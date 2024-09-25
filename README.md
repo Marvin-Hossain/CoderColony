@@ -1,3 +1,5 @@
+Welcome to README! This will be updated overtime as changes are made.
+
 mvnw & mvnw.cmd: Allow you to run maven commands. No need to modify
 
 pom.xml: Maven build file. Update when adding dependencies (adding a new library). 
