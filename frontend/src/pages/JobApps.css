@@ -1,0 +1,246 @@
+.job-apps {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: "Roboto", sans-serif;
+    color: #333;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.job-apps-header {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.job-apps-header h1 {
+    font-size: 2rem;
+    color: #2f4f4f;
+}
+
+.job-apps-header p {
+    font-size: 1rem;
+    color: #567d57;
+}
+
+.job-apps-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.job-input {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.job-input-field {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.add-job-button, .update-job-button {
+    background-color: #78c0a8;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-job-button:hover, .update-job-button:hover {
+    background-color: #56a68a;
+}
+
+.job-list {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.job-list h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #2f4f4f;
+}
+
+.job-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.job-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+}
+
+.job-item:last-child {
+    border-bottom: none;
+}
+
+.job-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.status-dropdown {
+    padding: 5px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.edit-job-button, .delete-job-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.edit-job-button:hover {
+    background-color: #0056b3;
+}
+
+.delete-job-button {
+    background-color: #dc3545;
+}
+
+.delete-job-button:hover {
+    background-color: #a71d2a;
+}
+
+.error-message {
+    color: #ff4444;
+    background-color: #ffe5e5;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.cancel-button {
+    background-color: #999;
+}
+
+.status-applied { background-color: #e3f2fd; }
+.status-rejected { background-color: #ffebee; }
+.status-interviewed { background-color: #e8f5e9; }
+
+.job-info {
+    display: flex;
+    gap: 15px;
+    min-width: 60%;
+    max-width: 75%;
+}
+
+.job-info strong {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    white-space: normal;
+    width: 180px;
+    word-break: break-word;
+}
+
+.job-info span {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    white-space: normal;
+}
+
+.job-info span:nth-of-type(1) {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    white-space: normal;
+    width: 150px;
+    word-break: break-word;
+}
+
+.job-info span:nth-of-type(2) {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    white-space: normal;
+    width: 120px;
+    word-break: break-word;
+}
+
+.job-meta {
+    margin-left: auto;
+}
+
+.back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: lowercase;
+}
+
+.status-badge.applied {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-badge.interviewed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-badge.rejected {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+select.job-input-field {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}

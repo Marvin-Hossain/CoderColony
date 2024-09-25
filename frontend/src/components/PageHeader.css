@@ -1,0 +1,21 @@
+.page-header {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    color: #2f4f4f;
+}
+
+.page-header p {
+    font-size: 1rem;
+    color: #567d57;
+}
+
+.back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+} 

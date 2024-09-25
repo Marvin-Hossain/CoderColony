@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+src/test/resources/application-test.properties
+src/main/resources/application-dev.properties
+*.p12
+*.jks
