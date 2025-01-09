@@ -1,0 +1,43 @@
+/* Center the heading and add spacing */
+h1 {
+    color: #333;
+    font-size: 2rem;
+}
+
+/* Card headers */
+.card-header {
+    font-weight: bold;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Form inputs */
+input {
+    padding: 0.75rem;
+    font-size: 1rem;
+}
+
+/* Table styling */
+.table {
+    margin-top: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.table-light {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 4px;
+}
+
+.btn-warning {
+    color: white;
+}

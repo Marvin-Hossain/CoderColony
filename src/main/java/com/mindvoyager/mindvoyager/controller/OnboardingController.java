@@ -11,10 +11,11 @@ public class OnboardingController {
     @GetMapping("/welcome")
     public String welcome() {
         return "Welcome to MindVoyager!";
+
     }
 
     @GetMapping("/goodbye")
     public String goodbye() {
-        return "Goodbye from MindVoyager!";
+        return "Goodbye from MindVoyager! Have a great day!";
     }
 }
