@@ -4,20 +4,28 @@ import Button from "../components/Button"; // Reusable Button component
 
 const Dashboard = () => {
     const [jobCount, setJobCount] = useState(0);
+    const [behavioralCount, setBehavioralCount] = useState(0);
     const jobGoal = 10;
+    const behavioralGoal = 10;
 
     useEffect(() => {
-        const fetchJobCount = async () => {
+        const fetchCounts = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/jobs/count');
-                const data = await response.json();
-                setJobCount(data.count);
+                // Fetch job count
+                const jobResponse = await fetch('http://localhost:8080/api/jobs/count');
+                const jobData = await jobResponse.json();
+                setJobCount(jobData.count);
+
+                // Fetch behavioral questions count
+                const behavioralResponse = await fetch('http://localhost:8080/api/behavioral/count');
+                const behavioralData = await behavioralResponse.json();
+                setBehavioralCount(behavioralData.count);
             } catch (error) {
-                console.error('Error fetching job count:', error);
+                console.error('Error fetching counts:', error);
             }
         };
 
-        fetchJobCount();
+        fetchCounts();
     }, []);
 
     return (
@@ -44,8 +52,8 @@ const Dashboard = () => {
                     </div>
                     <div className="goal">
                         <p>Practice Behavioral Qs</p>
-                        <progress value={3} max="5"></progress>
-                        <span>3/5</span>
+                        <progress value={behavioralCount} max={behavioralGoal}></progress>
+                        <span>{behavioralCount}/{behavioralGoal}</span>
                         <Button text="Go!" onClick={() => (window.location.href = "/behavioral-questions")} className="go-button" />
                     </div>
                     <div className="goal">

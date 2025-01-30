@@ -6,6 +6,7 @@ import JobApps from './pages/JobApps';
 import Progress from './pages/Progress';
 import UserList from './pages/UserList';
 import Bot from './pages/Bot';
+import BehavioralQuestions from './pages/BehavioralQuestions';
 import "bootstrap/dist/css/bootstrap.min.css";
 
 
@@ -20,6 +21,7 @@ function App() {
                 <Route path="/progress" element={<Progress />} />
                 <Route path="/users" element={<UserList />} />
                 <Route path="/bot" element={<Bot />} />
+                <Route path="/behavioral-questions" element={<BehavioralQuestions />} />
             </Routes>
         </Router>
     );
