@@ -1,15 +1,16 @@
 .custom-button {
-    background-color: #007bff;
+    background-color: #78c0a8; /* Light green tone */
     color: white;
     padding: 10px 20px;
     border: none;
     cursor: pointer;
     font-size: 1.2rem;
-    transition: background-color 0.3s;
-
-    border-radius: 50px;
+    transition: background-color 0.3s, transform 0.2s;
+    border-radius: 50px; /* Rounded corners for a modern look */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 .custom-button:hover {
-    background-color: #0056b3;  /* Darken the button on hover */
+    background-color: #56a68a; /* Slightly darker green on hover */
+    transform: scale(1.05); /* Subtle zoom effect */
 }

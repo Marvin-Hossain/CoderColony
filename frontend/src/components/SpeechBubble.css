@@ -1,36 +1,21 @@
 .speech-bubble {
     position: relative;
-    background: linear-gradient(135deg, #00e4ff, #0053ff);  /* Gradient background for a futuristic effect */
-    border-radius: 1em;  /* Softer corners */
+    background: linear-gradient(135deg, #00e4ff, #0053ff); /* Gradient background for a futuristic effect */
+    border-radius: 1em; /* Softer corners */
     padding: 20px;
     color: white;
-    font-family: 'Roboto', sans-serif;  /* Modern font style */
+    font-family: 'Roboto', sans-serif; /* Modern font style */
     font-size: 1.1rem;
     width: 300px;
-    box-shadow: 0 0 15px rgba(0, 224, 255, 0.7);  /* Glowing shadow */
-    border: 2px solid rgba(0, 224, 255, 0.8);  /* Thin glowing border */
+    box-shadow: 0 0 15px rgba(0, 224, 255, 0.7); /* Glowing shadow */
+    border: 2px solid rgba(0, 224, 255, 0.8); /* Thin glowing border */
 }
 
 .speech-bubble p {
     margin: 0;
-    text-shadow: 0 0 8px rgba(0, 224, 255, 0.6);  /* Futuristic text glow */
-    letter-spacing: 0.5px;  /* Slight letter spacing for modern feel */
+    text-shadow: 0 0 8px rgba(0, 224, 255, 0.6); /* Futuristic text glow */
+    letter-spacing: 0.5px; /* Slight letter spacing for modern feel */
     text-align: center;
-}
-
-.next-button {
-    position: absolute;
-    bottom: -15px;  /* Distance from the bottom */
-    right: -15px;
-    background-color: #007bff;
-    color: white;
-    padding: 5px 5px;
-    border: none;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: background-color 0.3s;
-
-    border-radius: 10px;
 }
 
 .speech-content {
@@ -40,4 +25,70 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+/* Next Button */
+.next-button {
+    position: absolute;
+    bottom: -15px; /* Distance from the bottom */
+    right: -15px;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background-color 0.3s;
+    border-radius: 10px;
+}
+
+.next-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* User Input Form */
+.user-input-form {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 15px; /* Add spacing from speech bubble */
+    align-items: center;
+}
+
+/* Input Box */
+.user-input {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid rgba(0, 224, 255, 0.8); /* Glowing border */
+    border-radius: 10px;
+    background-color: #002c64; /* Dark background to match futuristic style */
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 224, 255, 0.6); /* Glowing shadow */
+    transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+.user-input:focus {
+    border-color: #00e4ff; /* Brighter glow on focus */
+    box-shadow: 0 0 15px rgba(0, 224, 255, 0.9); /* Stronger glow */
+}
+
+/* Send Button */
+.send-button {
+    background: linear-gradient(135deg, #00e4ff, #0053ff); /* Match speech bubble gradient */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 224, 255, 0.7); /* Glowing shadow */
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.send-button:hover {
+    background: linear-gradient(135deg, #0056b3, #002c64); /* Darker gradient on hover */
+    transform: scale(1.05); /* Slight zoom effect */
 }

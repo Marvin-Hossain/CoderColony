@@ -1,0 +1,99 @@
+.dashboard {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: "Roboto", sans-serif;
+    color: #333;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+    font-size: 2rem;
+    color: #2f4f4f;
+}
+
+.dashboard-header p {
+    font-size: 1rem;
+    color: #567d57;
+}
+
+.dashboard-main {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.daily-goals, .weekly-goals {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.daily-goals h2, .weekly-goals h2 {
+    font-size: 1.5rem;
+    color: #2f4f4f;
+    margin-bottom: 15px;
+}
+
+.goal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.goal p {
+    flex: 2;
+    margin: 0;
+    color: #333;
+}
+
+.goal progress {
+    flex: 3;
+    margin: 0 10px;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background-color: #e6e6e6;
+}
+
+.goal progress::-webkit-progress-value {
+    background-color: #78c0a8;
+    border-radius: 5px;
+}
+
+.goal progress::-webkit-progress-bar {
+    background-color: #e6e6e6;
+    border-radius: 5px;
+}
+
+.goal span {
+    flex: 1;
+    text-align: center;
+    color: #567d57;
+}
+
+.go-button {
+    background-color: #78c0a8;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.go-button:hover {
+    background-color: #56a68a;
+    transform: scale(1.05);
+}
