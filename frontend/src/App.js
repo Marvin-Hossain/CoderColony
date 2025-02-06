@@ -4,9 +4,11 @@ import Intro from './pages/Intro';
 import Dashboard from './pages/Dashboard';
 import JobApps from './pages/JobApps';
 import Progress from './pages/Progress';
+import Settings from './pages/Settings';
 import UserList from './pages/UserList';
 import Bot from './pages/Bot';
 import BehavioralQuestions from './pages/BehavioralQuestions';
+import TechnicalQuestions from './pages/TechnicalQuestions';
 import "bootstrap/dist/css/bootstrap.min.css";
 
 
@@ -22,6 +24,8 @@ function App() {
                 <Route path="/users" element={<UserList />} />
                 <Route path="/bot" element={<Bot />} />
                 <Route path="/behavioral-questions" element={<BehavioralQuestions />} />
+                <Route path="/technical-questions" element={<TechnicalQuestions />} />
+                <Route path="/settings" element={<Settings />} />
             </Routes>
         </Router>
     );

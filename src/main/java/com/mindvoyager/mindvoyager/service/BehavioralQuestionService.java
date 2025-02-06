@@ -23,9 +23,6 @@ public class BehavioralQuestionService {
     @Autowired
     private OpenAIService openAIService;
 
-    @Autowired
-    private ProgressService progressService;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public BehavioralQuestion getRandomQuestion() {
@@ -59,19 +56,28 @@ public class BehavioralQuestionService {
             
             behavioralQuestion.setResponseText(response);
 
+            // Individual AI prompt for behavioral questions
             String prompt = String.format(
-                "You are an interview coach. Evaluate this behavioral interview response.\n" +
+                "You are an experienced technical interview coach specializing in behavioral questions. " +
+                "Evaluate responses using the STAR method (Situation, Task, Action, Result). " +
+                "Be constructive but firm in your feedback. " +
+                "For each response, analyze:\n" +
+                "1. Structure and completeness\n" +
+                "2. Specific examples and details\n" +
+                "3. Professional impact and results\n" +
+                "4. Communication clarity\n\n" +
                 "Question: '%s'\n" +
                 "Response: '%s'\n\n" +
-                "Provide detailed feedback and a rating. Return your response in this JSON format:\n" +
+                "Provide feedback in this JSON format:\n" +
                 "{\n" +
-                "  \"rating\": <number between 1-10>,\n" +
-                "  \"feedback\": \"<detailed feedback with specific improvements>\"\n" +
+                "  \"rating\": <number 1-10>,\n" +
+                "  \"feedback\": \"<Start with strengths, then areas for improvement, and end with actionable tips.>\"\n" +
                 "}",
                 question, response
             );
 
-            String gptResponse = openAIService.getResponse(prompt);
+            // Use the individual prompt
+            String gptResponse = openAIService.getResponse(response, prompt); // Pass the prompt here
             JsonNode jsonResponse = objectMapper.readTree(gptResponse);
 
             behavioralQuestion.setRating(jsonResponse.get("rating").asInt());
@@ -92,5 +98,10 @@ public class BehavioralQuestionService {
 
     public long getTodayCount() {
         return repository.countByDate(LocalDate.now());
+    }
+
+    public BehavioralQuestion addQuestion(BehavioralQuestion question) {
+        question.setCreatedAt(LocalDate.now()); // Set the creation date
+        return repository.save(question); // Save the question to the database
     }
 } 

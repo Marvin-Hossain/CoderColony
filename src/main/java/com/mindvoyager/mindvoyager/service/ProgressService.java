@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.time.ZoneId;
 import org.springframework.context.ApplicationContext;
 import com.mindvoyager.mindvoyager.repository.BehavioralQuestionRepository;
+import com.mindvoyager.mindvoyager.repository.TechnicalQuestionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,18 @@ public class ProgressService {
                 
                 // Convert to dateToCount format
                 dateToCount = behavioralCounts;
+            } else if (category.equals("technical")) {
+                // Add technical question handling
+                TechnicalQuestionRepository technicalRepo = 
+                    (TechnicalQuestionRepository) applicationContext.getBean("technicalQuestionRepository");
+                
+                Map<LocalDate, Integer> technicalCounts = new HashMap<>();
+                for (LocalDate date = startDate; !date.isAfter(today); date = date.plusDays(1)) {
+                    long count = technicalRepo.countByDate(date);
+                    technicalCounts.put(date, (int) count);
+                }
+                
+                dateToCount = technicalCounts;
             } else {
                 // Original logic for other categories
                 weeklyProgress = progressRepository.findByCategoryAndDateBetweenOrderByDate(

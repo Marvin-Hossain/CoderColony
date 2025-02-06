@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 public class OpenAIService {
@@ -24,80 +25,53 @@ public class OpenAIService {
     private String apiUrl;
 
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
-    public OpenAIService(RestTemplate restTemplate) {
+    public OpenAIService(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
-    public String getResponse(String userInput) {
+    public String getResponse(String userInput, String aiPrompt) {
         try {
-            System.out.println("OpenAI Service - Input received: " + userInput);  // Debug log
-            
+            logger.info("Received user input: {}", userInput); // Log user input
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
             Map<String, Object> requestBody = Map.of(
                 "model", "gpt-4",
                 "messages", List.of(
-                    Map.of("role", "system", "content", 
-                        "You are an experienced technical interview coach specializing in behavioral questions. " +
-                        "Evaluate responses using the STAR method (Situation, Task, Action, Result). " +
-                        "Be constructive but firm in your feedback. " +
-                        "For each response, analyze:\n" +
-                        "1. Structure and completeness\n" +
-                        "2. Specific examples and details\n" +
-                        "3. Professional impact and results\n" +
-                        "4. Communication clarity\n\n" +
-                        "Provide feedback in this JSON format:\n" +
-                        "{\n" +
-                        "  \"rating\": <number 1-10>,\n" +
-                        "  \"feedback\": \"<Start with strengths, then areas for improvement, and end with actionable tips.>\"\n" +
-                        "}"
-                    ),
+                    Map.of("role", "system", "content", aiPrompt),
                     Map.of("role", "user", "content", userInput)
                 ),
-                "max_tokens", 1000,
-                "temperature", 0.7  // Adjust between 0-1: lower for more consistent, higher for more creative
+                "temperature", 0.7,
+                "max_tokens", 1000
             );
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(apiKey);
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
             System.out.println("OpenAI Service - Sending request to OpenAI");  // Debug log
-            ResponseEntity<Map> response = restTemplate.exchange(
-                apiUrl,
-                HttpMethod.POST,
-                entity,
-                Map.class
-            );
+            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
             System.out.println("OpenAI Service - Received response from OpenAI");  // Debug log
 
-            Map<String, Object> responseBody = response.getBody();
-            if (responseBody != null && responseBody.containsKey("choices")) {
-                Map<String, Object> choice = ((List<Map<String, Object>>) responseBody.get("choices")).get(0);
-                Map<String, Object> message = (Map<String, Object>) choice.get("message");
-                String content = (String) message.get("content");
-                System.out.println("OpenAI Service - Raw GPT response: " + content);  // Debug log
-                
-                // Verify JSON format
-                try {
-                    new ObjectMapper().readTree(content);
-                    return content;
-                } catch (Exception e) {
-                    // If response isn't valid JSON, format it
-                    return String.format(
-                        "{\"rating\": 7, \"feedback\": %s}", 
-                        new ObjectMapper().writeValueAsString(content)
-                    );
-                }
+            JsonNode jsonResponse = objectMapper.readTree(response.getBody());
+            String content = jsonResponse.path("choices").get(0).path("message").path("content").asText();
+            System.out.println("OpenAI Service - Raw GPT response: " + content);  // Debug log
+            
+            // Verify JSON format
+            try {
+                new ObjectMapper().readTree(content);
+                return content;
+            } catch (Exception e) {
+                // If response isn't valid JSON, format it
+                return String.format(
+                    "{\"rating\": 7, \"feedback\": %s}", 
+                    new ObjectMapper().writeValueAsString(content)
+                );
             }
-
-            System.out.println("OpenAI Service - No valid response found in choices");  // Debug log
-            return "{\"rating\": 5, \"feedback\": \"Sorry, I couldn't process your request.\"}";
         } catch (Exception e) {
-            System.err.println("OpenAI Service - Error: " + e.getMessage());  // Debug log
-            e.printStackTrace();
-            return "{\"rating\": 5, \"feedback\": \"An error occurred while communicating with OpenAI.\"}";
+            logger.error("Error processing request: {}", e.getMessage()); // Log error message
+            return "{\"rating\": 5, \"feedback\": \"I apologize, but I'm having trouble processing your request right now.\"}";
         }
     }
 }

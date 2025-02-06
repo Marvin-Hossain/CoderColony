@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import Button from "../components/Button"; // Reusable Button component
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
     const [jobCount, setJobCount] = useState(0);
     const [behavioralCount, setBehavioralCount] = useState(0);
+    const [technicalCount, setTechnicalCount] = useState(0);
     const jobGoal = 10;
     const behavioralGoal = 10;
+    const technicalGoal = 10;
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchCounts = async () => {
@@ -20,6 +24,11 @@ const Dashboard = () => {
                 const behavioralResponse = await fetch('http://localhost:8080/api/behavioral/count');
                 const behavioralData = await behavioralResponse.json();
                 setBehavioralCount(behavioralData.count);
+
+                // Fetch technical questions count
+                const technicalResponse = await fetch('http://localhost:8080/api/technical/count');
+                const technicalData = await technicalResponse.json();
+                setTechnicalCount(technicalData.count);
             } catch (error) {
                 console.error('Error fetching counts:', error);
             }
@@ -32,8 +41,14 @@ const Dashboard = () => {
         <div className="dashboard">
             <Button 
                 text="Progress"
-                onClick={() => (window.location.href = "/progress")}
+                onClick={() => navigate('/progress')}
                 style={{ position: 'absolute', top: '1rem', left: '1rem' }}
+            />
+            <Button 
+
+                text="Settings"
+                onClick={() => navigate('/settings')}
+                className="settings-button"
             />
             <header className="dashboard-header">
                 <h1>Welcome to Your Dashboard</h1>
@@ -58,8 +73,8 @@ const Dashboard = () => {
                     </div>
                     <div className="goal">
                         <p>Practice Technical Qs</p>
-                        <progress value={1} max="5"></progress>
-                        <span>1/5</span>
+                        <progress value={technicalCount} max={technicalGoal}></progress>
+                        <span>{technicalCount}/{technicalGoal}</span>
                         <Button text="Go!" onClick={() => (window.location.href = "/technical-questions")} className="go-button" />
                     </div>
                     <div className="goal">
