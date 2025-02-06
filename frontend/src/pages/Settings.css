@@ -14,9 +14,30 @@
     margin-bottom: 20px;
 }
 
-.settings-header h1 {
-    font-size: 2rem;
-    color: #2f4f4f;
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.tabs button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.tabs button.active {
+    background-color: #78c0a8;
+    color: white;
+}
+
+.behavioral-tab, .technical-tab {
+    margin-top: 20px;
 }
 
 .error-message {
@@ -27,17 +48,73 @@
     border-radius: 4px;
 }
 
+textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
 .submit-button {
     background-color: #78c0a8;
     color: white;
-    padding: 10px 20px;
+    padding: 10px 15px;
     border: none;
     border-radius: 5px;
-    cursor: pointer;
     font-size: 1rem;
+    cursor: pointer;
     transition: background-color 0.3s;
+    margin-bottom: 20px;
 }
 
 .submit-button:hover {
     background-color: #56a68a;
+}
+
+.question-list {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.question-list h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #2f4f4f;
+}
+
+.question-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.question-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.question-item:last-child {
+    border-bottom: none;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+    background-color: #a71d2a;
 }

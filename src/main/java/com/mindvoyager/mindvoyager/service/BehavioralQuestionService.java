@@ -104,4 +104,12 @@ public class BehavioralQuestionService {
         question.setCreatedAt(LocalDate.now()); // Set the creation date
         return repository.save(question); // Save the question to the database
     }
+
+    public List<BehavioralQuestion> getAllQuestions() {
+        return repository.findAll();
+    }
+
+    public void deleteQuestion(Long id) {
+        repository.deleteById(id);
+    }
 } 
