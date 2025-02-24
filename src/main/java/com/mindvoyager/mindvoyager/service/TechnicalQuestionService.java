@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,7 +30,10 @@ public class TechnicalQuestionService {
         try {
             TechnicalQuestion question = repository.findRandomQuestion();
             if (question == null) {
-                throw new RuntimeException("No questions available in the database");
+                // Return a special TechnicalQuestion indicating no more questions
+                TechnicalQuestion noMoreQuestions = new TechnicalQuestion();
+                noMoreQuestions.setQuestion("No more questions for today! Please reset or come back tomorrow!");
+                return noMoreQuestions;
             }
             return question;
         } catch (Exception e) {
@@ -40,19 +44,18 @@ public class TechnicalQuestionService {
 
     public TechnicalQuestion evaluateResponse(String question, String response, boolean isNewQuestion) {
         try {
+            // Retrieve existing responses excluding today's date
             List<TechnicalQuestion> existingResponses = 
-                repository.findAllByQuestionAndDate(question, LocalDate.now());
+                repository.findAllByQuestionAndDateNot(question);
             
-            TechnicalQuestion technicalQuestion;
-            if (!existingResponses.isEmpty()) {
-                technicalQuestion = existingResponses.get(0);
-            } else {
-                technicalQuestion = new TechnicalQuestion();
-                technicalQuestion.setQuestion(question);
-                technicalQuestion.setCreatedAt(LocalDate.now());
+            if (existingResponses.isEmpty()) {
+                throw new RuntimeException("No existing question found to update.");
             }
-            
+
+            TechnicalQuestion technicalQuestion = existingResponses.get(0);
+            // Update the existing question's fields
             technicalQuestion.setResponseText(response);
+            technicalQuestion.setCreatedAt(LocalDate.now()); // Update createdAt date
 
             // Individual AI prompt for technical questions
             String prompt = String.format(
@@ -88,5 +91,21 @@ public class TechnicalQuestionService {
 
     public long getTodayCount() {
         return repository.countByDate(LocalDate.now());
+    }
+
+    @Transactional
+    public void resetAllQuestions() {
+        repository.resetAllDates(); // Call the repository method to reset dates
+    }
+
+    public void resetQuestionDate(String question) {
+        // Assuming you have a method in the repository to find the question by its text
+        TechnicalQuestion technicalQuestion = repository.findByQuestion(question);
+        if (technicalQuestion != null) {
+            technicalQuestion.setCreatedAt(null); // Reset the date to null
+            repository.save(technicalQuestion); // Save the updated question
+        } else {
+            throw new RuntimeException("Question not found");
+        }
     }
 } 

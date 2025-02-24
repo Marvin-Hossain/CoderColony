@@ -39,17 +39,18 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
+            <div className="button-container">
             <Button 
                 text="Progress"
                 onClick={() => navigate('/progress')}
                 style={{ position: 'absolute', top: '1rem', left: '1rem' }}
             />
             <Button 
-
                 text="Settings"
                 onClick={() => navigate('/settings')}
                 className="settings-button"
             />
+            </div>
             <header className="dashboard-header">
                 <h1>Welcome to Your Dashboard</h1>
                 <p>Track your progress and stay on top of your goals.</p>
@@ -63,25 +64,25 @@ const Dashboard = () => {
                         <p>Apply to {jobGoal} Jobs</p>
                         <progress value={jobCount} max={jobGoal}></progress>
                         <span>{jobCount}/{jobGoal}</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/job-apps")} className="go-button" />
+                        <Button text="Go!" onClick={() => navigate('/job-apps')} className="go-button" />
                     </div>
                     <div className="goal">
                         <p>Practice Behavioral Qs</p>
                         <progress value={behavioralCount} max={behavioralGoal}></progress>
                         <span>{behavioralCount}/{behavioralGoal}</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/behavioral-questions")} className="go-button" />
+                        <Button text="Go!" onClick={() => navigate('/behavioral-questions')} className="go-button" />
                     </div>
                     <div className="goal">
                         <p>Practice Technical Qs</p>
                         <progress value={technicalCount} max={technicalGoal}></progress>
                         <span>{technicalCount}/{technicalGoal}</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/technical-questions")} className="go-button" />
+                        <Button text="Go!" onClick={() => navigate('/technical-questions')} className="go-button" />
                     </div>
                     <div className="goal">
-                        <p>Practice LeetCode Qs</p>
-                        <progress value={2} max="5"></progress>
-                        <span>2/5</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/leetcode")} className="go-button" />
+                        <p>Practice LeetCode Qs<br></br>(Coming Soon!)</p>
+                        <progress value={0} max="0"></progress>
+                        <span>0/0</span>
+                        {/* <Button text="Go!" onClick={() => (window.location.href = "/leetcode")} className="go-button" /> */}
                     </div>
                 </section>
 
@@ -89,16 +90,16 @@ const Dashboard = () => {
                 <section className="weekly-goals">
                     <h2>Weekly Goals</h2>
                     <div className="goal">
-                        <p>Contact Connections</p>
-                        <progress value={2} max="5"></progress>
-                        <span>2/5</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/connections")} className="go-button" />
+                        <p>Contact Connections<br></br>(Coming soon!)</p>
+                        <progress value={0} max="0"></progress>
+                        <span>0/0</span>
+                        {/* <Button text="Go!" onClick={() => (window.location.href = "/connections")} className="go-button" /> */}
                     </div>
                     <div className="goal">
-                        <p>Learn New Concepts</p>
-                        <progress value={1} max="5"></progress>
-                        <span>1/5</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/new-concepts")} className="go-button" />
+                        <p>Learn New Concepts<br></br>(Coming soon!)</p>
+                        <progress value={0} max="0"></progress>
+                        <span>0/0</span>
+                        {/* <Button text="Go!" onClick={() => (window.location.href = "/new-concepts")} className="go-button" /> */}
                     </div>
                 </section>
             </main>

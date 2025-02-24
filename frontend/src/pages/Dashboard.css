@@ -97,3 +97,20 @@
     background-color: #56a68a;
     transform: scale(1.05);
 }
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+}
+
+.progress-button {
+    margin-right: auto;
+}
+
+.settings-button {
+    margin-left: auto;
+}

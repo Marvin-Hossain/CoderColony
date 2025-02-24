@@ -11,19 +11,32 @@ const TechnicalQuestions = () => {
     const [feedback, setFeedback] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showResetButton, setShowResetButton] = useState(false);
     const navigate = useNavigate();
 
     const fetchNewQuestion = async () => {
         setLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/question`);
-            if (!response.ok) throw new Error('Failed to fetch question');
-            const data = await response.json();
-            setQuestion(data.question);
-            setResponse('');
-            setFeedback(null);
+            
+            if (response.ok) {
+                const data = await response.json();
+                setQuestion(data.question);
+                setResponse('');
+                setFeedback(null);
+                
+                // Check if the question is the special "no more questions" message
+                if (data.question === "No more questions for today! Please reset or come back tomorrow!") {
+                    setShowResetButton(true); // Show the reset button
+                } else {
+                    setShowResetButton(false); // Hide the reset button for valid questions
+                }
+            } else {
+                throw new Error('Failed to fetch question');
+            }
         } catch (error) {
             setError('Failed to load question. Please try again.');
+            setShowResetButton(true); // Show reset button on error
         } finally {
             setLoading(false);
         }
@@ -86,9 +99,47 @@ const TechnicalQuestions = () => {
         }
     };
 
-    const handleRetry = () => {
+    const handleRetry = async () => {
         setFeedback(null);  // Clear previous feedback
         setResponse('');    // Clear previous response
+
+        // Call the reset date endpoint
+        try {
+            const result = await fetch(`${API_BASE_URL}/reset-date`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question }) // Send the current question to reset its date
+            });
+
+            if (!result.ok) {
+                throw new Error('Failed to reset question date');
+            }
+        } catch (error) {
+            console.error('Error resetting question date:', error);
+            setError('Failed to reset question date. Please try again.');
+        }
+    };
+
+    const resetQuestions = async () => {
+        setLoading(true);
+        try {
+            const result = await fetch(`${API_BASE_URL}/reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            
+            if (!result.ok) {
+                throw new Error('Failed to reset questions');
+            }
+
+            // Refresh the page or fetch new questions
+            window.location.reload(); // Reload the page to reflect changes
+        } catch (error) {
+            console.error('Error resetting questions:', error);
+            setError('Failed to reset questions. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -105,6 +156,13 @@ const TechnicalQuestions = () => {
                 />
                 <h1>Technical Interview Practice</h1>
                 <p>Practice your responses and get AI feedback</p>
+                {showResetButton && (
+                    <Button 
+                        text="Reset" 
+                        onClick={resetQuestions} 
+                        className="reset-button"
+                    />
+                )}
             </header>
 
             {error && <div className="error-message">{error}</div>}
@@ -125,11 +183,11 @@ const TechnicalQuestions = () => {
                                     value={response}
                                     onChange={(e) => setResponse(e.target.value)}
                                     placeholder="Use the STAR method: Describe the Situation, Task, Action, and Result..."
-                                    disabled={loading}
+                                    disabled={question === "No more questions for today! Please reset or come back tomorrow!"}
                                 />
                                 <button 
                                     onClick={submitResponse}
-                                    disabled={loading || !response.trim()}
+                                    disabled={loading || !response.trim() || question === "No more questions for today! Please reset or come back tomorrow!"}
                                     className="submit-button"
                                 >
                                     Get Feedback

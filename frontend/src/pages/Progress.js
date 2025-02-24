@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import {useNavigate} from 'react-router-dom';
 import "./Progress.css";
 import { Line } from "react-chartjs-2";
 import Button from "../components/Button";
@@ -27,14 +28,15 @@ const Progress = () => {
   const [selectedCategory, setSelectedCategory] = useState("jobs");
   const [weeklyData, setWeeklyData] = useState(null);
   const [allTimeStats, setAllTimeStats] = useState(null);
+  const navigate = useNavigate();
 
   const categories = [
     { id: "jobs", label: "Job Applications", goal: 10 },
-    { id: "behavioral", label: "Behavioral Questions", goal: 5 },
-    { id: "technical", label: "Technical Questions", goal: 5 },
-    { id: "leetcode", label: "LeetCode Questions", goal: 5 },
-    { id: "connections", label: "Connections", goal: 5 },
-    { id: "concepts", label: "New Concepts", goal: 5 },
+    // { id: "behavioral", label: "Behavioral Questions", goal: 10 },
+    // { id: "technical", label: "Technical Questions", goal: 10 },
+    // { id: "leetcode", label: "LeetCode Questions", goal: 0 },
+    // { id: "connections", label: "Connections", goal: 0 },
+    // { id: "concepts", label: "New Concepts", goal: 0 },
   ];
 
   const fetchData = async () => {
@@ -166,7 +168,7 @@ const Progress = () => {
     <div className="progress-page">
       <Button 
         text="Back" 
-        onClick={() => window.location.href = "/dashboard"} 
+        onClick={() => navigate('/dashboard')}
         className="back-button"
       />
       <header className="progress-header">

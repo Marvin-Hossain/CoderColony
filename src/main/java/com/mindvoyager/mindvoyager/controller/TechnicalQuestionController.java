@@ -25,6 +25,10 @@ public class TechnicalQuestionController {
     public ResponseEntity<TechnicalQuestion> getRandomQuestion() {
         try {
             TechnicalQuestion question = service.getRandomQuestion();
+            if (question == null) {
+                // Return 204 No Content if no questions are available
+                return ResponseEntity.noContent().build();
+            }
             return ResponseEntity.ok(question);
         } catch (Exception e) {
             logger.error("Error getting random question: ", e);
@@ -62,6 +66,29 @@ public class TechnicalQuestionController {
     @GetMapping("/count")
     public ResponseEntity<Map<String, Long>> getTodayCount() {
         return ResponseEntity.ok(Map.of("count", service.getTodayCount()));
+    }
+
+    @PostMapping("/reset")
+    public ResponseEntity<Void> resetQuestions() {
+        try {
+            service.resetAllQuestions(); // Call the service method to reset questions
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error resetting questions: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/reset-date")
+    public ResponseEntity<Void> resetQuestionDate(@RequestBody Map<String, String> request) {
+        try {
+            String question = request.get("question");
+            service.resetQuestionDate(question); // Call the service method to reset the date
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error resetting question date: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // Optional: If you want to add a complete question endpoint similar to Behavioral
