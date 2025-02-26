@@ -121,31 +121,31 @@ public class ProgressService {
         Map<String, Object> stats = new HashMap<>();
         try {
             if (category.equals("behavioral")) {
-                BehavioralQuestionRepository behavioralRepo = 
-                    (BehavioralQuestionRepository) applicationContext.getBean("behavioralQuestionRepository");
+                // BehavioralQuestionRepository behavioralRepo = 
+                //     (BehavioralQuestionRepository) applicationContext.getBean("behavioralQuestionRepository");
                 
-                // Get total unique questions answered
-                long total = behavioralRepo.countTotalAnswered();
+                // // Get total unique questions answered
+                // long total = behavioralRepo.countTotalAnswered();
                 
-                // Get daily counts and convert to Map
-                List<Object[]> dailyCountsList = behavioralRepo.getDailyCounts();
-                Map<LocalDate, Long> dailyCounts = dailyCountsList.stream()
-                    .collect(Collectors.toMap(
-                        row -> (LocalDate) row[0],
-                        row -> ((Number) row[1]).longValue()
-                    ));
+                // // Get daily counts and convert to Map
+                // List<Object[]> dailyCountsList = behavioralRepo.getDailyCounts();
+                // Map<LocalDate, Long> dailyCounts = dailyCountsList.stream()
+                //     .collect(Collectors.toMap(
+                //         row -> (LocalDate) row[0],
+                //         row -> ((Number) row[1]).longValue()
+                //     ));
                 
-                double average = dailyCounts.isEmpty() ? 0.0 : 
-                    (double) total / dailyCounts.size();
+                // double average = dailyCounts.isEmpty() ? 0.0 : 
+                //     (double) total / dailyCounts.size();
                 
-                long bestDay = dailyCounts.values().stream()
-                    .mapToLong(Long::longValue)
-                    .max()
-                    .orElse(0);
+                // long bestDay = dailyCounts.values().stream()
+                //     .mapToLong(Long::longValue)
+                //     .max()
+                //     .orElse(0);
 
-                stats.put("total", total);
-                stats.put("average", String.format("%.1f", average));
-                stats.put("bestDay", bestDay);
+                // stats.put("total", total);
+                // stats.put("average", String.format("%.1f", average));
+                // stats.put("bestDay", bestDay);
             } else if (category.equals("jobs")) {
                 // Get all jobs with their creation dates
                 List<Job> allJobs = jobService.getAllJobs();

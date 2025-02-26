@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -29,7 +29,10 @@ public class BehavioralQuestionService {
         try {
             BehavioralQuestion question = repository.findRandomQuestion();
             if (question == null) {
-                throw new RuntimeException("No questions available in the database");
+                // Return a special TechnicalQuestion indicating no more questions
+                BehavioralQuestion noMoreQuestions = new BehavioralQuestion();
+                noMoreQuestions.setQuestion("No more questions for today! Please reset or come back tomorrow!");
+                return noMoreQuestions;
             }
             return question;
         } catch (Exception e) {
@@ -38,27 +41,8 @@ public class BehavioralQuestionService {
         }
     }
 
-    public BehavioralQuestion evaluateResponse(String question, String response, boolean isNewQuestion) {
-        System.out.println("BehavioralQuestionService - Starting evaluation");
-        
-        try {
-            List<BehavioralQuestion> existingResponses = 
-                repository.findAllByQuestionAndDate(question, LocalDate.now());
-            
-            BehavioralQuestion behavioralQuestion;
-            if (!existingResponses.isEmpty()) {
-                behavioralQuestion = existingResponses.get(0);
-            } else {
-                behavioralQuestion = new BehavioralQuestion();
-                behavioralQuestion.setQuestion(question);
-                behavioralQuestion.setCreatedAt(LocalDate.now());
-            }
-            
-            behavioralQuestion.setResponseText(response);
-
-            // Individual AI prompt for behavioral questions
-            String prompt = String.format(
-                "You are an experienced technical interview coach specializing in behavioral questions. " +
+    private static final String EVALUATION_PROMPT_TEMPLATE = 
+    "           You are an experienced technical interview coach specializing in behavioral questions. " +
                 "Evaluate responses using the STAR method (Situation, Task, Action, Result). " +
                 "Be constructive but firm in your feedback. " +
                 "For each response, analyze:\n" +
@@ -72,33 +56,58 @@ public class BehavioralQuestionService {
                 "{\n" +
                 "  \"rating\": <number 1-10>,\n" +
                 "  \"feedback\": \"<Start with strengths, then areas for improvement, and end with actionable tips.>\"\n" +
-                "}",
-                question, response
-            );
+                "}";
 
-            // Use the individual prompt
-            String gptResponse = openAIService.getResponse(response, prompt); // Pass the prompt here
-            JsonNode jsonResponse = objectMapper.readTree(gptResponse);
-
-            behavioralQuestion.setRating(jsonResponse.get("rating").asInt());
-            behavioralQuestion.setFeedback(jsonResponse.get("feedback").asText());
+                public BehavioralQuestion evaluateResponse(String question, String response) {
+                    try {
+                        BehavioralQuestion behavioralQuestion = repository.findByQuestion(question);
+                        if (behavioralQuestion == null) {
+                            throw new RuntimeException("No existing question found to update.");
+                        }
             
-            return repository.save(behavioralQuestion);
-        } catch (Exception e) {
-            logger.error("Error evaluating response: ", e);
-            BehavioralQuestion fallback = new BehavioralQuestion();
-            fallback.setQuestion(question);
-            fallback.setResponseText(response);
-            fallback.setRating(5);
-            fallback.setFeedback("An error occurred while evaluating your response. Please try again.");
-            fallback.setCreatedAt(LocalDate.now());
-            return fallback;
-        }
-    }
-
-    public long getTodayCount() {
-        return repository.countByDate(LocalDate.now());
-    }
+                        String prompt = String.format(EVALUATION_PROMPT_TEMPLATE, question, response);
+                        String gptResponse = openAIService.getResponse(response, prompt);
+                        JsonNode jsonResponse = objectMapper.readTree(gptResponse);
+                        
+                        updateBehavioralQuestion(behavioralQuestion, response, jsonResponse);
+                        return repository.save(behavioralQuestion);
+                    } catch (Exception e) {
+                        logger.error("Error evaluating response", e);
+                        throw new RuntimeException("Failed to evaluate response", e);
+                    }
+                }
+            
+                private void updateBehavioralQuestion(BehavioralQuestion question, String response, JsonNode evaluation) {
+                    question.setResponseText(response);
+                    question.setCreatedAt(LocalDate.now());
+                    question.setRating(evaluation.get("rating").asInt());
+                    question.setFeedback(evaluation.get("feedback").asText());
+                }
+            
+                public long getTodayCount() {
+                    return repository.countByDate(LocalDate.now());
+                }
+            
+                @Transactional
+                public void resetAllQuestions() {
+                    try {
+                        repository.resetAllDates();
+                    } catch (Exception e) {
+                        logger.error("Error resetting questions: {}", e.getMessage());
+                        throw new RuntimeException("Failed to reset questions", e);
+                    }
+                }
+            
+                public void resetQuestionDate(String question) {
+                    // Assuming you have a method in the repository to find the question by its text
+                    BehavioralQuestion behavioralQuestion = repository.findByQuestion(question);
+                    if (behavioralQuestion != null) {
+                        behavioralQuestion.setCreatedAt(null); // Reset the date to null
+                        repository.save(behavioralQuestion); // Save the updated question
+                    } else {
+                        throw new RuntimeException("Question not found");
+                    }
+                }
 
     public BehavioralQuestion addQuestion(BehavioralQuestion question) {
         question.setCreatedAt(LocalDate.now()); // Set the creation date

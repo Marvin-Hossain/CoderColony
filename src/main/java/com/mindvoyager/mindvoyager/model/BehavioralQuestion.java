@@ -44,8 +44,8 @@ public class BehavioralQuestion {
     public String getFeedback() { return feedback; }
     public void setFeedback(String feedback) { this.feedback = feedback; }
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDate.now();
-    }
+    // @PrePersist
+    // protected void onCreate() {
+    //     createdAt = LocalDate.now();
+    // }
 } 

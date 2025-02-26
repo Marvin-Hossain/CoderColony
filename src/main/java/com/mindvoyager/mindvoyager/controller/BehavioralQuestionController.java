@@ -2,14 +2,13 @@ package com.mindvoyager.mindvoyager.controller;
 
 import com.mindvoyager.mindvoyager.model.BehavioralQuestion;
 import com.mindvoyager.mindvoyager.service.BehavioralQuestionService;
-import com.mindvoyager.mindvoyager.service.ProgressService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.mindvoyager.mindvoyager.dto.EvaluateResponseRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -23,9 +22,6 @@ public class BehavioralQuestionController {
     @Autowired
     private BehavioralQuestionService service;
 
-    @Autowired
-    private ProgressService progressService;
-
     @GetMapping("/question")
     public ResponseEntity<BehavioralQuestion> getRandomQuestion() {
         try {
@@ -38,29 +34,20 @@ public class BehavioralQuestionController {
     }
 
     @PostMapping("/evaluate")
-    public ResponseEntity<BehavioralQuestion> evaluateResponse(@RequestBody Map<String, String> request) {
+    public ResponseEntity<BehavioralQuestion> evaluateResponse(@RequestBody EvaluateResponseRequest request) {
         try {
-            String question = request.get("question");
-            String response = request.get("response");
-            boolean isNewQuestion = Boolean.parseBoolean(request.get("isNewQuestion"));
-            
-            logger.info("Received evaluation request - Question: {}, Response length: {}, New Question: {}", 
-                       question, 
-                       response != null ? response.length() : 0,
-                       isNewQuestion);
-            
-            if (question == null || response == null) {
-                logger.error("Missing question or response in request");
+            if (!request.isValid()) {
                 return ResponseEntity.badRequest().build();
             }
             
-            BehavioralQuestion result = service.evaluateResponse(question, response, isNewQuestion);
-            logger.info("Evaluation complete - Rating: {}", result.getRating());
+            BehavioralQuestion result = service.evaluateResponse(
+                request.getQuestion(), 
+                request.getResponse()
+            );
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            logger.error("Error evaluating response: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                   .body(new BehavioralQuestion());
+            logger.error("Error evaluating response: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -69,10 +56,27 @@ public class BehavioralQuestionController {
         return ResponseEntity.ok(Map.of("count", service.getTodayCount()));
     }
 
-    @PostMapping("/complete")
-    public ResponseEntity<Void> completeQuestion() {
-        progressService.logProgress("behavioral", 1);
-        return ResponseEntity.ok().build();
+    @PostMapping("/reset")
+    public ResponseEntity<Void> resetQuestions() {
+        try {
+            service.resetAllQuestions(); // Call the service method to reset questions
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error resetting questions: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/reset-date")
+    public ResponseEntity<Void> resetQuestionDate(@RequestBody Map<String, String> request) {
+        try {
+            String question = request.get("question");
+            service.resetQuestionDate(question); // Call the service method to reset the date
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error resetting question date: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping("/add")

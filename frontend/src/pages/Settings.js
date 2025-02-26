@@ -3,14 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import './Settings.css';
 
-// Move API URLs to environment variables
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080/api";
 const API_BASE_URLS = {
-    behavioral: `${API_BASE_URL}/behavioral`,
-    technical: `${API_BASE_URL}/technical`
+    behavioral: "http://localhost:8080/api/behavioral",
+    technical: "http://localhost:8080/api/technical"
 };
 
-const QuestionPanel = ({ type, error, question, setQuestion, handleSubmit, questions, handleDelete, isLoading }) => (
+const QuestionPanel = ({ type, error, question, setQuestion, handleSubmit, questions, handleDelete }) => (
     <div className={`${type}-tab`}>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
@@ -19,34 +17,19 @@ const QuestionPanel = ({ type, error, question, setQuestion, handleSubmit, quest
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder={`Enter your ${type} question here...`}
                 required
-                disabled={isLoading}
             />
-            <button type="submit" className="submit-button" disabled={isLoading}>
-                {isLoading ? 'Adding...' : 'Add Question'}
-            </button>
+            <button type="submit" className="submit-button">Add Question</button>
         </form>
         <div className="question-list">
             <h2>Existing {type.charAt(0).toUpperCase() + type.slice(1)} Questions</h2>
-            {isLoading ? (
-                <div className="loading-indicator">Loading questions...</div>
-            ) : questions.length === 0 ? (
-                <p className="no-questions">No questions available. Add some!</p>
-            ) : (
-                <ul>
-                    {questions.map(q => (
-                        <li key={q.id} className="question-item">
-                            {q.question}
-                            <button 
-                                onClick={() => handleDelete(q.id)} 
-                                className="delete-button"
-                                disabled={isLoading}
-                            >
-                                Delete
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            )}
+            <ul>
+                {questions.map(q => (
+                    <li key={q.id} className="question-item">
+                        {q.question}
+                        <button onClick={() => handleDelete(q.id)} className="delete-button">Delete</button>
+                    </li>
+                ))}
+            </ul>
         </div>
     </div>
 );
@@ -56,12 +39,9 @@ const Settings = () => {
     const [question, setQuestion] = useState('');
     const [questions, setQuestions] = useState([]);
     const [error, setError] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const fetchQuestions = async () => {
-        setIsLoading(true);
-        setError(null);
         try {
             const response = await fetch(`${API_BASE_URLS[activeTab]}/all`);
             if (!response.ok) throw new Error('Failed to fetch questions');
@@ -69,8 +49,6 @@ const Settings = () => {
             setQuestions(data);
         } catch (error) {
             setError('Failed to load questions. Please try again.');
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -81,8 +59,6 @@ const Settings = () => {
             return;
         }
 
-        setIsLoading(true);
-        setError(null);
         try {
             const response = await fetch(`${API_BASE_URLS[activeTab]}/add`, {
                 method: 'POST',
@@ -95,29 +71,26 @@ const Settings = () => {
                 throw new Error(errorText);
             }
 
+            alert('Question added successfully!');
             setQuestion('');
             fetchQuestions(); // Refresh the question list
-            alert('Question added successfully!');
+            setError(null);
         } catch (error) {
             setError('Failed to add question. Please try again.');
-            setIsLoading(false); // Need to set loading false here in case fetchQuestions isn't called
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this question?")) return;
-        
-        setIsLoading(true);
-        setError(null);
-        try {
-            const response = await fetch(`${API_BASE_URLS[activeTab]}/${id}`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) throw new Error('Failed to delete question');
-            fetchQuestions(); // Refresh the question list
-        } catch (error) {
-            setError('Failed to delete question. Please try again.');
-            setIsLoading(false);
+        if (window.confirm("Are you sure you want to delete this question?")) {
+            try {
+                const response = await fetch(`${API_BASE_URLS[activeTab]}/${id}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) throw new Error('Failed to delete question');
+                fetchQuestions(); // Refresh the question list
+            } catch (error) {
+                setError('Failed to delete question. Please try again.');
+            }
         }
     };
 
@@ -133,32 +106,22 @@ const Settings = () => {
             </header>
             
             <div className="tabs">
-                <button 
-                    onClick={() => setActiveTab('behavioral')} 
-                    className={activeTab === 'behavioral' ? 'active' : ''}
-                    disabled={isLoading}
-                >
+                <button onClick={() => setActiveTab('behavioral')} className={activeTab === 'behavioral' ? 'active' : ''}>
                     Behavioral Questions
                 </button>
-                <button 
-                    onClick={() => setActiveTab('technical')} 
-                    className={activeTab === 'technical' ? 'active' : ''}
-                    disabled={isLoading}
-                >
+                <button onClick={() => setActiveTab('technical')} className={activeTab === 'technical' ? 'active' : ''}>
                     Technical Questions
                 </button>
             </div>
-
             <QuestionPanel 
-                type={activeTab}
-                error={error}
-                question={question}
-                setQuestion={setQuestion}
-                handleSubmit={handleSubmit}
-                questions={questions}
-                handleDelete={handleDelete}
-                isLoading={isLoading}
-            />
+            type={activeTab}
+            error={error}
+            question={question}
+            setQuestion={setQuestion}
+            handleSubmit={handleSubmit}
+            questions={questions}
+            handleDelete={handleDelete}
+        />
         </div>
     );
 };

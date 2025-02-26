@@ -11,19 +11,31 @@ const BehavioralQuestions = () => {
     const [feedback, setFeedback] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showResetButton, setShowResetButton] = useState(false);
     const navigate = useNavigate();
-
     const fetchNewQuestion = async () => {
         setLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/question`);
-            if (!response.ok) throw new Error('Failed to fetch question');
-            const data = await response.json();
-            setQuestion(data.question);
-            setResponse('');
-            setFeedback(null);
+            
+            if (response.ok) {
+                const data = await response.json();
+                setQuestion(data.question);
+                setResponse('');
+                setFeedback(null);
+                
+                // Check if the question is the special "no more questions" message
+                if (data.question === "No more questions for today! Please reset or come back tomorrow!") {
+                    setShowResetButton(true); // Show the reset button
+                } else {
+                    setShowResetButton(false); // Hide the reset button for valid questions
+                }
+            } else {
+                throw new Error('Failed to fetch question');
+            }
         } catch (error) {
             setError('Failed to load question. Please try again.');
+            setShowResetButton(true); // Show reset button on error
         } finally {
             setLoading(false);
         }
@@ -42,14 +54,11 @@ const BehavioralQuestions = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     question, 
-                    response,
-                    isNewQuestion: false
+                    response
                 })
             });
             
             if (!result.ok) {
-                const errorText = await result.text();
-                console.error('Server error:', errorText);
                 throw new Error('Failed to evaluate response');
             }
 
@@ -59,7 +68,6 @@ const BehavioralQuestions = () => {
                 feedback: data.feedback
             });
         } catch (error) {
-            console.error('Error details:', error);
             setError('Failed to evaluate response. Please try again.');
         } finally {
             setLoading(false);
@@ -69,15 +77,6 @@ const BehavioralQuestions = () => {
     const handleNext = async () => {
         setLoading(true);
         try {
-            const result = await fetch(`${API_BASE_URL}/evaluate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    question, 
-                    response,
-                    isNewQuestion: true
-                })
-            });
             await fetchNewQuestion();
         } catch (error) {
             setError('Failed to load next question. Please try again.');
@@ -86,9 +85,47 @@ const BehavioralQuestions = () => {
         }
     };
 
-    const handleRetry = () => {
+    const handleRetry = async () => {
         setFeedback(null);  // Clear previous feedback
         setResponse('');    // Clear previous response
+
+        // Call the reset date endpoint
+        try {
+            const result = await fetch(`${API_BASE_URL}/reset-date`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question }) // Send the current question to reset its date
+            });
+
+            if (!result.ok) {
+                throw new Error('Failed to reset question date');
+            }
+        } catch (error) {
+            console.error('Error resetting question date:', error);
+            setError('Failed to reset question date. Please try again.');
+        }
+    };
+
+    const resetQuestions = async () => {
+        setLoading(true);
+        try {
+            const result = await fetch(`${API_BASE_URL}/reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            
+            if (!result.ok) {
+                throw new Error('Failed to reset questions');
+            }
+
+            // Fetch a new question after resetting
+            fetchNewQuestion(); // Call the function to get a new question
+        } catch (error) {
+            console.error('Error resetting questions:', error);
+            setError('Failed to reset questions. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -105,6 +142,14 @@ const BehavioralQuestions = () => {
                 />
                 <h1>Behavioral Interview Practice</h1>
                 <p>Practice your responses and get AI feedback</p>
+                {showResetButton && (
+                    <Button 
+                        text="Reset" 
+                        onClick={resetQuestions} 
+                        className="reset-button"
+                        disabled={loading}
+                    />
+                )}
             </header>
 
             {error && <div className="error-message">{error}</div>}
@@ -125,11 +170,11 @@ const BehavioralQuestions = () => {
                                     value={response}
                                     onChange={(e) => setResponse(e.target.value)}
                                     placeholder="Use the STAR method: Describe the Situation, Task, Action, and Result..."
-                                    disabled={loading}
+                                    disabled={loading || question === "No more questions for today! Please reset or come back tomorrow!"}
                                 />
                                 <button 
                                     onClick={submitResponse}
-                                    disabled={loading || !response.trim()}
+                                    disabled={loading || !response.trim() || question === "No more questions for today! Please reset or come back tomorrow!"}
                                     className="submit-button"
                                 >
                                     Get Feedback
@@ -144,12 +189,14 @@ const BehavioralQuestions = () => {
                                     <button 
                                         onClick={handleRetry}
                                         className="retry-button"
+                                        disabled={loading}
                                     >
                                         Try Again
                                     </button>
                                     <button 
                                         onClick={handleNext}
                                         className="next-button"
+                                        disabled={loading}
                                     >
                                         Next Question
                                     </button>
