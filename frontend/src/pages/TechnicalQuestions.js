@@ -55,14 +55,11 @@ const TechnicalQuestions = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     question, 
-                    response,
-                    isNewQuestion: false
+                    response
                 })
             });
             
             if (!result.ok) {
-                const errorText = await result.text();
-                console.error('Server error:', errorText);
                 throw new Error('Failed to evaluate response');
             }
 
@@ -72,7 +69,6 @@ const TechnicalQuestions = () => {
                 feedback: data.feedback
             });
         } catch (error) {
-            console.error('Error details:', error);
             setError('Failed to evaluate response. Please try again.');
         } finally {
             setLoading(false);
@@ -82,15 +78,6 @@ const TechnicalQuestions = () => {
     const handleNext = async () => {
         setLoading(true);
         try {
-            const result = await fetch(`${API_BASE_URL}/evaluate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    question, 
-                    response,
-                    isNewQuestion: true
-                })
-            });
             await fetchNewQuestion();
         } catch (error) {
             setError('Failed to load next question. Please try again.');
@@ -132,8 +119,8 @@ const TechnicalQuestions = () => {
                 throw new Error('Failed to reset questions');
             }
 
-            // Refresh the page or fetch new questions
-            window.location.reload(); // Reload the page to reflect changes
+            // Fetch a new question after resetting
+            fetchNewQuestion(); // Call the function to get a new question
         } catch (error) {
             console.error('Error resetting questions:', error);
             setError('Failed to reset questions. Please try again.');
@@ -161,6 +148,7 @@ const TechnicalQuestions = () => {
                         text="Reset" 
                         onClick={resetQuestions} 
                         className="reset-button"
+                        disabled={loading}
                     />
                 )}
             </header>
@@ -183,7 +171,7 @@ const TechnicalQuestions = () => {
                                     value={response}
                                     onChange={(e) => setResponse(e.target.value)}
                                     placeholder="Use the STAR method: Describe the Situation, Task, Action, and Result..."
-                                    disabled={question === "No more questions for today! Please reset or come back tomorrow!"}
+                                    disabled={loading || question === "No more questions for today! Please reset or come back tomorrow!"}
                                 />
                                 <button 
                                     onClick={submitResponse}
@@ -202,12 +190,14 @@ const TechnicalQuestions = () => {
                                     <button 
                                         onClick={handleRetry}
                                         className="retry-button"
+                                        disabled={loading}
                                     >
                                         Try Again
                                     </button>
                                     <button 
                                         onClick={handleNext}
                                         className="next-button"
+                                        disabled={loading}
                                     >
                                         Next Question
                                     </button>

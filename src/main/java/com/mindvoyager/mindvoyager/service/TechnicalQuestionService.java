@@ -2,6 +2,7 @@ package com.mindvoyager.mindvoyager.service;
 
 import com.mindvoyager.mindvoyager.model.TechnicalQuestion;
 import com.mindvoyager.mindvoyager.repository.TechnicalQuestionRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-
 @Service
 public class TechnicalQuestionService {
 
@@ -42,51 +42,40 @@ public class TechnicalQuestionService {
         }
     }
 
-    public TechnicalQuestion evaluateResponse(String question, String response, boolean isNewQuestion) {
+    private static final String EVALUATION_PROMPT_TEMPLATE = 
+    "You are a software engineer interview coach. Evaluate this technical interview response.\n" +
+    "Question: '%s'\n" +
+    "Response: '%s'\n\n" +
+    "Provide detailed feedback and a rating. Return your response in this JSON format:\n" +
+    "{\n" +
+    "  \"rating\": <number between 1-10>,\n" +
+    "  \"feedback\": \"<detailed feedback with specific improvements>\"\n" +
+    "}";
+
+    public TechnicalQuestion evaluateResponse(String question, String response) {
         try {
-            // Retrieve existing responses excluding today's date
-            List<TechnicalQuestion> existingResponses = 
-                repository.findAllByQuestionAndDateNot(question);
-            
-            if (existingResponses.isEmpty()) {
+            TechnicalQuestion technicalQuestion = repository.findByQuestion(question);
+            if (technicalQuestion == null) {
                 throw new RuntimeException("No existing question found to update.");
             }
 
-            TechnicalQuestion technicalQuestion = existingResponses.get(0);
-            // Update the existing question's fields
-            technicalQuestion.setResponseText(response);
-            technicalQuestion.setCreatedAt(LocalDate.now()); // Update createdAt date
-
-            // Individual AI prompt for technical questions
-            String prompt = String.format(
-                "You are a software engineer interview coach. Evaluate this technical interview response.\n" +
-                "Question: '%s'\n" +
-                "Response: '%s'\n\n" +
-                "Provide detailed feedback and a rating. Return your response in this JSON format:\n" +
-                "{\n" +
-                "  \"rating\": <number between 1-10>,\n" +
-                "  \"feedback\": \"<detailed feedback with specific improvements>\"\n" +
-                "}",
-                question, response
-            );
-
-            String gptResponse = openAIService.getResponse(response, prompt); // Pass the prompt here
+            String prompt = String.format(EVALUATION_PROMPT_TEMPLATE, question, response);
+            String gptResponse = openAIService.getResponse(response, prompt);
             JsonNode jsonResponse = objectMapper.readTree(gptResponse);
-
-            technicalQuestion.setRating(jsonResponse.get("rating").asInt());
-            technicalQuestion.setFeedback(jsonResponse.get("feedback").asText());
             
+            updateTechnicalQuestion(technicalQuestion, response, jsonResponse);
             return repository.save(technicalQuestion);
         } catch (Exception e) {
-            logger.error("Error evaluating response: ", e);
-            TechnicalQuestion fallback = new TechnicalQuestion();
-            fallback.setQuestion(question);
-            fallback.setResponseText(response);
-            fallback.setRating(5);
-            fallback.setFeedback("An error occurred while evaluating your response. Please try again.");
-            fallback.setCreatedAt(LocalDate.now());
-            return fallback;
+            logger.error("Error evaluating response", e);
+            throw new RuntimeException("Failed to evaluate response", e);
         }
+    }
+
+    private void updateTechnicalQuestion(TechnicalQuestion question, String response, JsonNode evaluation) {
+        question.setResponseText(response);
+        question.setCreatedAt(LocalDate.now());
+        question.setRating(evaluation.get("rating").asInt());
+        question.setFeedback(evaluation.get("feedback").asText());
     }
 
     public long getTodayCount() {
@@ -95,7 +84,12 @@ public class TechnicalQuestionService {
 
     @Transactional
     public void resetAllQuestions() {
-        repository.resetAllDates(); // Call the repository method to reset dates
+        try {
+            repository.resetAllDates();
+        } catch (Exception e) {
+            logger.error("Error resetting questions: {}", e.getMessage());
+            throw new RuntimeException("Failed to reset questions", e);
+        }
     }
 
     public void resetQuestionDate(String question) {
@@ -107,5 +101,18 @@ public class TechnicalQuestionService {
         } else {
             throw new RuntimeException("Question not found");
         }
+    }
+
+    public List<TechnicalQuestion> getAllQuestions() {
+        return repository.findAll();
+    }
+    
+    public TechnicalQuestion addQuestion(TechnicalQuestion question) {
+        question.setCreatedAt(null);
+        return repository.save(question);
+    }
+
+    public void deleteQuestion(Long id) {
+        repository.deleteById(id);
     }
 } 

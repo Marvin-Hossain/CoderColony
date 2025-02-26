@@ -15,6 +15,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 public class OpenAIService {
+    private static final String DEFAULT_MODEL = "gpt-4";
+    private static final double DEFAULT_TEMPERATURE = 0.7;
+    private static final int DEFAULT_MAX_TOKENS = 1000;
 
     private static final Logger logger = LoggerFactory.getLogger(OpenAIService.class);
 
@@ -31,47 +34,60 @@ public class OpenAIService {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
-
     public String getResponse(String userInput, String aiPrompt) {
         try {
-            logger.info("Received user input: {}", userInput); // Log user input
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(apiKey);
-
-            Map<String, Object> requestBody = Map.of(
-                "model", "gpt-4",
-                "messages", List.of(
-                    Map.of("role", "system", "content", aiPrompt),
-                    Map.of("role", "user", "content", userInput)
-                ),
-                "temperature", 0.7,
-                "max_tokens", 1000
-            );
-
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            System.out.println("OpenAI Service - Sending request to OpenAI");  // Debug log
-            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
-            System.out.println("OpenAI Service - Received response from OpenAI");  // Debug log
-
-            JsonNode jsonResponse = objectMapper.readTree(response.getBody());
-            String content = jsonResponse.path("choices").get(0).path("message").path("content").asText();
-            System.out.println("OpenAI Service - Raw GPT response: " + content);  // Debug log
+            HttpHeaders headers = createHeaders();
+            Map<String, Object> requestBody = createRequestBody(aiPrompt, userInput);
             
-            // Verify JSON format
-            try {
-                new ObjectMapper().readTree(content);
-                return content;
-            } catch (Exception e) {
-                // If response isn't valid JSON, format it
-                return String.format(
-                    "{\"rating\": 7, \"feedback\": %s}", 
-                    new ObjectMapper().writeValueAsString(content)
-                );
-            }
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
+            
+            return processResponse(response.getBody());
         } catch (Exception e) {
-            logger.error("Error processing request: {}", e.getMessage()); // Log error message
-            return "{\"rating\": 5, \"feedback\": \"I apologize, but I'm having trouble processing your request right now.\"}";
+            logger.error("Error in OpenAI request: {}", e.getMessage());
+            return createErrorResponse();
         }
+    }
+
+    private HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+        return headers;
+    }
+
+    private Map<String, Object> createRequestBody(String aiPrompt, String userInput) {
+        return Map.of(
+            "model", DEFAULT_MODEL,
+            "messages", List.of(
+                Map.of("role", "system", "content", aiPrompt),
+                Map.of("role", "user", "content", userInput)
+            ),
+            "temperature", DEFAULT_TEMPERATURE,
+            "max_tokens", DEFAULT_MAX_TOKENS
+        );
+    }
+
+    private String processResponse(String responseBody) throws Exception {
+        JsonNode jsonResponse = objectMapper.readTree(responseBody);
+        String content = jsonResponse.path("choices").get(0).path("message").path("content").asText();
+        
+        try {
+            objectMapper.readTree(content);
+            return content;
+        } catch (Exception e) {
+            return formatInvalidJsonResponse(content);
+        }
+    }
+
+    private String formatInvalidJsonResponse(String content) throws Exception {
+        return String.format(
+            "{\"rating\": 7, \"feedback\": %s}", 
+            objectMapper.writeValueAsString(content)
+        );
+    }
+
+    private String createErrorResponse() {
+        return "{\"rating\": 5, \"feedback\": \"I apologize, but I'm having trouble processing your request right now.\"}";
     }
 }

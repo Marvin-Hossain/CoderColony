@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.mindvoyager.mindvoyager.dto.EvaluateResponseRequest;
 
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/technical")
@@ -25,10 +27,6 @@ public class TechnicalQuestionController {
     public ResponseEntity<TechnicalQuestion> getRandomQuestion() {
         try {
             TechnicalQuestion question = service.getRandomQuestion();
-            if (question == null) {
-                // Return 204 No Content if no questions are available
-                return ResponseEntity.noContent().build();
-            }
             return ResponseEntity.ok(question);
         } catch (Exception e) {
             logger.error("Error getting random question: ", e);
@@ -37,29 +35,20 @@ public class TechnicalQuestionController {
     }
 
     @PostMapping("/evaluate")
-    public ResponseEntity<TechnicalQuestion> evaluateResponse(@RequestBody Map<String, String> request) {
+    public ResponseEntity<TechnicalQuestion> evaluateResponse(@RequestBody EvaluateResponseRequest request) {
         try {
-            String question = request.get("question");
-            String response = request.get("response");
-            boolean isNewQuestion = Boolean.parseBoolean(request.get("isNewQuestion"));
-            
-            logger.info("Received evaluation request - Question: {}, Response length: {}, New Question: {}", 
-                       question, 
-                       response != null ? response.length() : 0,
-                       isNewQuestion);
-            
-            if (question == null || response == null) {
-                logger.error("Missing question or response in request");
+            if (!request.isValid()) {
                 return ResponseEntity.badRequest().build();
             }
             
-            TechnicalQuestion result = service.evaluateResponse(question, response, isNewQuestion);
-            logger.info("Evaluation complete - Rating: {}", result.getRating());
+            TechnicalQuestion result = service.evaluateResponse(
+                request.getQuestion(), 
+                request.getResponse()
+            );
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            logger.error("Error evaluating response: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                   .body(new TechnicalQuestion());
+            logger.error("Error evaluating response: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -91,10 +80,43 @@ public class TechnicalQuestionController {
         }
     }
 
-    // Optional: If you want to add a complete question endpoint similar to Behavioral
+    // // Optional: If you want to add a complete question endpoint similar to Behavioral
     // @PostMapping("/complete")
     // public ResponseEntity<Void> completeQuestion() {
     //     progressService.logProgress("technical", 1);
     //     return ResponseEntity.ok().build();
     // }
+
+    @GetMapping("/all")
+public ResponseEntity<List<TechnicalQuestion>> getAllQuestions() {
+    try {
+        List<TechnicalQuestion> questions = service.getAllQuestions();
+        return ResponseEntity.ok(questions);
+    } catch (Exception e) {
+        logger.error("Error fetching all questions: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+}
+
+@PostMapping("/add")
+public ResponseEntity<TechnicalQuestion> addQuestion(@RequestBody TechnicalQuestion question) {
+    try {
+        TechnicalQuestion savedQuestion = service.addQuestion(question);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
+    } catch (Exception e) {
+        logger.error("Error adding question: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+}
+
+@DeleteMapping("/{id}")
+public ResponseEntity<Void> deleteQuestion(@PathVariable Long id) {
+    try {
+        service.deleteQuestion(id);
+        return ResponseEntity.noContent().build();
+    } catch (Exception e) {
+        logger.error("Error deleting question: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+}
 } 

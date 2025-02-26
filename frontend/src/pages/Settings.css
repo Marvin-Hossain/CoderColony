@@ -118,3 +118,27 @@ textarea {
 .delete-button:hover {
     background-color: #a71d2a;
 }
+
+/* New loading state styles */
+.loading-indicator {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+.no-questions {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+button:disabled,
+textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.submit-button:disabled {
+    background-color: #aaa;
+}
