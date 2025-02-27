@@ -8,9 +8,19 @@ const API_BASE_URLS = {
     technical: "http://localhost:8080/api/technical"
 };
 
-const QuestionPanel = ({ type, error, question, setQuestion, handleSubmit, questions, handleDelete }) => (
+const QuestionPanel = ({ type, error, success, confirmation, question, setQuestion, handleSubmit, questions, handleDelete, confirmDelete, cancelDelete }) => (
     <div className={`${type}-tab`}>
         {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        {confirmation && (
+            <div className="confirmation-message">
+                <p>{confirmation.message}</p>
+                <div className="confirmation-buttons">
+                    <button onClick={cancelDelete} className="cancel-button">Cancel</button>
+                    <button onClick={() => confirmDelete(confirmation.id)} className="confirm-button">Confirm</button>
+                </div>
+            </div>
+        )}
         <form onSubmit={handleSubmit}>
             <textarea
                 value={question}
@@ -39,6 +49,8 @@ const Settings = () => {
     const [question, setQuestion] = useState('');
     const [questions, setQuestions] = useState([]);
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const [confirmation, setConfirmation] = useState(null);
     const navigate = useNavigate();
 
     const fetchQuestions = async () => {
@@ -52,10 +64,32 @@ const Settings = () => {
         }
     };
 
+    // Function to handle tab switching
+    const handleTabChange = (tab) => {
+        // Reset all messages when switching tabs
+        setError(null);
+        setSuccess(null);
+        setConfirmation(null);
+        setQuestion('');
+        setActiveTab(tab);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSuccess(null); // Clear any previous success message
+        setConfirmation(null); // Clear any confirmation dialog
         if (!question.trim()) {
             setError('Please enter a question.');
+            return;
+        }
+
+        // Check if question already exists in the current list
+        const questionExists = questions.some(q => 
+            q.question.toLowerCase().trim() === question.toLowerCase().trim()
+        );
+        
+        if (questionExists) {
+            setError('This question already exists. Please enter a different question.');
             return;
         }
 
@@ -71,27 +105,43 @@ const Settings = () => {
                 throw new Error(errorText);
             }
 
-            alert('Question added successfully!');
+            setSuccess('Question added successfully!');
             setQuestion('');
             fetchQuestions(); // Refresh the question list
             setError(null);
         } catch (error) {
             setError('Failed to add question. Please try again.');
+            setSuccess(null);
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this question?")) {
-            try {
-                const response = await fetch(`${API_BASE_URLS[activeTab]}/${id}`, {
-                    method: 'DELETE',
-                });
-                if (!response.ok) throw new Error('Failed to delete question');
-                fetchQuestions(); // Refresh the question list
-            } catch (error) {
-                setError('Failed to delete question. Please try again.');
-            }
+        // Show confirmation message
+        setConfirmation({
+            message: "Are you sure you want to delete this question?",
+            id: id
+        });
+        setError(null);
+        setSuccess(null);
+    };
+
+    const confirmDelete = async (id) => {
+        try {
+            const response = await fetch(`${API_BASE_URLS[activeTab]}/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Failed to delete question');
+            fetchQuestions(); // Refresh the question list
+            setSuccess('Question deleted successfully!');
+            setConfirmation(null);
+        } catch (error) {
+            setError('Failed to delete question. Please try again.');
+            setConfirmation(null);
         }
+    };
+
+    const cancelDelete = () => {
+        setConfirmation(null);
     };
 
     useEffect(() => {
@@ -106,22 +156,26 @@ const Settings = () => {
             </header>
             
             <div className="tabs">
-                <button onClick={() => setActiveTab('behavioral')} className={activeTab === 'behavioral' ? 'active' : ''}>
+                <button onClick={() => handleTabChange('behavioral')} className={activeTab === 'behavioral' ? 'active' : ''}>
                     Behavioral Questions
                 </button>
-                <button onClick={() => setActiveTab('technical')} className={activeTab === 'technical' ? 'active' : ''}>
+                <button onClick={() => handleTabChange('technical')} className={activeTab === 'technical' ? 'active' : ''}>
                     Technical Questions
                 </button>
             </div>
             <QuestionPanel 
-            type={activeTab}
-            error={error}
-            question={question}
-            setQuestion={setQuestion}
-            handleSubmit={handleSubmit}
-            questions={questions}
-            handleDelete={handleDelete}
-        />
+                type={activeTab}
+                error={error}
+                success={success}
+                confirmation={confirmation}
+                question={question}
+                setQuestion={setQuestion}
+                handleSubmit={handleSubmit}
+                questions={questions}
+                handleDelete={handleDelete}
+                confirmDelete={confirmDelete}
+                cancelDelete={cancelDelete}
+            />
         </div>
     );
 };

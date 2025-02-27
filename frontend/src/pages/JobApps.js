@@ -17,12 +17,7 @@ const JobApps = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [editingJobId, setEditingJobId] = useState(null);
-    const [formData, setFormData] = useState({
-        title: "",
-        company: "",
-        location: "",
-        status: "APPLIED"
-    });
+    const [formData, setFormData] = useState(INITIAL_FORM_STATE);
     const navigate = useNavigate();
 
     // Reusable error handler
@@ -68,6 +63,8 @@ const JobApps = () => {
             resetForm();
         } catch (error) {
             handleApiError(error, "add job");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -91,6 +88,8 @@ const JobApps = () => {
             resetForm();
         } catch (error) {
             handleApiError(error, "update job");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -106,6 +105,8 @@ const JobApps = () => {
                 setJobs(jobs.filter((job) => job.id !== jobId));
             } catch (error) {
                 handleApiError(error, "delete job");
+            } finally {
+                setLoading(false);
             }
         }
     };
@@ -123,12 +124,7 @@ const JobApps = () => {
 
     // Reset form
     const resetForm = () => {
-        setFormData({
-            title: "",
-            company: "",
-            location: "",
-            status: "APPLIED"
-        });
+        setFormData(INITIAL_FORM_STATE);
         setEditingJobId(null);
         setError(null);
     };
