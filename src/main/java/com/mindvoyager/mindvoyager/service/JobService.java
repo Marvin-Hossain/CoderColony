@@ -1,6 +1,7 @@
 package com.mindvoyager.mindvoyager.service;
 
 import com.mindvoyager.mindvoyager.model.Job;
+import com.mindvoyager.mindvoyager.model.User;
 import com.mindvoyager.mindvoyager.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,34 +16,39 @@ public class JobService {
     @Autowired
     private JobRepository jobRepository;
 
-    // Create a new job
-    public Job createJob(Job job) {
-        job.setCreatedAt(LocalDate.now(ZoneId.of("America/Chicago"))); // Set CST timezone
+    // Keep the original getAllJobs method for backward compatibility
+    public List<Job> getAllJobs() {
+        return jobRepository.findAll();
+    }
+
+    // Create a new job with user
+    public Job createJob(Job job, User user) {
+        job.setUser(user);
+        job.setCreatedAt(LocalDate.now(ZoneId.of("America/Chicago")));
         return jobRepository.save(job);
     }
 
-    // Get all jobs
-    public List<Job> getAllJobs() {
-        List<Job> jobs = jobRepository.findAll();
-        // Set creation date for any null dates
-        jobs.forEach(job -> {
-            if (job.getCreatedAt() == null) {
-                job.setCreatedAt(LocalDate.now(ZoneId.of("America/Chicago")));
-                jobRepository.save(job);
-            }
-        });
-        return jobs;
+    // Get all jobs for a specific user
+    public List<Job> getJobsByUser(User user) {
+        return jobRepository.findByUser(user);
     }
 
-    // Get a job by ID
-    public Job getJobById(Long id) {
-        return jobRepository.findById(id)
+    // Get job by id (with security check)
+    public Job getJobById(Long id, User user) {
+        Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found with id: " + id));
+        
+        // Security check: ensure the job belongs to the requesting user
+        if (!job.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied: Job does not belong to current user");
+        }
+        
+        return job;
     }
 
-    // Update a job
-    public Job updateJob(Long id, Job jobDetails) {
-        Job job = getJobById(id);
+    // Update job (with security check)
+    public Job updateJob(Long id, Job jobDetails, User user) {
+        Job job = getJobById(id, user);
         job.setTitle(jobDetails.getTitle());
         job.setCompany(jobDetails.getCompany());
         job.setLocation(jobDetails.getLocation());
@@ -50,24 +56,26 @@ public class JobService {
         return jobRepository.save(job);
     }
 
-    public Job updateJobStatus(Long id, Job.Status status) {
-        Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found with id: " + id));
+    // Update job status (with security check)
+    public Job updateJobStatus(Long id, Job.Status status, User user) {
+        Job job = getJobById(id, user);
         job.setStatus(status);
         return jobRepository.save(job);
     }
 
-    // Delete a job
-    public void deleteJob(Long id) {
-        Job job = getJobById(id); // Ensure job exists
+    // Delete job (with security check)
+    public void deleteJob(Long id, User user) {
+        Job job = getJobById(id, user);
         jobRepository.delete(job);
     }
-
-    // Get job count for today only (CST)
-    public long getJobCount() {
-        LocalDate today = LocalDate.now(ZoneId.of("America/Chicago"));
-        return jobRepository.findAll().stream()
-            .filter(job -> job.getCreatedAt() != null && job.getCreatedAt().equals(today))
-            .count();
+    
+    // Get job count for a specific user
+    public long getJobCountByUser(User user) {
+        return jobRepository.countByUser(user);
+    }
+    
+    // Get job count by status for a specific user
+    public long getJobCountByUserAndStatus(User user, Job.Status status) {
+        return jobRepository.countByUserAndStatus(user, status);
     }
 }

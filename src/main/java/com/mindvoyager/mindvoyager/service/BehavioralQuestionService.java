@@ -2,7 +2,6 @@ package com.mindvoyager.mindvoyager.service;
 
 import com.mindvoyager.mindvoyager.model.BehavioralQuestion;
 import com.mindvoyager.mindvoyager.repository.BehavioralQuestionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,13 +16,19 @@ public class BehavioralQuestionService {
 
     private static final Logger logger = LoggerFactory.getLogger(BehavioralQuestionService.class);
 
-    @Autowired
-    private BehavioralQuestionRepository repository;
+    private final BehavioralQuestionRepository repository;
+    private final OpenAIService openAIService;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private OpenAIService openAIService;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    // Constructor injection
+    public BehavioralQuestionService(
+            BehavioralQuestionRepository repository, 
+            OpenAIService openAIService,
+            ObjectMapper objectMapper) {
+        this.repository = repository;
+        this.openAIService = openAIService;
+        this.objectMapper = objectMapper;
+    }
 
     public BehavioralQuestion getRandomQuestion() {
         try {

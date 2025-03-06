@@ -98,6 +98,11 @@
     transform: scale(1.05);
 }
 
+.go-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
 .button-container {
     display: flex;
     justify-content: space-between;
@@ -113,4 +118,14 @@
 
 .settings-button {
     margin-left: auto;
+}
+
+.logout-link {
+    cursor: pointer;
+    color: #005700; /* Darker shade of green */
+    text-decoration: underline;
+}
+
+.logout-link:hover {
+    color: #004400; /* Even darker shade on hover */
 }

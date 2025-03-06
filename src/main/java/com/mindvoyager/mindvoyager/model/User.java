@@ -1,10 +1,6 @@
 package com.mindvoyager.mindvoyager.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
@@ -14,8 +10,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
+    private String githubId;
+
     private String username;
+    
     private String email;
+    
+    // Add these fields for GitHub integration
+    private String avatarUrl;
 
     // Getter for ID
     public Long getId() {
@@ -45,5 +48,21 @@ public class User {
     // Setter for Email
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getGithubId() {
+        return githubId;
+    }
+    
+    public void setGithubId(String githubId) {
+        this.githubId = githubId;
+    }
+    
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+    
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

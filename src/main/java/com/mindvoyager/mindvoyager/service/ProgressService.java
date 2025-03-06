@@ -13,9 +13,6 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.Optional;
 import java.time.ZoneId;
-import org.springframework.context.ApplicationContext;
-import com.mindvoyager.mindvoyager.repository.BehavioralQuestionRepository;
-import com.mindvoyager.mindvoyager.repository.TechnicalQuestionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +26,6 @@ public class ProgressService {
     @Autowired
     private JobService jobService;
 
-    @Autowired
-    private ApplicationContext applicationContext;
-
     public Map<String, Object> getWeeklyProgress(String category) {
         LocalDate today = LocalDate.now(ZoneId.of("America/Chicago"));
         LocalDate startDate = today.minusDays(6);
@@ -39,42 +33,15 @@ public class ProgressService {
         Map<LocalDate, Integer> dateToCount;
 
         try {
-            if (category.equals("behavioral")) {
-                // Get behavioral question counts directly from BehavioralQuestionRepository
-                BehavioralQuestionRepository behavioralRepo = 
-                    (BehavioralQuestionRepository) applicationContext.getBean("behavioralQuestionRepository");
+            // Original logic for other categories
+            weeklyProgress = progressRepository.findByCategoryAndDateBetweenOrderByDate(
+                category, startDate, today);
                 
-                Map<LocalDate, Integer> behavioralCounts = new HashMap<>();
-                for (LocalDate date = startDate; !date.isAfter(today); date = date.plusDays(1)) {
-                    long count = behavioralRepo.countByDate(date);
-                    behavioralCounts.put(date, (int) count);
-                }
-                
-                // Convert to dateToCount format
-                dateToCount = behavioralCounts;
-            } else if (category.equals("technical")) {
-                // Add technical question handling
-                TechnicalQuestionRepository technicalRepo = 
-                    (TechnicalQuestionRepository) applicationContext.getBean("technicalQuestionRepository");
-                
-                Map<LocalDate, Integer> technicalCounts = new HashMap<>();
-                for (LocalDate date = startDate; !date.isAfter(today); date = date.plusDays(1)) {
-                    long count = technicalRepo.countByDate(date);
-                    technicalCounts.put(date, (int) count);
-                }
-                
-                dateToCount = technicalCounts;
-            } else {
-                // Original logic for other categories
-                weeklyProgress = progressRepository.findByCategoryAndDateBetweenOrderByDate(
-                    category, startDate, today);
-                    
-                dateToCount = weeklyProgress.stream()
-                    .collect(Collectors.groupingBy(
-                        Progress::getDate,
-                        Collectors.summingInt(Progress::getCompletionCount)
-                    ));
-            }
+            dateToCount = weeklyProgress.stream()
+                .collect(Collectors.groupingBy(
+                    Progress::getDate,
+                    Collectors.summingInt(Progress::getCompletionCount)
+                ));
         } catch (Exception e) {
             weeklyProgress = new ArrayList<>();
             dateToCount = new HashMap<>();
@@ -120,33 +87,7 @@ public class ProgressService {
     public Map<String, Object> getAllTimeStats(String category) {
         Map<String, Object> stats = new HashMap<>();
         try {
-            if (category.equals("behavioral")) {
-                // BehavioralQuestionRepository behavioralRepo = 
-                //     (BehavioralQuestionRepository) applicationContext.getBean("behavioralQuestionRepository");
-                
-                // // Get total unique questions answered
-                // long total = behavioralRepo.countTotalAnswered();
-                
-                // // Get daily counts and convert to Map
-                // List<Object[]> dailyCountsList = behavioralRepo.getDailyCounts();
-                // Map<LocalDate, Long> dailyCounts = dailyCountsList.stream()
-                //     .collect(Collectors.toMap(
-                //         row -> (LocalDate) row[0],
-                //         row -> ((Number) row[1]).longValue()
-                //     ));
-                
-                // double average = dailyCounts.isEmpty() ? 0.0 : 
-                //     (double) total / dailyCounts.size();
-                
-                // long bestDay = dailyCounts.values().stream()
-                //     .mapToLong(Long::longValue)
-                //     .max()
-                //     .orElse(0);
-
-                // stats.put("total", total);
-                // stats.put("average", String.format("%.1f", average));
-                // stats.put("bestDay", bestDay);
-            } else if (category.equals("jobs")) {
+            if (category.equals("jobs")) {
                 // Get all jobs with their creation dates
                 List<Job> allJobs = jobService.getAllJobs();
                 

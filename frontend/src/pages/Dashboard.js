@@ -4,6 +4,8 @@ import Button from "../components/Button"; // Reusable Button component
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [jobCount, setJobCount] = useState(0);
     const [behavioralCount, setBehavioralCount] = useState(0);
     const [technicalCount, setTechnicalCount] = useState(0);
@@ -13,47 +15,107 @@ const Dashboard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchCounts = async () => {
+        // Check if user is authenticated
+        const checkAuth = async () => {
             try {
-                // Fetch job count
-                const jobResponse = await fetch('http://localhost:8080/api/jobs/count');
-                const jobData = await jobResponse.json();
-                setJobCount(jobData.count);
+                const response = await fetch('http://localhost:8080/api/auth/user', {
+                    credentials: 'include',
+                });
 
-                // Fetch behavioral questions count
-                const behavioralResponse = await fetch('http://localhost:8080/api/behavioral/count');
-                const behavioralData = await behavioralResponse.json();
-                setBehavioralCount(behavioralData.count);
+                if (!response.ok) {
+                    throw new Error('Not authenticated');
+                }
 
-                // Fetch technical questions count
-                const technicalResponse = await fetch('http://localhost:8080/api/technical/count');
-                const technicalData = await technicalResponse.json();
-                setTechnicalCount(technicalData.count);
+                const userData = await response.json();
+                
+                if (!userData.authenticated) {
+                    navigate('/');
+                    return;
+                }
+
+                setUser(userData);
+                
+                // Fetch job stats for the user
+                fetchJobStats();
+                
+                // Fetch other stats as needed
+                // fetchBehavioralStats();
+                // fetchTechnicalStats();
+                
             } catch (error) {
-                console.error('Error fetching counts:', error);
+                console.error('Authentication check failed:', error);
+                navigate('/');
+            } finally {
+                setLoading(false);
             }
         };
 
-        fetchCounts();
-    }, []);
+        const fetchJobStats = async () => {
+            try {
+                const response = await fetch('http://localhost:8080/api/jobs/dashboard-stats', {
+                    credentials: 'include',
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setJobCount(data.appliedCount || 0);
+                    // You can use other stats as needed
+                }
+            } catch (error) {
+                console.error('Failed to fetch job stats:', error);
+            }
+        };
+
+        checkAuth();
+    }, [navigate]);
+
+    const handleLogout = async () => {
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include',
+            });
+            
+            if (response.ok) {
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Fallback to direct navigation if the API call fails
+            navigate('/');
+        }
+    };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="dashboard">
             <div className="button-container">
-            <Button 
-                text="Progress"
-                onClick={() => navigate('/progress')}
-                style={{ position: 'absolute', top: '1rem', left: '1rem' }}
-            />
-            <Button 
-                text="Settings"
-                onClick={() => navigate('/settings')}
-                className="settings-button"
-            />
+                <Button 
+                    text="Progress"
+                    onClick={() => navigate('/progress')}
+                    className="progress-button"
+                />
+                <Button 
+                    text="Settings"
+                    onClick={() => navigate('/settings')}
+                    className="settings-button"
+                />
             </div>
             <header className="dashboard-header">
                 <h1>Welcome to Your Dashboard</h1>
-                <p>Track your progress and stay on top of your goals.</p>
+                <div className="user-section">
+                    <p>Welcome, {user?.username || 'User'}&nbsp;|&nbsp;
+                        <span 
+                            className="logout-link" 
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </span>
+                    </p>
+                </div>
             </header>
 
             <main className="dashboard-main">
@@ -82,7 +144,7 @@ const Dashboard = () => {
                         <p>Practice LeetCode Qs<br></br>(Coming Soon!)</p>
                         <progress value={0} max="0"></progress>
                         <span>0/0</span>
-                        {/* <Button text="Go!" onClick={() => (window.location.href = "/leetcode")} className="go-button" /> */}
+                        <Button text="Go!" onClick={() => (window.location.href = "/leetcode")} className="go-button" disabled />
                     </div>
                 </section>
 
@@ -93,13 +155,13 @@ const Dashboard = () => {
                         <p>Contact Connections<br></br>(Coming soon!)</p>
                         <progress value={0} max="0"></progress>
                         <span>0/0</span>
-                        {/* <Button text="Go!" onClick={() => (window.location.href = "/connections")} className="go-button" /> */}
+                        <Button text="Go!" onClick={() => (window.location.href = "/connections")} className="go-button" disabled/>
                     </div>
                     <div className="goal">
                         <p>Learn New Concepts<br></br>(Coming soon!)</p>
                         <progress value={0} max="0"></progress>
                         <span>0/0</span>
-                        {/* <Button text="Go!" onClick={() => (window.location.href = "/new-concepts")} className="go-button" /> */}
+                        <Button text="Go!" onClick={() => (window.location.href = "/new-concepts")} className="go-button" disabled />
                     </div>
                 </section>
             </main>

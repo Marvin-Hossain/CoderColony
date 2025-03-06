@@ -85,6 +85,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    
 }
 
 .job-item:last-child {
@@ -150,19 +151,60 @@
 .job-info {
     display: flex;
     gap: 15px;
+    min-width: 60%;
+    max-width: 75%;
+}
+
+.job-info strong {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    white-space: normal;
+    width: 180px;
+    word-break: break-word;
+}
+
+.job-info span {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    white-space: normal;
+}
+
+.job-info span:nth-of-type(1) {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    white-space: normal;
+    width: 150px;
+    word-break: break-word;
+}
+
+.job-info span:nth-of-type(2) {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    white-space: normal;
+    width: 120px;
+    word-break: break-word;
+}
+
+.job-meta {
+    margin-left: auto;
 }
 
 .back-button {
     position: absolute;
     left: 20px;
     top: 20px;
-}
-
-.job-meta {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: 5px;
 }
 
 .status-badge {

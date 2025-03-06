@@ -3,7 +3,6 @@ package com.mindvoyager.mindvoyager.service;
 import com.mindvoyager.mindvoyager.model.TechnicalQuestion;
 import com.mindvoyager.mindvoyager.repository.TechnicalQuestionRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,18 +12,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+
 @Service
 public class TechnicalQuestionService {
 
     private static final Logger logger = LoggerFactory.getLogger(TechnicalQuestionService.class);
 
-    @Autowired
-    private TechnicalQuestionRepository repository;
+    private final TechnicalQuestionRepository repository;
+    private final OpenAIService openAIService;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private OpenAIService openAIService;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    // Constructor injection
+    public TechnicalQuestionService(
+            TechnicalQuestionRepository repository,
+            OpenAIService openAIService) {
+        this.repository = repository;
+        this.openAIService = openAIService;
+        this.objectMapper = new ObjectMapper();
+    }
 
     public TechnicalQuestion getRandomQuestion() {
         try {

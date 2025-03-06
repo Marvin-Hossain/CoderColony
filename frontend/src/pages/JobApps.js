@@ -31,8 +31,18 @@ const JobApps = () => {
     const fetchJobs = async () => {
         setLoading(true);
         try {
-            const response = await fetch(API_BASE_URL);
-            if (!response.ok) throw new Error(`Error: ${response.status}`);
+            const response = await fetch(API_BASE_URL, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
+                throw new Error(`Error: ${response.status}`);
+            }
+            
             const data = await response.json();
             setJobs(data);
         } catch (error) {
@@ -42,110 +52,149 @@ const JobApps = () => {
         }
     };
 
-    // Add new job
-    const handleAddJob = async (e) => {
+    // Add job
+    const addJob = async (e) => {
         e.preventDefault();
-        if (!formData.title || !formData.company || !formData.location) {
-            setError("Please fill in all fields");
-            return;
-        }
-
         setLoading(true);
         try {
             const response = await fetch(API_BASE_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...formData, status: "APPLIED" }),
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+                credentials: 'include'
             });
-            if (!response.ok) throw new Error(`Error: ${response.status}`);
-            const addedJob = await response.json();
-            setJobs(prev => [...prev, addedJob]);
-            resetForm();
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
+                throw new Error(`Error: ${response.status}`);
+            }
+            
+            await fetchJobs();
+            setFormData(INITIAL_FORM_STATE);
         } catch (error) {
             handleApiError(error, "add job");
-        } finally {
-            setLoading(false);
         }
     };
 
     // Update job
-    const handleUpdateJob = async (e) => {
+    const updateJob = async (e) => {
         e.preventDefault();
-        if (!editingJobId) return;
-
         setLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/${editingJobId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
+                credentials: 'include'
             });
-            if (!response.ok) throw new Error(`Error: ${response.status}`);
-            const updatedJob = await response.json();
-            setJobs(jobs.map(job => 
-                job.id === editingJobId ? updatedJob : job
-            ));
-            resetForm();
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
+                throw new Error(`Error: ${response.status}`);
+            }
+            
+            await fetchJobs();
+            setFormData(INITIAL_FORM_STATE);
+            setEditingJobId(null);
         } catch (error) {
             handleApiError(error, "update job");
-        } finally {
-            setLoading(false);
         }
     };
 
     // Delete job
-    const handleDeleteJob = async (jobId) => {
-        if (window.confirm("Are you sure you want to delete this job application?")) {
-            setLoading(true);
-            try {
-                const response = await fetch(`${API_BASE_URL}/${jobId}`, {
-                    method: "DELETE",
-                });
-                if (!response.ok) throw new Error(`Error: ${response.status}`);
-                setJobs(jobs.filter((job) => job.id !== jobId));
-            } catch (error) {
-                handleApiError(error, "delete job");
-            } finally {
-                setLoading(false);
+    const deleteJob = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this job?")) return;
+        
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
+                throw new Error(`Error: ${response.status}`);
             }
+            
+            await fetchJobs();
+        } catch (error) {
+            handleApiError(error, "delete job");
         }
     };
 
-    // Handle edit mode
-    const handleEditJob = (job) => {
-        setEditingJobId(job.id);
+    // Update job status
+    const updateJobStatus = async (id, status) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status }),
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
+                throw new Error(`Error: ${response.status}`);
+            }
+            
+            await fetchJobs();
+        } catch (error) {
+            handleApiError(error, "update status");
+        }
+    };
+
+    // Form change handler
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value
+        });
+    };
+
+    // Start editing job
+    const startEdit = (job) => {
         setFormData({
             title: job.title,
             company: job.company,
             location: job.location,
             status: job.status
         });
+        setEditingJobId(job.id);
     };
 
-    // Reset form
-    const resetForm = () => {
+    // Cancel editing
+    const cancelEdit = () => {
         setFormData(INITIAL_FORM_STATE);
         setEditingJobId(null);
-        setError(null);
     };
 
-    // Initial fetch
+    // Load jobs on component mount
     useEffect(() => {
         fetchJobs();
     }, []);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
     const renderForm = () => (
-        <form onSubmit={editingJobId ? handleUpdateJob : handleAddJob} className="job-input">
+        <form onSubmit={editingJobId ? updateJob : addJob} className="job-input">
             <input
                 type="text"
                 name="title"
                 value={formData.title}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 placeholder="Job Title"
                 className="job-input-field"
                 required
@@ -154,7 +203,7 @@ const JobApps = () => {
                 type="text"
                 name="company"
                 value={formData.company}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 placeholder="Company"
                 className="job-input-field"
                 required
@@ -163,7 +212,7 @@ const JobApps = () => {
                 type="text"
                 name="location"
                 value={formData.location}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 placeholder="Location (City, ST or Remote)"
                 className="job-input-field"
                 required
@@ -192,7 +241,7 @@ const JobApps = () => {
                 {editingJobId && (
                     <button 
                         type="button" 
-                        onClick={resetForm}
+                        onClick={cancelEdit}
                         className="cancel-button"
                     >
                         Cancel
@@ -225,14 +274,14 @@ const JobApps = () => {
                         </div>
                         <div className="job-actions">
                             <button 
-                                onClick={() => handleEditJob(job)}
+                                onClick={() => startEdit(job)}
                                 className="edit-job-button"
                                 disabled={loading}
                             >
                                 Edit
                             </button>
                             <button 
-                                onClick={() => handleDeleteJob(job.id)}
+                                onClick={() => deleteJob(job.id)}
                                 className="delete-job-button"
                                 disabled={loading}
                             >
