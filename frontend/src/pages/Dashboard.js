@@ -58,7 +58,7 @@ const Dashboard = () => {
                 
                 if (response.ok) {
                     const data = await response.json();
-                    setJobCount(data.appliedCount || 0);
+                    setJobCount(data.todayCount || 0);
                     // You can use other stats as needed
                 }
             } catch (error) {

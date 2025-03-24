@@ -78,4 +78,8 @@ public class JobService {
     public long getJobCountByUserAndStatus(User user, Job.Status status) {
         return jobRepository.countByUserAndStatus(user, status);
     }
+
+    public long getTodayCount(User user) {
+        return jobRepository.countByCreatedAtAndUser(LocalDate.now(), user);
+    }
 }

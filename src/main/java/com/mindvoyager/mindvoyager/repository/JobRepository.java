@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+import java.time.LocalDate;
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
     // Find jobs by user
@@ -20,4 +20,6 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     
     // Count jobs by user and status
     long countByUserAndStatus(User user, Job.Status status);
+
+    long countByCreatedAtAndUser(LocalDate createdAt, User user);
 }

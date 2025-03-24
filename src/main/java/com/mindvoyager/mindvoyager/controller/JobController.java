@@ -101,7 +101,13 @@ public class JobController {
         long count = jobService.getJobCountByUser(currentUser);
         return Map.of("count", count);
     }
-    
+
+    @GetMapping("/today-count")
+    public Map<String, Long> getTodayCount(Authentication authentication) {
+        User currentUser = getCurrentUser(authentication);
+        long count = jobService.getTodayCount(currentUser);
+        return Map.of("count", count);
+    }
     // Get job counts by status for dashboard
     @GetMapping("/dashboard-stats")
     public Map<String, Object> getDashboardStats(Authentication authentication) {
@@ -109,12 +115,14 @@ public class JobController {
         
         long totalCount = jobService.getJobCountByUser(currentUser);
         long appliedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.APPLIED);
+        long todayCount = jobService.getTodayCount(currentUser);
         long interviewedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.INTERVIEWED);
         long rejectedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.REJECTED);
         
         return Map.of(
             "totalCount", totalCount,
             "appliedCount", appliedCount,
+            "todayCount", todayCount,
             "interviewedCount", interviewedCount,
             "rejectedCount", rejectedCount
         );
