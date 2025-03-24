@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.time.ZoneId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.mindvoyager.mindvoyager.model.User;
 
 @Service
 public class ProgressService {
@@ -26,70 +27,61 @@ public class ProgressService {
     @Autowired
     private JobService jobService;
 
-    public Map<String, Object> getWeeklyProgress(String category) {
+    public Map<String, Object> getWeeklyProgress(String category, User user) {
         LocalDate today = LocalDate.now(ZoneId.of("America/Chicago"));
         LocalDate startDate = today.minusDays(6);
-        List<Progress> weeklyProgress;
-        Map<LocalDate, Integer> dateToCount;
+        Map<String, Object> result = new HashMap<>();
 
-        try {
-            // Original logic for other categories
-            weeklyProgress = progressRepository.findByCategoryAndDateBetweenOrderByDate(
-                category, startDate, today);
-                
-            dateToCount = weeklyProgress.stream()
-                .collect(Collectors.groupingBy(
-                    Progress::getDate,
-                    Collectors.summingInt(Progress::getCompletionCount)
-                ));
-        } catch (Exception e) {
-            weeklyProgress = new ArrayList<>();
-            dateToCount = new HashMap<>();
-        }
-
-        // If it's jobs category, get counts for each day from JobService
         if (category.equals("jobs")) {
-            List<Job> allJobs = jobService.getAllJobs();
-            Map<LocalDate, Long> jobsByDate = allJobs.stream()
-                .filter(job -> job.getCreatedAt() != null)
+            // Get user-specific jobs
+            List<Job> userJobs = jobService.getJobsByUser(user);
+            
+            // Filter jobs within the date range and group by date
+            Map<LocalDate, Long> jobsByDate = userJobs.stream()
+                .filter(job -> job.getCreatedAt() != null 
+                    && !job.getCreatedAt().isBefore(startDate) 
+                    && !job.getCreatedAt().isAfter(today))
                 .collect(Collectors.groupingBy(
                     Job::getCreatedAt,
                     Collectors.counting()
                 ));
 
-            // Update dateToCount with job counts
+            // Format data for the response
+            List<Map<String, Object>> chartData = new ArrayList<>();
+            
+            // Ensure all dates are included, even if no jobs
             for (LocalDate date = startDate; !date.isAfter(today); date = date.plusDays(1)) {
-                dateToCount.put(date, jobsByDate.getOrDefault(date, 0L).intValue());
+                Map<String, Object> point = new HashMap<>();
+                point.put("date", date.toString());
+                point.put("count", jobsByDate.getOrDefault(date, 0L));
+                chartData.add(point);
             }
-        }
 
-        List<LocalDate> allDates = new ArrayList<>();
-        List<Integer> allCompletions = new ArrayList<>();
-        List<String> dateLabels = new ArrayList<>();
-        
-        for (int i = 0; i < 7; i++) {
-            LocalDate date = startDate.plusDays(i);
-            allDates.add(date);
-            int count = dateToCount.getOrDefault(date, 0);
-            allCompletions.add(count);
-            String dayOfWeek = date.getDayOfWeek().toString().substring(0, 3);
-            String monthDay = date.getMonthValue() + "/" + date.getDayOfMonth();
-            dateLabels.add(dayOfWeek + "\n(" + monthDay + ")");
+            result.put("chartData", chartData);
+            result.put("total", userJobs.size());
+            result.put("todayCount", jobsByDate.getOrDefault(today, 0L));
+            
+            // Add status counts
+            Map<Job.Status, Long> statusCounts = userJobs.stream()
+                .collect(Collectors.groupingBy(
+                    Job::getStatus,
+                    Collectors.counting()
+                ));
+            
+            result.put("applied", statusCounts.getOrDefault(Job.Status.APPLIED, 0L));
+            result.put("interviewed", statusCounts.getOrDefault(Job.Status.INTERVIEWED, 0L));
+            result.put("rejected", statusCounts.getOrDefault(Job.Status.REJECTED, 0L));
         }
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("dates", dateLabels);
-        response.put("completions", allCompletions);
         
-        return response;
+        return result;
     }
 
-    public Map<String, Object> getAllTimeStats(String category) {
+    public Map<String, Object> getAllTimeStats(String category, User user) {
         Map<String, Object> stats = new HashMap<>();
         try {
             if (category.equals("jobs")) {
-                // Get all jobs with their creation dates
-                List<Job> allJobs = jobService.getAllJobs();
+                // Get all jobs for the specific user
+                List<Job> allJobs = jobService.getJobsByUser(user);
                 
                 // Group jobs by date and count
                 Map<LocalDate, Long> jobsByDate = allJobs.stream()

@@ -1,7 +1,7 @@
 .progress-page {
-    max-width: 800px;
-    margin: 0 auto;
     padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
     font-family: "Roboto", sans-serif;
     color: #333;
     background: #f9f9f9;
@@ -50,8 +50,9 @@
 .chart-container {
     background: white;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
 .back-button {
@@ -61,19 +62,17 @@
 }
 
 .stats {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
-    margin: 20px 0;
-    font-size: 0.9rem;
+    margin-top: 20px;
 }
 
 .stats-section {
-    flex: 1;
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .stats h3 {
@@ -92,7 +91,8 @@
 .stat-item {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    margin: 10px 0;
+    padding: 5px 0;
     border-bottom: 1px solid #eee;
 }
 

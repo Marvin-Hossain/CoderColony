@@ -41,18 +41,42 @@ const Progress = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/progress/${selectedCategory}`);
+      const response = await fetch(`http://localhost:8080/api/progress/${selectedCategory}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          navigate('/');
+          return;
+        }
+        throw new Error(`Error: ${response.status}`);
+      }
+      
       const data = await response.json();
       console.log("Weekly data received:", data);
       setWeeklyData(data);
 
-      const statsResponse = await fetch(`http://localhost:8080/api/progress/${selectedCategory}/all-time`);
+      const statsResponse = await fetch(
+        `http://localhost:8080/api/progress/${selectedCategory}/all-time`,
+        { credentials: 'include' }
+      );
+      
+      if (!statsResponse.ok) {
+        if (statsResponse.status === 401 || statsResponse.status === 403) {
+          navigate('/');
+          return;
+        }
+        throw new Error(`Error: ${statsResponse.status}`);
+      }
+      
       const statsData = await statsResponse.json();
       console.log("Stats data received:", statsData);
       setAllTimeStats(statsData);
     } catch (error) {
       console.error('Error fetching progress data:', error);
-      setWeeklyData(generateSampleData());
+      setWeeklyData(null);
+      setAllTimeStats(null);
     }
   };
 
@@ -81,21 +105,29 @@ const Progress = () => {
     };
   };
 
-  const chartData = weeklyData ? {
-    labels: weeklyData.dates,
+  const chartData = {
+    labels: weeklyData?.chartData?.map(item => {
+      const date = new Date(item.date);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }) || [],
     datasets: [
       {
-        label: `${categories.find(c => c.id === selectedCategory)?.label} Completed`,
-        data: weeklyData.completions,
-        borderColor: '#78c0a8',
-        backgroundColor: 'rgba(120, 192, 168, 0.5)',
-        tension: 0.1,
+        label: categories.find(c => c.id === selectedCategory)?.label || '',
+        data: weeklyData?.chartData?.map(item => item.count) || [],
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1,
+        tension: 0.1
       }
-    ],
-  } : null;
+    ]
+  };
 
-  const options = {
+  const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
@@ -108,19 +140,18 @@ const Progress = () => {
     scales: {
       x: {
         ticks: {
-          maxRotation: 0,
-          autoSkip: false,
-          padding: 10
+          maxRotation: 45,
+          minRotation: 45
         }
       },
       y: {
         beginAtZero: true,
         ticks: {
-          stepSize: 1,
+          stepSize: 1
         },
-        max: categories.find(c => c.id === selectedCategory)?.goal + 2,
-      },
-    },
+        suggestedMax: categories.find(c => c.id === selectedCategory)?.goal + 2
+      }
+    }
   };
 
   const renderStats = () => {
@@ -188,9 +219,14 @@ const Progress = () => {
         ))}
       </div>
 
-      <div className="chart-container">
-        {renderStats()}
-        {chartData && <Line options={options} data={chartData} />}
+      {renderStats()}
+
+      <div className="chart-container" style={{ height: '400px', width: '100%' }}>
+        {weeklyData ? (
+          <Line data={chartData} options={chartOptions} />
+        ) : (
+          <div>Loading chart data...</div>
+        )}
       </div>
     </div>
   );
