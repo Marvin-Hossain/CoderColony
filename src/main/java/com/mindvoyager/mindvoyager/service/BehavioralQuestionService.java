@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import com.mindvoyager.mindvoyager.model.User;
 
 @Service
 public class BehavioralQuestionService {
@@ -23,16 +24,15 @@ public class BehavioralQuestionService {
     // Constructor injection
     public BehavioralQuestionService(
             BehavioralQuestionRepository repository, 
-            OpenAIService openAIService,
-            ObjectMapper objectMapper) {
+            OpenAIService openAIService) {
         this.repository = repository;
         this.openAIService = openAIService;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper();
     }
 
-    public BehavioralQuestion getRandomQuestion() {
+    public BehavioralQuestion getRandomQuestion(User user) {
         try {
-            BehavioralQuestion question = repository.findRandomQuestion();
+            BehavioralQuestion question = repository.findRandomQuestionForUser(user.getId());
             if (question == null) {
                 // Return a special TechnicalQuestion indicating no more questions
                 BehavioralQuestion noMoreQuestions = new BehavioralQuestion();
@@ -63,9 +63,9 @@ public class BehavioralQuestionService {
                 "  \"feedback\": \"<Start with strengths, then areas for improvement, and end with actionable tips.>\"\n" +
                 "}";
 
-                public BehavioralQuestion evaluateResponse(String question, String response) {
+                public BehavioralQuestion evaluateResponse(String question, String response, User user) {
                     try {
-                        BehavioralQuestion behavioralQuestion = repository.findByQuestion(question);
+                        BehavioralQuestion behavioralQuestion = repository.findByQuestionAndUser(question, user);
                         if (behavioralQuestion == null) {
                             throw new RuntimeException("No existing question found to update.");
                         }
@@ -89,23 +89,23 @@ public class BehavioralQuestionService {
                     question.setFeedback(evaluation.get("feedback").asText());
                 }
             
-                public long getTodayCount() {
-                    return repository.countByDate(LocalDate.now());
+                public long getTodayCount(User user) {
+                    return repository.countByDateAndUser(LocalDate.now(), user);
                 }
             
                 @Transactional
-                public void resetAllQuestions() {
+                public void resetAllQuestions(User user) {
                     try {
-                        repository.resetAllDates();
+                        repository.resetAllDatesForUser(user);
                     } catch (Exception e) {
                         logger.error("Error resetting questions: {}", e.getMessage());
                         throw new RuntimeException("Failed to reset questions", e);
                     }
                 }
             
-                public void resetQuestionDate(String question) {
+                public void resetQuestionDate(String question, User user) {
                     // Assuming you have a method in the repository to find the question by its text
-                    BehavioralQuestion behavioralQuestion = repository.findByQuestion(question);
+                    BehavioralQuestion behavioralQuestion = repository.findByQuestionAndUser(question, user);
                     if (behavioralQuestion != null) {
                         behavioralQuestion.setCreatedAt(null); // Reset the date to null
                         repository.save(behavioralQuestion); // Save the updated question
@@ -114,8 +114,9 @@ public class BehavioralQuestionService {
                     }
                 }
 
-    public BehavioralQuestion addQuestion(BehavioralQuestion question) {
+    public BehavioralQuestion addQuestion(BehavioralQuestion question, User user) {
         question.setCreatedAt(LocalDate.now()); // Set the creation date
+        question.setUser(user);
         return repository.save(question); // Save the question to the database
     }
 
@@ -123,7 +124,19 @@ public class BehavioralQuestionService {
         return repository.findAll();
     }
 
-    public void deleteQuestion(Long id) {
-        repository.deleteById(id);
+    public void deleteQuestion(Long id, User user) {
+        BehavioralQuestion question = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
+        
+        // Security check: ensure the question belongs to the requesting user
+        if (!question.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied: Question does not belong to current user");
+        }
+
+        repository.delete(question);
+    }
+
+    public List<BehavioralQuestion> getQuestionsByUser(User user) {
+        return repository.findByUser(user);
     }
 } 

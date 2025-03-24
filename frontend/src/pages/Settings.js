@@ -55,8 +55,16 @@ const Settings = () => {
 
     const fetchQuestions = async () => {
         try {
-            const response = await fetch(`${API_BASE_URLS[activeTab]}/all`);
-            if (!response.ok) throw new Error('Failed to fetch questions');
+            const response = await fetch(`${API_BASE_URLS[activeTab]}/all`, {
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
+                throw new Error('Failed to fetch questions');
+            }
             const data = await response.json();
             setQuestions(data);
         } catch (error) {
@@ -76,14 +84,13 @@ const Settings = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSuccess(null); // Clear any previous success message
-        setConfirmation(null); // Clear any confirmation dialog
+        setSuccess(null);
+        setConfirmation(null);
         if (!question.trim()) {
             setError('Please enter a question.');
             return;
         }
 
-        // Check if question already exists in the current list
         const questionExists = questions.some(q => 
             q.question.toLowerCase().trim() === question.toLowerCase().trim()
         );
@@ -97,17 +104,22 @@ const Settings = () => {
             const response = await fetch(`${API_BASE_URLS[activeTab]}/add`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ question }),
             });
 
             if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
                 const errorText = await response.text();
                 throw new Error(errorText);
             }
 
             setSuccess('Question added successfully!');
             setQuestion('');
-            fetchQuestions(); // Refresh the question list
+            fetchQuestions();
             setError(null);
         } catch (error) {
             setError('Failed to add question. Please try again.');
@@ -129,9 +141,18 @@ const Settings = () => {
         try {
             const response = await fetch(`${API_BASE_URLS[activeTab]}/${id}`, {
                 method: 'DELETE',
+                credentials: 'include'
             });
-            if (!response.ok) throw new Error('Failed to delete question');
-            fetchQuestions(); // Refresh the question list
+            
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
+                throw new Error('Failed to delete question');
+            }
+            
+            fetchQuestions();
             setSuccess('Question deleted successfully!');
             setConfirmation(null);
         } catch (error) {

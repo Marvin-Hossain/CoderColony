@@ -25,6 +25,10 @@ public class TechnicalQuestion {
     @Column(columnDefinition = "TEXT")
     private String feedback;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -38,6 +42,8 @@ public class TechnicalQuestion {
     public void setRating(Integer rating) { this.rating = rating; }
     public String getFeedback() { return feedback; }
     public void setFeedback(String feedback) { this.feedback = feedback; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
     // @PrePersist
     // protected void onCreate() {

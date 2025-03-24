@@ -1,17 +1,22 @@
 package com.mindvoyager.mindvoyager.controller;
 
 import com.mindvoyager.mindvoyager.model.TechnicalQuestion;
+import com.mindvoyager.mindvoyager.model.User;
 import com.mindvoyager.mindvoyager.service.TechnicalQuestionService;
+import com.mindvoyager.mindvoyager.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import com.mindvoyager.mindvoyager.dto.EvaluateResponseRequest;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/technical")
@@ -20,13 +25,38 @@ public class TechnicalQuestionController {
 
     private static final Logger logger = LoggerFactory.getLogger(TechnicalQuestionController.class);
 
-    @Autowired
-    private TechnicalQuestionService service;
+    private final TechnicalQuestionService service;
+    private final UserService userService;
+
+    // Constructor injection
+    public TechnicalQuestionController(TechnicalQuestionService service, UserService userService) {
+        this.service = service;
+        this.userService = userService;
+    }
+
+    // Helper method to get current user
+    private User getCurrentUser(Authentication authentication) {
+        if (!(authentication instanceof OAuth2AuthenticationToken)) {
+            throw new RuntimeException("User not authenticated");
+        }
+        
+        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+        OAuth2User oAuth2User = oauthToken.getPrincipal();
+        String githubId = oAuth2User.getAttribute("id").toString();
+        
+        Optional<User> userOptional = userService.findByGithubId(githubId);
+        if (!userOptional.isPresent()) {
+            throw new RuntimeException("User not found");
+        }
+        
+        return userOptional.get();
+    }
 
     @GetMapping("/question")
-    public ResponseEntity<TechnicalQuestion> getRandomQuestion() {
+    public ResponseEntity<TechnicalQuestion> getRandomQuestion(Authentication authentication) {
         try {
-            TechnicalQuestion question = service.getRandomQuestion();
+            User currentUser = getCurrentUser(authentication);
+            TechnicalQuestion question = service.getRandomQuestion(currentUser);
             return ResponseEntity.ok(question);
         } catch (Exception e) {
             logger.error("Error getting random question: ", e);
@@ -35,15 +65,19 @@ public class TechnicalQuestionController {
     }
 
     @PostMapping("/evaluate")
-    public ResponseEntity<TechnicalQuestion> evaluateResponse(@RequestBody EvaluateResponseRequest request) {
+    public ResponseEntity<TechnicalQuestion> evaluateResponse(
+            @RequestBody EvaluateResponseRequest request,
+            Authentication authentication) {
         try {
             if (!request.isValid()) {
                 return ResponseEntity.badRequest().build();
             }
             
+            User currentUser = getCurrentUser(authentication);
             TechnicalQuestion result = service.evaluateResponse(
                 request.getQuestion(), 
-                request.getResponse()
+                request.getResponse(),
+                currentUser
             );
             return ResponseEntity.ok(result);
         } catch (Exception e) {
@@ -53,14 +87,16 @@ public class TechnicalQuestionController {
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Map<String, Long>> getTodayCount() {
-        return ResponseEntity.ok(Map.of("count", service.getTodayCount()));
+    public ResponseEntity<Map<String, Long>> getTodayCount(Authentication authentication) {
+        User currentUser = getCurrentUser(authentication);
+        return ResponseEntity.ok(Map.of("count", service.getTodayCount(currentUser)));
     }
 
     @PostMapping("/reset")
-    public ResponseEntity<Void> resetQuestions() {
+    public ResponseEntity<Void> resetQuestions(Authentication authentication) {
         try {
-            service.resetAllQuestions(); // Call the service method to reset questions
+            User currentUser = getCurrentUser(authentication);
+            service.resetAllQuestions(currentUser);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error resetting questions: ", e);
@@ -69,10 +105,13 @@ public class TechnicalQuestionController {
     }
 
     @PostMapping("/reset-date")
-    public ResponseEntity<Void> resetQuestionDate(@RequestBody Map<String, String> request) {
+    public ResponseEntity<Void> resetQuestionDate(
+            @RequestBody Map<String, String> request,
+            Authentication authentication) {
         try {
+            User currentUser = getCurrentUser(authentication);
             String question = request.get("question");
-            service.resetQuestionDate(question); // Call the service method to reset the date
+            service.resetQuestionDate(question, currentUser);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error resetting question date: ", e);
@@ -80,43 +119,43 @@ public class TechnicalQuestionController {
         }
     }
 
-    // // Optional: If you want to add a complete question endpoint similar to Behavioral
-    // @PostMapping("/complete")
-    // public ResponseEntity<Void> completeQuestion() {
-    //     progressService.logProgress("technical", 1);
-    //     return ResponseEntity.ok().build();
-    // }
-
     @GetMapping("/all")
-public ResponseEntity<List<TechnicalQuestion>> getAllQuestions() {
-    try {
-        List<TechnicalQuestion> questions = service.getAllQuestions();
-        return ResponseEntity.ok(questions);
-    } catch (Exception e) {
-        logger.error("Error fetching all questions: ", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public ResponseEntity<List<TechnicalQuestion>> getAllQuestions(Authentication authentication) {
+        try {
+            User currentUser = getCurrentUser(authentication);
+            List<TechnicalQuestion> questions = service.getQuestionsByUser(currentUser);
+            return ResponseEntity.ok(questions);
+        } catch (Exception e) {
+            logger.error("Error fetching all questions: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-}
 
-@PostMapping("/add")
-public ResponseEntity<TechnicalQuestion> addQuestion(@RequestBody TechnicalQuestion question) {
-    try {
-        TechnicalQuestion savedQuestion = service.addQuestion(question);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
-    } catch (Exception e) {
-        logger.error("Error adding question: ", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    @PostMapping("/add")
+    public ResponseEntity<TechnicalQuestion> addQuestion(
+            @RequestBody TechnicalQuestion question,
+            Authentication authentication) {
+        try {
+            User currentUser = getCurrentUser(authentication);
+            TechnicalQuestion savedQuestion = service.addQuestion(question, currentUser);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
+        } catch (Exception e) {
+            logger.error("Error adding question: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-}
 
-@DeleteMapping("/{id}")
-public ResponseEntity<Void> deleteQuestion(@PathVariable Long id) {
-    try {
-        service.deleteQuestion(id);
-        return ResponseEntity.noContent().build();
-    } catch (Exception e) {
-        logger.error("Error deleting question: ", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteQuestion(
+            @PathVariable Long id,
+            Authentication authentication) {
+        try {
+            User currentUser = getCurrentUser(authentication);
+            service.deleteQuestion(id, currentUser);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            logger.error("Error deleting question: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-}
 } 

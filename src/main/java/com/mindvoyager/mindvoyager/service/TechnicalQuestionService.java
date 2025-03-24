@@ -2,6 +2,7 @@ package com.mindvoyager.mindvoyager.service;
 
 import com.mindvoyager.mindvoyager.model.TechnicalQuestion;
 import com.mindvoyager.mindvoyager.repository.TechnicalQuestionRepository;
+import com.mindvoyager.mindvoyager.model.User;
 
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,9 +32,9 @@ public class TechnicalQuestionService {
         this.objectMapper = new ObjectMapper();
     }
 
-    public TechnicalQuestion getRandomQuestion() {
+    public TechnicalQuestion getRandomQuestion(User user) {
         try {
-            TechnicalQuestion question = repository.findRandomQuestion();
+            TechnicalQuestion question = repository.findRandomQuestionForUser(user.getId());
             if (question == null) {
                 // Return a special TechnicalQuestion indicating no more questions
                 TechnicalQuestion noMoreQuestions = new TechnicalQuestion();
@@ -57,9 +58,9 @@ public class TechnicalQuestionService {
     "  \"feedback\": \"<detailed feedback with specific improvements>\"\n" +
     "}";
 
-    public TechnicalQuestion evaluateResponse(String question, String response) {
+    public TechnicalQuestion evaluateResponse(String question, String response, User user) {
         try {
-            TechnicalQuestion technicalQuestion = repository.findByQuestion(question);
+            TechnicalQuestion technicalQuestion = repository.findByQuestionAndUser(question, user);
             if (technicalQuestion == null) {
                 throw new RuntimeException("No existing question found to update.");
             }
@@ -83,28 +84,27 @@ public class TechnicalQuestionService {
         question.setFeedback(evaluation.get("feedback").asText());
     }
 
-    public long getTodayCount() {
-        return repository.countByDate(LocalDate.now());
+    public long getTodayCount(User user) {
+        return repository.countByDateAndUser(LocalDate.now(), user);
     }
 
     @Transactional
-    public void resetAllQuestions() {
+    public void resetAllQuestions(User user) {
         try {
-            repository.resetAllDates();
+            repository.resetAllDatesForUser(user);
         } catch (Exception e) {
             logger.error("Error resetting questions: {}", e.getMessage());
             throw new RuntimeException("Failed to reset questions", e);
         }
     }
 
-    public void resetQuestionDate(String question) {
-        // Assuming you have a method in the repository to find the question by its text
-        TechnicalQuestion technicalQuestion = repository.findByQuestion(question);
+    public void resetQuestionDate(String question, User user) {
+        TechnicalQuestion technicalQuestion = repository.findByQuestionAndUser(question, user);
         if (technicalQuestion != null) {
-            technicalQuestion.setCreatedAt(null); // Reset the date to null
-            repository.save(technicalQuestion); // Save the updated question
+            technicalQuestion.setCreatedAt(null);
+            repository.save(technicalQuestion);
         } else {
-            throw new RuntimeException("Question not found");
+            throw new RuntimeException("Question not found for this user");
         }
     }
 
@@ -112,12 +112,25 @@ public class TechnicalQuestionService {
         return repository.findAll();
     }
     
-    public TechnicalQuestion addQuestion(TechnicalQuestion question) {
+    public TechnicalQuestion addQuestion(TechnicalQuestion question, User user) {
         question.setCreatedAt(null);
+        question.setUser(user);
         return repository.save(question);
     }
 
-    public void deleteQuestion(Long id) {
-        repository.deleteById(id);
+    public void deleteQuestion(Long id, User user) {
+        TechnicalQuestion question = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
+        
+        // Security check: ensure the question belongs to the requesting user
+        if (!question.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied: Question does not belong to current user");
+        }
+        
+        repository.delete(question);
+    }
+
+    public List<TechnicalQuestion> getQuestionsByUser(User user) {
+        return repository.findByUser(user);
     }
 } 

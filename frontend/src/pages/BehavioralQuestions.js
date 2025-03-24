@@ -13,10 +13,13 @@ const BehavioralQuestions = () => {
     const [error, setError] = useState(null);
     const [showResetButton, setShowResetButton] = useState(false);
     const navigate = useNavigate();
+
     const fetchNewQuestion = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/question`);
+            const response = await fetch(`${API_BASE_URL}/question`, {
+                credentials: 'include'
+            });
             
             if (response.ok) {
                 const data = await response.json();
@@ -52,6 +55,7 @@ const BehavioralQuestions = () => {
             const result = await fetch(`${API_BASE_URL}/evaluate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ 
                     question, 
                     response
@@ -59,6 +63,10 @@ const BehavioralQuestions = () => {
             });
             
             if (!result.ok) {
+                if (result.status === 401 || result.status === 403) {
+                    navigate('/');
+                    return;
+                }
                 throw new Error('Failed to evaluate response');
             }
 
@@ -94,10 +102,15 @@ const BehavioralQuestions = () => {
             const result = await fetch(`${API_BASE_URL}/reset-date`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ question }) // Send the current question to reset its date
             });
 
             if (!result.ok) {
+                if (result.status === 401 || result.status === 403) {
+                    navigate('/');
+                    return;
+                }
                 throw new Error('Failed to reset question date');
             }
         } catch (error) {
@@ -112,9 +125,14 @@ const BehavioralQuestions = () => {
             const result = await fetch(`${API_BASE_URL}/reset`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
             });
             
             if (!result.ok) {
+                if (result.status === 401 || result.status === 403) {
+                    navigate('/');
+                    return;
+                }
                 throw new Error('Failed to reset questions');
             }
 

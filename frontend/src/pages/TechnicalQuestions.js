@@ -17,7 +17,9 @@ const TechnicalQuestions = () => {
     const fetchNewQuestion = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/question`);
+            const response = await fetch(`${API_BASE_URL}/question`, {
+                credentials: 'include'
+            });
             
             if (response.ok) {
                 const data = await response.json();
@@ -25,18 +27,21 @@ const TechnicalQuestions = () => {
                 setResponse('');
                 setFeedback(null);
                 
-                // Check if the question is the special "no more questions" message
                 if (data.question === "No more questions for today! Please reset or come back tomorrow!") {
-                    setShowResetButton(true); // Show the reset button
+                    setShowResetButton(true);
                 } else {
-                    setShowResetButton(false); // Hide the reset button for valid questions
+                    setShowResetButton(false);
                 }
             } else {
+                if (response.status === 401 || response.status === 403) {
+                    navigate('/');
+                    return;
+                }
                 throw new Error('Failed to fetch question');
             }
         } catch (error) {
             setError('Failed to load question. Please try again.');
-            setShowResetButton(true); // Show reset button on error
+            setShowResetButton(true);
         } finally {
             setLoading(false);
         }
@@ -53,6 +58,7 @@ const TechnicalQuestions = () => {
             const result = await fetch(`${API_BASE_URL}/evaluate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ 
                     question, 
                     response
@@ -60,6 +66,10 @@ const TechnicalQuestions = () => {
             });
             
             if (!result.ok) {
+                if (result.status === 401 || result.status === 403) {
+                    navigate('/');
+                    return;
+                }
                 throw new Error('Failed to evaluate response');
             }
 
@@ -87,18 +97,22 @@ const TechnicalQuestions = () => {
     };
 
     const handleRetry = async () => {
-        setFeedback(null);  // Clear previous feedback
-        setResponse('');    // Clear previous response
+        setFeedback(null);
+        setResponse('');
 
-        // Call the reset date endpoint
         try {
             const result = await fetch(`${API_BASE_URL}/reset-date`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question }) // Send the current question to reset its date
+                credentials: 'include',
+                body: JSON.stringify({ question })
             });
 
             if (!result.ok) {
+                if (result.status === 401 || result.status === 403) {
+                    navigate('/');
+                    return;
+                }
                 throw new Error('Failed to reset question date');
             }
         } catch (error) {
@@ -113,14 +127,18 @@ const TechnicalQuestions = () => {
             const result = await fetch(`${API_BASE_URL}/reset`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
             });
             
             if (!result.ok) {
+                if (result.status === 401 || result.status === 403) {
+                    navigate('/');
+                    return;
+                }
                 throw new Error('Failed to reset questions');
             }
 
-            // Fetch a new question after resetting
-            fetchNewQuestion(); // Call the function to get a new question
+            fetchNewQuestion();
         } catch (error) {
             console.error('Error resetting questions:', error);
             setError('Failed to reset questions. Please try again.');
