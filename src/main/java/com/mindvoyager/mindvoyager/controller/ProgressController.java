@@ -10,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.util.Map;
-import java.time.LocalDate;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Optional;
 
@@ -73,25 +72,5 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Failed to fetch statistics"));
         }
-    }
-
-    @PostMapping("/{category}")
-    public ResponseEntity<?> logProgress(
-            @PathVariable String category,
-            @RequestBody Map<String, Integer> payload) {
-        try {
-            progressService.logProgress(category, payload.get("count"));
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            log.error("Error logging progress for category: {}", category, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Failed to log progress"));
-        }
-    }
-
-    @DeleteMapping("/{category}")
-    public void decrementProgress(@PathVariable String category, @RequestBody Map<String, String> payload) {
-        LocalDate date = LocalDate.parse(payload.get("date"));
-        progressService.decrementProgress(category, date);
     }
 }

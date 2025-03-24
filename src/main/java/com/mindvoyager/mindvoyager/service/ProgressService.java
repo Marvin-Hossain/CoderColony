@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
-import java.util.Optional;
 import java.time.ZoneId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,38 +139,6 @@ public class ProgressService {
                 "average", "0.0",
                 "bestDay", 0
             );
-        }
-    }
-
-    public void logProgress(String category, int count) {
-        LocalDate today = LocalDate.now(ZoneId.of("America/Chicago"));
-        Optional<Progress> existingProgress = progressRepository.findByCategoryAndDate(category, today);
-        
-        if (existingProgress.isPresent()) {
-            Progress progress = existingProgress.get();
-            progress.setCompletionCount(progress.getCompletionCount() + count);
-            progressRepository.save(progress);
-        } else {
-            Progress progress = new Progress();
-            progress.setCategory(category);
-            progress.setDate(today);
-            progress.setCompletionCount(count);
-            progressRepository.save(progress);
-        }
-    }
-
-    public void decrementProgress(String category, LocalDate date) {
-        Optional<Progress> progressOpt = progressRepository.findByCategoryAndDate(category, date);
-        if (progressOpt.isPresent()) {
-            Progress progress = progressOpt.get();
-            if (progress.getCompletionCount() > 0) {
-                progress.setCompletionCount(progress.getCompletionCount() - 1);
-                if (progress.getCompletionCount() == 0) {
-                    progressRepository.delete(progress);
-                } else {
-                    progressRepository.save(progress);
-                }
-            }
         }
     }
 }

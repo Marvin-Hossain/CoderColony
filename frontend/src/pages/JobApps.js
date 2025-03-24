@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "./JobApps.css";
 import Button from "../components/Button";
 import { useNavigate } from 'react-router-dom';
@@ -188,6 +188,15 @@ const JobApps = () => {
         fetchJobs();
     }, []);
 
+    // Add sorting with useMemo
+    const sortedJobs = useMemo(() => {
+        return [...jobs].sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return dateB - dateA; // Most recent first
+        });
+    }, [jobs]);
+
     const renderForm = () => (
         <form onSubmit={editingJobId ? updateJob : addJob} className="job-input">
             <input
@@ -257,7 +266,7 @@ const JobApps = () => {
             {loading && !jobs.length && <div>Loading...</div>}
             {!loading && !jobs.length && <p>No jobs logged yet. Start adding applications!</p>}
             <ul>
-                {jobs.map((job) => (
+                {sortedJobs.map((job) => (
                     <li key={job.id} className="job-item">
                         <div className="job-info">
                             <strong>{job.title}</strong>
