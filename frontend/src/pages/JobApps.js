@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import "./JobApps.css";
 import Button from "../components/Button";
 import { useNavigate } from 'react-router-dom';
+import { API_CONFIG } from '../services/config';
+import PageHeader from "../components/PageHeader";
 
-const API_BASE_URL = "http://localhost:8080/api/jobs";
+const API_BASE_URL = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS;
 
 const INITIAL_FORM_STATE = {
     title: "",
@@ -305,15 +307,11 @@ const JobApps = () => {
 
     return (
         <div className="job-apps">
-            <header className="job-apps-header">
-                <Button 
-                    text="Back" 
-                    onClick={() => navigate('/dashboard')} 
-                    className="back-button"
-                />
-                <h1>Job Applications</h1>
-                <p>Track your job applications</p>
-            </header>
+            <PageHeader 
+                title="Job Applications"
+                subtitle="Track your job applications"
+                onBack={() => navigate('/dashboard')}
+            />
 
             {error && <div className="error-message">{error}</div>}
 

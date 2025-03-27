@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import "./Progress.css";
 import { Line } from "react-chartjs-2";
 import Button from "../components/Button";
+import { API_CONFIG } from '../services/config';
+import PageHeader from '../components/PageHeader';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,6 +15,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import CategoryTabs from '../components/CategoryTabs';
 
 // Move chart registration outside component
 ChartJS.register(
@@ -38,9 +41,10 @@ const CATEGORIES = [
 // Move API calls to separate service
 const progressService = {
   async fetchWeeklyData(category) {
-    const response = await fetch(`http://localhost:8080/api/progress/${category}`, {
-      credentials: 'include'
-    });
+    const response = await fetch(
+      API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROGRESS + `/${category}`,
+      { credentials: 'include' }
+    );
     if (!response.ok) {
       throw new Error(`Error: ${response.status}`);
     }
@@ -49,7 +53,7 @@ const progressService = {
 
   async fetchAllTimeStats(category) {
     const response = await fetch(
-      `http://localhost:8080/api/progress/${category}/all-time`,
+      API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROGRESS + `/${category}/all-time`,
       { credentials: 'include' }
     );
     if (!response.ok) {
@@ -71,10 +75,6 @@ const Progress = () => {
   const handleCategoryChange = useCallback((categoryId) => {
     setSelectedCategory(categoryId);
   }, []);
-
-  const handleBackClick = useCallback(() => {
-    navigate('/dashboard');
-  }, [navigate]);
 
   // Use useMemo for complex calculations
   const chartData = useMemo(() => ({
@@ -168,15 +168,11 @@ const Progress = () => {
 
   return (
     <div className="progress-page">
-      <Button 
-        text="Back" 
-        onClick={handleBackClick}
-        className="back-button"
+      <PageHeader 
+        title="Progress Tracker"
+        subtitle="Track your daily and weekly progress"
+        onBack={() => navigate('/dashboard')}
       />
-      <header className="progress-header">
-        <h1>Progress Tracker</h1>
-        <p>Track your daily and weekly progress</p>
-      </header>
       
       <CategoryTabs 
         categories={CATEGORIES}
@@ -198,20 +194,6 @@ const Progress = () => {
 };
 
 // Extract smaller components
-const CategoryTabs = React.memo(({ categories, selectedCategory, onCategoryChange }) => (
-  <div className="category-tabs">
-    {categories.map((category) => (
-      <button
-        key={category.id}
-        className={`category-tab ${selectedCategory === category.id ? 'active' : ''}`}
-        onClick={() => onCategoryChange(category.id)}
-      >
-        {category.label}
-      </button>
-    ))}
-  </div>
-));
-
 const StatsSection = React.memo(({ title, stats }) => (
   <div className="stats-section">
     <h3>{title}</h3>

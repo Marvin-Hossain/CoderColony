@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
+import { API_CONFIG } from '../services/config';
 
 const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -8,9 +9,10 @@ const ProtectedRoute = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/auth/user', {
-          credentials: 'include',
-        });
+        const response = await fetch(
+          API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
+          { credentials: 'include' }
+        );
 
         if (response.ok) {
           const data = await response.json();

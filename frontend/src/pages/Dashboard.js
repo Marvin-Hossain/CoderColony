@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import Button from "../components/Button"; // Reusable Button component
 import { useNavigate } from 'react-router-dom';
+import { API_CONFIG } from '../services/config';
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -18,9 +19,10 @@ const Dashboard = () => {
         // Check if user is authenticated
         const checkAuth = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/auth/user', {
-                    credentials: 'include',
-                });
+                const response = await fetch(
+                    API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER, 
+                    { credentials: 'include' }
+                );
 
                 if (!response.ok) {
                     throw new Error('Not authenticated');
@@ -35,7 +37,6 @@ const Dashboard = () => {
 
                 setUser(userData);
                 
-                // Fetch job stats for the user
                 fetchJobStats();
                 
                 // Fetch other stats as needed
@@ -52,9 +53,10 @@ const Dashboard = () => {
 
         const fetchJobStats = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/jobs/dashboard-stats', {
-                    credentials: 'include',
-                });
+                const response = await fetch(
+                    API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS_STATS, 
+                    { credentials: 'include' }
+                );
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -71,10 +73,10 @@ const Dashboard = () => {
 
     const handleLogout = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/auth/logout', {
-                method: 'POST',
-                credentials: 'include',
-            });
+            const response = await fetch(
+                API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.LOGOUT,
+                { method: 'POST', credentials: 'include' }
+            );
             
             if (response.ok) {
                 navigate('/');
@@ -92,26 +94,21 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
-            <div className="button-container">
+            <header className="dashboard-header">
                 <Button 
                     text="Progress"
                     onClick={() => navigate('/progress')}
                     className="progress-button"
                 />
+                <h1>Welcome to Your Dashboard</h1>
                 <Button 
                     text="Settings"
                     onClick={() => navigate('/settings')}
                     className="settings-button"
                 />
-            </div>
-            <header className="dashboard-header">
-                <h1>Welcome to Your Dashboard</h1>
                 <div className="user-section">
                     <p>Welcome, {user?.username || 'User'}&nbsp;|&nbsp;
-                        <span 
-                            className="logout-link" 
-                            onClick={handleLogout}
-                        >
+                        <span className="logout-link" onClick={handleLogout}>
                             Logout
                         </span>
                     </p>

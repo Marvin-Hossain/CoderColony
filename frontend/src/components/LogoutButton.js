@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_CONFIG } from '../services/config';
 
 const LogoutButton = () => {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ const LogoutButton = () => {
       localStorage.removeItem('user');
       
       // Call backend logout endpoint
-      await fetch('http://localhost:8080/logout', {
+      await fetch(API_CONFIG.BASE_AUTH_URL + API_CONFIG.ENDPOINTS.AUTH.LOGOUT, {
         method: 'POST',
         credentials: 'include'
       });

@@ -1,4 +1,6 @@
-.technical-questions {
+/* Common styles for both types */
+.technical-questions,
+.behavioral-questions {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
@@ -9,19 +11,28 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.technical-header {
+.reset-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.error-message {
+    color: #ff4444;
+    background-color: #ffe5e5;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.loading {
     text-align: center;
-    margin-bottom: 20px;
-    position: relative;
+    padding: 20px;
+    color: #666;
 }
 
-.technical-header h1 {
-    font-size: 2rem;
-    color: #2f4f4f;
-    
-}
-
-.technical-main {
+.technical-main,
+.behavioral-main {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -32,6 +43,10 @@
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.question-section h2 {
+    margin-bottom: 10px;
 }
 
 .response-section {
@@ -48,6 +63,28 @@
     font-size: 1rem;
     resize: vertical;
     line-height: 1.5;
+}
+
+.submit-button, 
+.next-button {
+    background-color: #78c0a8;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover, 
+.next-button:hover {
+    background-color: #56a68a;
+}
+
+.submit-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
 .feedback-section {
@@ -77,40 +114,6 @@
     border-left: 4px solid #78c0a8;
 }
 
-.submit-button, .next-button {
-    background-color: #78c0a8;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.3s;
-}
-
-.submit-button:hover, .next-button:hover {
-    background-color: #56a68a;
-}
-
-.submit-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.error-message {
-    color: #ff4444;
-    background-color: #ffe5e5;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
-}
-
-.loading {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-}
-
 .button-group {
     display: flex;
     gap: 10px;
@@ -130,4 +133,4 @@
 
 .retry-button:hover {
     background-color: #ec971f;
-} 
+}

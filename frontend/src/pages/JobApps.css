@@ -12,6 +12,7 @@
 .job-apps-header {
     text-align: center;
     margin-bottom: 20px;
+    position: relative;
 }
 
 .job-apps-header h1 {
@@ -203,8 +204,8 @@
 
 .back-button {
     position: absolute;
-    left: 20px;
-    top: 20px;
+    left: 0;
+    top: 0;
 }
 
 .status-badge {

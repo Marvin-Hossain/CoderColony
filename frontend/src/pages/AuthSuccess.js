@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_CONFIG } from '../services/config';
 
 const AuthSuccess = () => {
     const [loading, setLoading] = useState(true);
@@ -10,9 +11,10 @@ const AuthSuccess = () => {
         // First try the test endpoint to see raw authentication data
         const checkAuthStatus = async () => {
             try {
-                const testResponse = await fetch('http://localhost:8080/api/auth/test', {
-                    credentials: 'include'
-                });
+                const testResponse = await fetch(
+                    API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.TEST,
+                    { credentials: 'include' }
+                );
                 
                 if (!testResponse.ok) {
                     throw new Error(`Test endpoint failed: ${testResponse.status}`);
@@ -23,9 +25,10 @@ const AuthSuccess = () => {
                 
                 // If authenticated according to test endpoint, try the user endpoint
                 if (testData.authenticated) {
-                    const userResponse = await fetch('http://localhost:8080/api/auth/user', {
-                        credentials: 'include'
-                    });
+                    const userResponse = await fetch(
+                        API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
+                        { credentials: 'include' }
+                    );
                     
                     if (!userResponse.ok) {
                         throw new Error(`User endpoint failed: ${userResponse.status}`);

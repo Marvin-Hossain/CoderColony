@@ -9,33 +9,6 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.settings-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    justify-content: center;
-}
-
-.tabs button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    background-color: #f0f0f0;
-    color: #333;
-    transition: all 0.3s ease;
-}
-
-.tabs button.active {
-    background-color: #78c0a8;
-    color: white;
-}
-
 .behavioral-tab, .technical-tab {
     margin-top: 20px;
 }

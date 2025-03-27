@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import './Settings.css';
+import { API_CONFIG } from '../services/config';
+import PageHeader from '../components/PageHeader';
+import CategoryTabs from '../components/CategoryTabs';
 
 const API_BASE_URLS = {
-    behavioral: "http://localhost:8080/api/behavioral",
-    technical: "http://localhost:8080/api/technical"
+    behavioral: API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.BEHAVIORAL,
+    technical: API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.TECHNICAL
 };
 
 const QuestionPanel = ({ type, error, success, confirmation, question, setQuestion, handleSubmit, questions, handleDelete, confirmDelete, cancelDelete }) => (
@@ -171,19 +174,19 @@ const Settings = () => {
 
     return (
         <div className="settings">
-            <header className="settings-header">
-                <Button text="Back" onClick={() => navigate('/dashboard')} className="back-button" />
-                <h1>Settings</h1>
-            </header>
+            <PageHeader 
+                title="Settings"
+                onBack={() => navigate('/dashboard')}
+            />
             
-            <div className="tabs">
-                <button onClick={() => handleTabChange('behavioral')} className={activeTab === 'behavioral' ? 'active' : ''}>
-                    Behavioral Questions
-                </button>
-                <button onClick={() => handleTabChange('technical')} className={activeTab === 'technical' ? 'active' : ''}>
-                    Technical Questions
-                </button>
-            </div>
+            <CategoryTabs 
+                categories={[
+                    { id: 'behavioral', label: 'Behavioral Questions' },
+                    { id: 'technical', label: 'Technical Questions' }
+                ]}
+                selectedCategory={activeTab}
+                onCategoryChange={handleTabChange}
+            />
             <QuestionPanel 
                 type={activeTab}
                 error={error}

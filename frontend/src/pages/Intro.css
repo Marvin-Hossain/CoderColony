@@ -26,3 +26,19 @@
     border-radius: 50px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Matches overall project aesthetic */
 }
+
+.intro-message {
+    background-color: #f4f9f4;
+    border-radius: 15px;
+    padding: 20px;
+    color: #2f4f4f;
+    font-family: "Roboto", sans-serif;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    border: 2px solid #c1e1c1;
+    line-height: 1.5;
+    font-weight: 500;
+}
