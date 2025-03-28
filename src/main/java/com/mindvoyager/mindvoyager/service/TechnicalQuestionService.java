@@ -79,9 +79,15 @@ public class TechnicalQuestionService {
 
     private void updateTechnicalQuestion(TechnicalQuestion question, String response, JsonNode evaluation) {
         question.setResponseText(response);
-        question.setCreatedAt(LocalDate.now());
+        int rating = evaluation.get("rating").asInt();
         question.setRating(evaluation.get("rating").asInt());
         question.setFeedback(evaluation.get("feedback").asText());
+        // Only set createdAt if rating is greater than 5
+        if (rating > 5) {
+            question.setCreatedAt(LocalDate.now());
+        } else {
+            question.setCreatedAt(null); // Reset date if rating is too low
+        }
     }
 
     public long getTodayCount(User user) {

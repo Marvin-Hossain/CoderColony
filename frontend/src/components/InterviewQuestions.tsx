@@ -36,21 +36,6 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
     const [showResetButton, setShowResetButton] = useState<boolean>(false);
     const navigate = useNavigate();
 
-    // Initialize count from localStorage when component mounts
-    useEffect(() => {
-        const today = new Date().toDateString();
-        const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}') as QuestionCounts;
-        
-        // Clear counts if they're from a previous day
-        if (savedData.date !== today) {
-            localStorage.setItem('questionCounts', JSON.stringify({
-                date: today,
-                behavioral: 0,
-                technical: 0
-            }));
-        }
-    }, []);
-
     const fetchNewQuestion = async (): Promise<void> => {
         setLoading(true);
         try {
@@ -122,16 +107,6 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
     const handleNext = async (): Promise<void> => {
         setLoading(true);
         try {
-            // Increment the count in localStorage
-            const today = new Date().toDateString();
-            const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}') as QuestionCounts;
-            
-            localStorage.setItem('questionCounts', JSON.stringify({
-                ...savedData,
-                date: today,
-                [type]: (savedData[type] || 0) + 1
-            }));
-            
             // Then fetch new question
             await fetchNewQuestion();
         } catch (error) {

@@ -54,8 +54,7 @@ const Dashboard: React.FC = () => {
                 }
 
                 setUser(userData);
-                fetchJobStats();
-                updateQuestionCounts();
+                fetchStats();
                 
             } catch (error) {
                 console.error('Authentication check failed:', error);
@@ -65,39 +64,37 @@ const Dashboard: React.FC = () => {
             }
         };
 
-        const fetchJobStats = async (): Promise<void> => {
+        const fetchStats = async (): Promise<void> => {
             try {
-                const response = await fetch(
-                    API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS_STATS, 
-                    { credentials: 'include' }
-                );
-                
-                if (response.ok) {
-                    const data: JobStats = await response.json();
-                    setJobCount(data.todayCount || 0);
-                }
-            } catch (error) {
-                console.error('Failed to fetch job stats:', error);
-            }
-        };
+                const [jobStats, technicalCount, behavioralCount] = await Promise.all([
+                    fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS_STATS, {
+                        credentials: 'include'
+                    }),
+                    fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.TECHNICAL + '/count', {
+                        credentials: 'include'
+                    }),
+                    fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.BEHAVIORAL + '/count', {
+                        credentials: 'include'
+                    })
+                ]);
 
-        const updateQuestionCounts = (): void => {
-            const today = new Date().toDateString();
-            const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}') as QuestionCounts;
-            
-            if (savedData.date === today) {
-                setBehavioralCount(savedData.behavioral || 0);
-                setTechnicalCount(savedData.technical || 0);
-            } else {
-                setBehavioralCount(0);
-                setTechnicalCount(0);
+                if (!jobStats.ok || !technicalCount.ok || !behavioralCount.ok) {
+                    throw new Error('Failed to fetch stats');
+                }
+
+                const jobData = await jobStats.json();
+                const technicalData = await technicalCount.json();
+                const behavioralData = await behavioralCount.json();
+
+                setJobCount(jobData.todayCount);
+                setTechnicalCount(technicalData.count);
+                setBehavioralCount(behavioralData.count);
+            } catch (error) {
+                console.error('Error fetching stats:', error);
             }
         };
 
         checkAuth();
-
-        window.addEventListener('focus', updateQuestionCounts);
-        return () => window.removeEventListener('focus', updateQuestionCounts);
     }, [navigate]);
 
     const handleLogout = async () => {
