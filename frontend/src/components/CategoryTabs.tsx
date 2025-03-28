@@ -1,7 +1,22 @@
 import React from 'react';
 import './CategoryTabs.css';
 
-const CategoryTabs = ({ categories, selectedCategory, onCategoryChange }) => (
+interface Category {
+    id: string;
+    label: string;
+}
+
+interface CategoryTabsProps {
+    categories: Category[];
+    selectedCategory: string;
+    onCategoryChange: (categoryId: string) => void;
+}
+
+const CategoryTabs: React.FC<CategoryTabsProps> = ({ 
+    categories, 
+    selectedCategory, 
+    onCategoryChange 
+}) => (
     <div className="category-tabs">
         {categories.map((category) => (
             <button

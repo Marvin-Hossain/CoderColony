@@ -4,11 +4,11 @@ import "./Intro.css";
 import Button from "../components/Button"; // Reusable Button component
 import { API_CONFIG } from "../services/config"; // Import API_CONFIG
 
-const Intro = () => {
+const Intro: React.FC = () => {
     const navigate = useNavigate();
     
     // Function to handle GitHub login
-    const handleGithubLogin = () => {
+    const handleGithubLogin = (): void => {
         window.location.href = API_CONFIG.BASE_AUTH_URL + API_CONFIG.ENDPOINTS.AUTH.GITHUB;
     };
     

@@ -2,7 +2,19 @@ import React from 'react';
 import Button from './Button';
 import './PageHeader.css';
 
-const PageHeader = ({ title, subtitle, onBack, rightButton }) => (
+interface PageHeaderProps {
+    title: string;
+    subtitle?: string;
+    onBack: () => void;
+    rightButton?: React.ReactNode;
+}
+
+const PageHeader: React.FC<PageHeaderProps> = ({
+    title,
+    subtitle,
+    onBack,
+    rightButton
+}) => (
     <header className="page-header">
         <Button 
             text="Back" 

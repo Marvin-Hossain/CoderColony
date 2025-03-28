@@ -1,29 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_CONFIG } from '../services/config';
 
-const AuthSuccess = () => {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+interface AuthTestResponse {
+    authenticated: boolean;
+    message?: string;
+}
+
+interface UserResponse {
+    authenticated: boolean;
+    user?: {
+        username: string;
+        id: string;
+        // add other user properties as needed
+    };
+    reason?: string;
+}
+
+const AuthSuccess: React.FC = () => {
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // First try the test endpoint to see raw authentication data
-        const checkAuthStatus = async () => {
+        const checkAuthStatus = async (): Promise<void> => {
             try {
+                // First try the test endpoint
                 const testResponse = await fetch(
                     API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.TEST,
                     { credentials: 'include' }
                 );
-                
+
                 if (!testResponse.ok) {
                     throw new Error(`Test endpoint failed: ${testResponse.status}`);
                 }
+
+                const testData: AuthTestResponse = await testResponse.json();
                 
-                const testData = await testResponse.json();
-                console.log("Raw auth data:", testData);
-                
-                // If authenticated according to test endpoint, try the user endpoint
                 if (testData.authenticated) {
                     const userResponse = await fetch(
                         API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
@@ -34,16 +47,12 @@ const AuthSuccess = () => {
                         throw new Error(`User endpoint failed: ${userResponse.status}`);
                     }
                     
-                    const userData = await userResponse.json();
-                    console.log("User data:", userData);
+                    const userData: UserResponse = await userResponse.json();
                     
-                    if (userData.authenticated) {
-                        // Store user data in localStorage
+                    if (userData.authenticated && userData.user) {
                         localStorage.setItem('user', JSON.stringify(userData.user));
-                        console.log("User authenticated, redirecting to dashboard");
                         navigate('/dashboard');
                     } else {
-                        console.log("Not authenticated according to /api/auth/user");
                         setError(`Authentication succeeded but user data couldn't be retrieved: ${userData.reason || 'unknown reason'}`);
                     }
                 } else {
@@ -51,7 +60,7 @@ const AuthSuccess = () => {
                 }
             } catch (error) {
                 console.error('Error in authentication flow:', error);
-                setError(error.message);
+                setError(error instanceof Error ? error.message : 'Unknown error occurred');
             } finally {
                 setLoading(false);
             }
@@ -65,21 +74,10 @@ const AuthSuccess = () => {
     }
 
     if (error) {
-        return (
-            <div>
-                <h2>Authentication Error</h2>
-                <p>{error}</p>
-                <button onClick={() => navigate('/')}>Return to Home</button>
-            </div>
-        );
+        return <div>Authentication failed: {error}</div>;
     }
 
-    return (
-        <div>
-            <h2>Authentication Successful</h2>
-            <p>Redirecting to dashboard...</p>
-        </div>
-    );
+    return <div>Authentication successful, redirecting...</div>;
 };
 
-export default AuthSuccess; 
+export default AuthSuccess;

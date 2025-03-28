@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./Progress.css";
 import { Line } from "react-chartjs-2";
@@ -28,8 +28,39 @@ ChartJS.register(
   Legend
 );
 
+interface Category {
+  id: string;
+  label: string;
+  goal: number;
+}
+
+interface WeeklyData {
+  chartData: {
+    date: string;
+    count: number;
+  }[];
+}
+
+interface AllTimeStats {
+  total: number;
+  average: number;
+  bestDay: string;
+  applied?: number;
+  interviewed?: number;
+  rejected?: number;
+}
+
+interface StatsSectionProps {
+  title: string;
+  stats: AllTimeStats;
+}
+
+interface StatusBreakdownProps {
+  stats: AllTimeStats;
+}
+
 // Move categories to constants
-const CATEGORIES = [
+const CATEGORIES: Category[] = [
   { id: "jobs", label: "Job Applications", goal: 10 },
   // { id: "behavioral", label: "Behavioral Questions", goal: 10 },
   // { id: "technical", label: "Technical Questions", goal: 10 },
@@ -40,7 +71,7 @@ const CATEGORIES = [
 
 // Move API calls to separate service
 const progressService = {
-  async fetchWeeklyData(category) {
+  async fetchWeeklyData(category: string): Promise<WeeklyData> {
     const response = await fetch(
       API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROGRESS + `/${category}`,
       { credentials: 'include' }
@@ -51,7 +82,7 @@ const progressService = {
     return response.json();
   },
 
-  async fetchAllTimeStats(category) {
+  async fetchAllTimeStats(category: string): Promise<AllTimeStats> {
     const response = await fetch(
       API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROGRESS + `/${category}/all-time`,
       { credentials: 'include' }
@@ -63,16 +94,16 @@ const progressService = {
   }
 };
 
-const Progress = () => {
-  const [selectedCategory, setSelectedCategory] = useState("jobs");
-  const [weeklyData, setWeeklyData] = useState(null);
-  const [allTimeStats, setAllTimeStats] = useState(null);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+const Progress: React.FC = () => {
+  const [selectedCategory, setSelectedCategory] = useState<string>("jobs");
+  const [weeklyData, setWeeklyData] = useState<WeeklyData | null>(null);
+  const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   // Use useCallback for event handlers
-  const handleCategoryChange = useCallback((categoryId) => {
+  const handleCategoryChange = useCallback((categoryId: string): void => {
     setSelectedCategory(categoryId);
   }, []);
 
@@ -97,14 +128,15 @@ const Progress = () => {
     ]
   }), [weeklyData, selectedCategory]);
 
+  const selectedCategoryData = CATEGORIES.find(c => c.id === selectedCategory);
   const chartOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' },
+      legend: { position: 'top' as const },
       title: {
         display: true,
-        text: `Weekly ${CATEGORIES.find(c => c.id === selectedCategory)?.label} Progress`,
+        text: `Weekly ${selectedCategoryData?.label || ''} Progress`,
       },
     },
     scales: {
@@ -117,37 +149,41 @@ const Progress = () => {
       y: {
         beginAtZero: true,
         ticks: { stepSize: 1 },
-        suggestedMax: CATEGORIES.find(c => c.id === selectedCategory)?.goal + 2
+        suggestedMax: (selectedCategoryData?.goal || 0) + 2
       }
     }
-  }), [selectedCategory]);
+  }), [selectedCategory, selectedCategoryData]);
 
   // Fetch data with proper error handling
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const [weeklyResult, statsResult] = await Promise.all([
-        progressService.fetchWeeklyData(selectedCategory),
-        progressService.fetchAllTimeStats(selectedCategory)
-      ]);
-      setWeeklyData(weeklyResult);
-      setAllTimeStats(statsResult);
-    } catch (err) {
-      if (err.message.includes('401') || err.message.includes('403')) {
-        navigate('/');
-        return;
-      }
-      setError('Failed to fetch progress data');
-      console.error('Error fetching progress data:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedCategory, navigate]);
-
   useEffect(() => {
+    const fetchData = async (): Promise<void> => {
+      setIsLoading(true);
+      try {
+        const [weeklyData, statsData] = await Promise.all([
+          progressService.fetchWeeklyData(selectedCategory),
+          progressService.fetchAllTimeStats(selectedCategory)
+        ]);
+
+        setWeeklyData(weeklyData);
+        setAllTimeStats(statsData);
+        setError(null);
+      } catch (err) {
+        // Type guard to check if error is an Error object
+        if (err instanceof Error) {
+          if (err.message.includes('401') || err.message.includes('403')) {
+            navigate('/');
+            return;
+          }
+        }
+        setError('Failed to load progress data');
+        console.error('Error fetching progress data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchData();
-  }, [fetchData]);
+  }, [selectedCategory, navigate]);
 
   // Extract components for better organization
   const renderStats = () => {
@@ -194,7 +230,7 @@ const Progress = () => {
 };
 
 // Extract smaller components
-const StatsSection = React.memo(({ title, stats }) => (
+const StatsSection: React.FC<StatsSectionProps> = React.memo(({ title, stats }) => (
   <div className="stats-section">
     <h3>{title}</h3>
     <div className="stat-item">
@@ -212,7 +248,7 @@ const StatsSection = React.memo(({ title, stats }) => (
   </div>
 ));
 
-const StatusBreakdown = React.memo(({ stats }) => (
+const StatusBreakdown: React.FC<StatusBreakdownProps> = React.memo(({ stats }) => (
   <div className="stats-section">
     <h3>Status Breakdown</h3>
     <div className="stat-item">

@@ -5,20 +5,41 @@ import './InterviewQuestions.css';
 import { API_CONFIG } from '../services/config';
 import PageHeader from './PageHeader';
 
-const InterviewQuestions = ({ type, title }) => {
-    const API_BASE_URL = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS[type.toUpperCase()];
-    const [question, setQuestion] = useState('');
-    const [response, setResponse] = useState('');
-    const [feedback, setFeedback] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [showResetButton, setShowResetButton] = useState(false);
+interface FeedbackData {
+    rating: number;
+    feedback: string;
+}
+
+interface QuestionResponse {
+    question: string;
+}
+
+interface QuestionCounts {
+    date: string;
+    behavioral: number;
+    technical: number;
+    [key: string]: string | number;
+}
+
+interface InterviewQuestionsProps {
+    type: 'behavioral' | 'technical';
+    title: string;
+}
+
+const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) => {
+    const API_BASE_URL = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS[type.toUpperCase() as keyof typeof API_CONFIG.ENDPOINTS];
+    const [question, setQuestion] = useState<string>('');
+    const [response, setResponse] = useState<string>('');
+    const [feedback, setFeedback] = useState<FeedbackData | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [showResetButton, setShowResetButton] = useState<boolean>(false);
     const navigate = useNavigate();
 
     // Initialize count from localStorage when component mounts
     useEffect(() => {
         const today = new Date().toDateString();
-        const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}');
+        const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}') as QuestionCounts;
         
         // Clear counts if they're from a previous day
         if (savedData.date !== today) {
@@ -30,7 +51,7 @@ const InterviewQuestions = ({ type, title }) => {
         }
     }, []);
 
-    const fetchNewQuestion = async () => {
+    const fetchNewQuestion = async (): Promise<void> => {
         setLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/question`, {
@@ -38,7 +59,7 @@ const InterviewQuestions = ({ type, title }) => {
             });
             
             if (response.ok) {
-                const data = await response.json();
+                const data: QuestionResponse = await response.json();
                 setQuestion(data.question);
                 setResponse('');
                 setFeedback(null);
@@ -63,7 +84,7 @@ const InterviewQuestions = ({ type, title }) => {
         }
     };
 
-    const submitResponse = async () => {
+    const submitResponse = async (): Promise<void> => {
         if (!response.trim()) {
             setError('Please provide a response');
             return;
@@ -89,11 +110,8 @@ const InterviewQuestions = ({ type, title }) => {
                 throw new Error('Failed to evaluate response');
             }
 
-            const data = await result.json();
-            setFeedback({
-                rating: data.rating,
-                feedback: data.feedback
-            });
+            const data: FeedbackData = await result.json();
+            setFeedback(data);
         } catch (error) {
             setError('Failed to evaluate response. Please try again.');
         } finally {
@@ -101,12 +119,12 @@ const InterviewQuestions = ({ type, title }) => {
         }
     };
 
-    const handleNext = async () => {
+    const handleNext = async (): Promise<void> => {
         setLoading(true);
         try {
             // Increment the count in localStorage
             const today = new Date().toDateString();
-            const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}');
+            const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}') as QuestionCounts;
             
             localStorage.setItem('questionCounts', JSON.stringify({
                 ...savedData,
@@ -123,7 +141,7 @@ const InterviewQuestions = ({ type, title }) => {
         }
     };
 
-    const handleRetry = async () => {
+    const handleRetry = async (): Promise<void> => {
         setFeedback(null);
         setResponse('');
 
@@ -148,7 +166,7 @@ const InterviewQuestions = ({ type, title }) => {
         }
     };
 
-    const resetQuestions = async () => {
+    const resetQuestions = async (): Promise<void> => {
         setLoading(true);
         try {
             const result = await fetch(`${API_BASE_URL}/reset`, {
@@ -210,7 +228,7 @@ const InterviewQuestions = ({ type, title }) => {
                             <div className="response-section">
                                 <textarea
                                     value={response}
-                                    onChange={(e) => setResponse(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setResponse(e.target.value)}
                                     placeholder="Use the STAR method: Describe the Situation, Task, Action, and Result..."
                                     disabled={loading || question === "No more questions for today! Please reset or come back tomorrow!"}
                                 />
@@ -229,7 +247,7 @@ const InterviewQuestions = ({ type, title }) => {
                                     Score: {feedback.rating}/10
                                     {feedback.rating < 5 && (
                                         <span className="score-warning">
-                                            (Need 5+ to advance)
+                                            (Need at least 5/10 to advance)
                                         </span>
                                     )}
                                 </div>

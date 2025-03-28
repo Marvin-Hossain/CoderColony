@@ -11,8 +11,7 @@ import AuthSuccess from './pages/AuthSuccess';
 import "bootstrap/dist/css/bootstrap.min.css";
 import ProtectedRoute from './components/ProtectedRoute';
 
-function App() {
-    
+const App: React.FC = () => {
     return (
         <Router>
             <Routes>
@@ -29,6 +28,6 @@ function App() {
             </Routes>
         </Router>
     );
-}
+};
 
 export default App;

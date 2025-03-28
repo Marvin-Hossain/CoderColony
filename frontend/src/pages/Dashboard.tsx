@@ -4,20 +4,38 @@ import Button from "../components/Button"; // Reusable Button component
 import { useNavigate } from 'react-router-dom';
 import { API_CONFIG } from '../services/config';
 
-const Dashboard = () => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [jobCount, setJobCount] = useState(0);
-    const [behavioralCount, setBehavioralCount] = useState(0);
-    const [technicalCount, setTechnicalCount] = useState(0);
+interface UserData {
+    authenticated: boolean;
+    username: string;
+    id?: string;
+    email?: string;
+    // add other user properties as needed
+}
+
+interface JobStats {
+    todayCount: number;
+}
+
+interface QuestionCounts {
+    date: string;
+    behavioral: number;
+    technical: number;
+    [key: string]: string | number;
+}
+
+const Dashboard: React.FC = () => {
+    const [user, setUser] = useState<UserData | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [jobCount, setJobCount] = useState<number>(0);
+    const [behavioralCount, setBehavioralCount] = useState<number>(0);
+    const [technicalCount, setTechnicalCount] = useState<number>(0);
     const jobGoal = 10;
     const behavioralGoal = 10;
     const technicalGoal = 10;
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Check if user is authenticated
-        const checkAuth = async () => {
+        const checkAuth = async (): Promise<void> => {
             try {
                 const response = await fetch(
                     API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER, 
@@ -28,7 +46,7 @@ const Dashboard = () => {
                     throw new Error('Not authenticated');
                 }
 
-                const userData = await response.json();
+                const userData: UserData = await response.json();
                 
                 if (!userData.authenticated) {
                     navigate('/');
@@ -47,7 +65,7 @@ const Dashboard = () => {
             }
         };
 
-        const fetchJobStats = async () => {
+        const fetchJobStats = async (): Promise<void> => {
             try {
                 const response = await fetch(
                     API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS_STATS, 
@@ -55,18 +73,17 @@ const Dashboard = () => {
                 );
                 
                 if (response.ok) {
-                    const data = await response.json();
+                    const data: JobStats = await response.json();
                     setJobCount(data.todayCount || 0);
-                    // You can use other stats as needed
                 }
             } catch (error) {
                 console.error('Failed to fetch job stats:', error);
             }
         };
 
-        const updateQuestionCounts = () => {
+        const updateQuestionCounts = (): void => {
             const today = new Date().toDateString();
-            const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}');
+            const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}') as QuestionCounts;
             
             if (savedData.date === today) {
                 setBehavioralCount(savedData.behavioral || 0);
