@@ -134,3 +134,19 @@
 .retry-button:hover {
     background-color: #ec971f;
 }
+
+.low-score {
+    color: #ff4444;
+    background: #ffe5e5;
+}
+
+.score-warning {
+    font-size: 0.9rem;
+    margin-left: 10px;
+    font-style: italic;
+}
+
+.next-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

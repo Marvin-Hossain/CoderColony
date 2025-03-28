@@ -15,6 +15,21 @@ const InterviewQuestions = ({ type, title }) => {
     const [showResetButton, setShowResetButton] = useState(false);
     const navigate = useNavigate();
 
+    // Initialize count from localStorage when component mounts
+    useEffect(() => {
+        const today = new Date().toDateString();
+        const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}');
+        
+        // Clear counts if they're from a previous day
+        if (savedData.date !== today) {
+            localStorage.setItem('questionCounts', JSON.stringify({
+                date: today,
+                behavioral: 0,
+                technical: 0
+            }));
+        }
+    }, []);
+
     const fetchNewQuestion = async () => {
         setLoading(true);
         try {
@@ -89,6 +104,17 @@ const InterviewQuestions = ({ type, title }) => {
     const handleNext = async () => {
         setLoading(true);
         try {
+            // Increment the count in localStorage
+            const today = new Date().toDateString();
+            const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}');
+            
+            localStorage.setItem('questionCounts', JSON.stringify({
+                ...savedData,
+                date: today,
+                [type]: (savedData[type] || 0) + 1
+            }));
+            
+            // Then fetch new question
             await fetchNewQuestion();
         } catch (error) {
             setError('Failed to load next question. Please try again.');
@@ -199,7 +225,14 @@ const InterviewQuestions = ({ type, title }) => {
                         ) : (
                             <div className="feedback-section">
                                 <h3>Feedback:</h3>
-                                <div className="rating">Score: {feedback.rating}/10</div>
+                                <div className={`rating ${feedback.rating < 5 ? 'low-score' : ''}`}>
+                                    Score: {feedback.rating}/10
+                                    {feedback.rating < 5 && (
+                                        <span className="score-warning">
+                                            (Need 5+ to advance)
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="feedback-text">{feedback.feedback}</div>
                                 <div className="button-group">
                                     <button 
@@ -212,7 +245,7 @@ const InterviewQuestions = ({ type, title }) => {
                                     <button 
                                         onClick={handleNext}
                                         className="next-button"
-                                        disabled={loading}
+                                        disabled={loading || feedback.rating < 5}
                                     >
                                         Next Question
                                     </button>

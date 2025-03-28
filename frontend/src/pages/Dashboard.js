@@ -36,12 +36,8 @@ const Dashboard = () => {
                 }
 
                 setUser(userData);
-                
                 fetchJobStats();
-                
-                // Fetch other stats as needed
-                // fetchBehavioralStats();
-                // fetchTechnicalStats();
+                updateQuestionCounts();
                 
             } catch (error) {
                 console.error('Authentication check failed:', error);
@@ -68,7 +64,23 @@ const Dashboard = () => {
             }
         };
 
+        const updateQuestionCounts = () => {
+            const today = new Date().toDateString();
+            const savedData = JSON.parse(localStorage.getItem('questionCounts') || '{}');
+            
+            if (savedData.date === today) {
+                setBehavioralCount(savedData.behavioral || 0);
+                setTechnicalCount(savedData.technical || 0);
+            } else {
+                setBehavioralCount(0);
+                setTechnicalCount(0);
+            }
+        };
+
         checkAuth();
+
+        window.addEventListener('focus', updateQuestionCounts);
+        return () => window.removeEventListener('focus', updateQuestionCounts);
     }, [navigate]);
 
     const handleLogout = async () => {

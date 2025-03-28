@@ -79,7 +79,7 @@ const Progress = () => {
   // Use useMemo for complex calculations
   const chartData = useMemo(() => ({
     labels: weeklyData?.chartData?.map(item => {
-      const date = new Date(item.date);
+      const date = new Date(item.date + 'T00:00:00');
       return date.toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric' 
