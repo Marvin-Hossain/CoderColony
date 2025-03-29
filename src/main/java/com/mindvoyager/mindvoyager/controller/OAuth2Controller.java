@@ -102,7 +102,7 @@ public class OAuth2Controller {
         String githubId = idAttribute.toString();
 
         Optional<User> userOptional = userService.findByGithubId(githubId);
-        if (!userOptional.isPresent()) {
+        if (userOptional.isEmpty()) {
             return Map.of("authenticated", false);
         }
 

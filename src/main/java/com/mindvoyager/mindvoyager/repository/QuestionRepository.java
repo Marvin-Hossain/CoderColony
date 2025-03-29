@@ -28,10 +28,4 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     Question findByQuestionAndUserAndType(String question, User user, QuestionType type);
 
     List<Question> findByUserAndType(User user, QuestionType type);
-
-    long countByUserAndType(User user, QuestionType type);
-
-    List<Question> findByUser(User user);
-
-    long countByUser(User user);
 } 

@@ -42,7 +42,7 @@ public class JobController {
         String githubId = oAuth2User.getAttribute("id").toString();
 
         Optional<User> userOptional = userService.findByGithubId(githubId);
-        if (!userOptional.isPresent()) {
+        if (userOptional.isEmpty()) {
             throw new RuntimeException("User not found");
         }
 

@@ -15,8 +15,6 @@ import java.util.List;
 
 import com.mindvoyager.mindvoyager.model.User;
 
-import java.util.stream.Collectors;
-
 @Service
 public class QuestionService {
 
@@ -137,15 +135,6 @@ public class QuestionService {
         }
     }
 
-    // Helper methods for getting questions by type
-    public List<Question> getBehavioralQuestions(User user) {
-        return repository.findByUserAndType(user, Question.QuestionType.BEHAVIORAL);
-    }
-
-    public List<Question> getTechnicalQuestions(User user) {
-        return repository.findByUserAndType(user, Question.QuestionType.TECHNICAL);
-    }
-
     // Resets a specific question (marks it as unanswered)
     public void resetQuestionDate(String question, User user, QuestionType type) {
         Question questionEntity = repository.findByQuestionAndUserAndType(question, user, type);
@@ -163,13 +152,6 @@ public class QuestionService {
         question.setUser(user);
         question.setType(type);
         return repository.save(question);
-    }
-
-    // Gets all questions of a specific type
-    public List<Question> getAllQuestions(QuestionType type) {
-        return repository.findAll().stream()
-                .filter(q -> q.getType() == type)
-                .collect(Collectors.toList());
     }
 
     // Deletes a question after security checks

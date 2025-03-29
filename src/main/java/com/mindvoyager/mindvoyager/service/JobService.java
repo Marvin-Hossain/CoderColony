@@ -16,11 +16,6 @@ public class JobService {
     @Autowired
     private JobRepository jobRepository;
 
-    // Keep the original getAllJobs method for backward compatibility
-    public List<Job> getAllJobs() {
-        return jobRepository.findAll();
-    }
-
     // Create a new job with user
     public Job createJob(Job job, User user) {
         job.setUser(user);
