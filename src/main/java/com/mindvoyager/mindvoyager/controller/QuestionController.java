@@ -1,7 +1,7 @@
 package com.mindvoyager.mindvoyager.controller;
 
-import com.mindvoyager.mindvoyager.model.BehavioralQuestion;
-import com.mindvoyager.mindvoyager.service.BehavioralQuestionService;
+import com.mindvoyager.mindvoyager.model.Question;
+import com.mindvoyager.mindvoyager.service.QuestionService;
 import com.mindvoyager.mindvoyager.model.User;
 import com.mindvoyager.mindvoyager.service.UserService;
 import org.slf4j.Logger;
@@ -12,28 +12,27 @@ import org.springframework.web.bind.annotation.*;
 import com.mindvoyager.mindvoyager.dto.EvaluateResponseRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+// OAuth2 specific imports
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import java.util.Optional;
-
 
 @RestController
-@RequestMapping("/api/behavioral")
+@RequestMapping("/api/questions")
 @CrossOrigin(origins = "http://localhost:3000")
-public class BehavioralQuestionController {
+public class QuestionController {
+    private static final Logger logger = LoggerFactory.getLogger(QuestionController.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(BehavioralQuestionController.class);
-
-    private final BehavioralQuestionService service;
+    private final QuestionService service;
     private final UserService userService;
 
-    public BehavioralQuestionController(BehavioralQuestionService service, UserService userService) {
+    public QuestionController(QuestionService service, UserService userService) {
         this.service = service;
         this.userService = userService;
     }
 
-    // Helper method to get current user
+    // Helper method to get current user (keep your existing implementation)
     private User getCurrentUser(Authentication authentication) {
         if (!(authentication instanceof OAuth2AuthenticationToken)) {
             throw new RuntimeException("User not authenticated");
@@ -50,13 +49,16 @@ public class BehavioralQuestionController {
         
         return userOptional.get();
     }
-    
 
-    @GetMapping("/question")
-    public ResponseEntity<BehavioralQuestion> getRandomQuestion(Authentication authentication) {
+    @GetMapping("/{type}/question")
+    public ResponseEntity<Question> getRandomQuestion(
+            @PathVariable String type,
+            Authentication authentication) {
+        logger.info("Received request for {} question", type);
         try {
             User currentUser = getCurrentUser(authentication);
-            BehavioralQuestion question = service.getRandomQuestion(currentUser);
+            Question question = service.getRandomQuestion(currentUser, 
+                Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok(question);
         } catch (Exception e) {
             logger.error("Error getting random question: ", e);
@@ -64,8 +66,9 @@ public class BehavioralQuestionController {
         }
     }
 
-    @PostMapping("/evaluate")
-    public ResponseEntity<BehavioralQuestion> evaluateResponse(
+    @PostMapping("/{type}/evaluate")
+    public ResponseEntity<Question> evaluateResponse(
+            @PathVariable String type,
             @RequestBody EvaluateResponseRequest request,
             Authentication authentication) {
         try {
@@ -74,10 +77,11 @@ public class BehavioralQuestionController {
             }
             
             User currentUser = getCurrentUser(authentication);
-            BehavioralQuestion result = service.evaluateResponse(
+            Question result = service.evaluateResponse(
                 request.getQuestion(), 
                 request.getResponse(),
-                currentUser
+                currentUser,
+                Question.QuestionType.valueOf(type.toUpperCase())
             );
             return ResponseEntity.ok(result);
         } catch (Exception e) {
@@ -86,12 +90,14 @@ public class BehavioralQuestionController {
         }
     }
 
-    //check method to match technical (may help grab count)
-    @GetMapping("/count")
-    public ResponseEntity<Map<String, Long>> getTodayCount(Authentication authentication) {
+    @GetMapping("/{type}/count")
+    public ResponseEntity<Map<String, Long>> getTodayCount(
+            @PathVariable String type,
+            Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            long count = service.getTodayCount(currentUser);
+            long count = service.getTodayCount(currentUser, 
+                Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok(Map.of("count", count));
         } catch (Exception e) {
             logger.error("Error getting today's count: {}", e.getMessage());
@@ -99,11 +105,14 @@ public class BehavioralQuestionController {
         }
     }
 
-    @PostMapping("/reset")
-    public ResponseEntity<Void> resetQuestions(Authentication authentication) {
+    @PostMapping("/{type}/reset")
+    public ResponseEntity<Void> resetQuestions(
+            @PathVariable String type,
+            Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            service.resetAllQuestions(currentUser);
+            service.resetAllQuestions(currentUser, 
+                Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error resetting questions: ", e);
@@ -111,14 +120,16 @@ public class BehavioralQuestionController {
         }
     }
 
-    @PostMapping("/reset-date")
+    @PostMapping("/{type}/reset-date")
     public ResponseEntity<Void> resetQuestionDate(
+            @PathVariable String type,
             @RequestBody Map<String, String> request,
             Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
             String question = request.get("question");
-            service.resetQuestionDate(question, currentUser);
+            service.resetQuestionDate(question, currentUser, 
+                Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error resetting question date: ", e);
@@ -126,13 +137,15 @@ public class BehavioralQuestionController {
         }
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<BehavioralQuestion> addQuestion(
-            @RequestBody BehavioralQuestion question,
+    @PostMapping("/{type}/add")
+    public ResponseEntity<Question> addQuestion(
+            @PathVariable String type,
+            @RequestBody Question question,
             Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            BehavioralQuestion savedQuestion = service.addQuestion(question, currentUser);
+            Question savedQuestion = service.addQuestion(question, currentUser, 
+                Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
         } catch (Exception e) {
             logger.error("Error adding question: ", e);
@@ -140,11 +153,14 @@ public class BehavioralQuestionController {
         }
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<BehavioralQuestion>> getAllQuestions(Authentication authentication) {
+    @GetMapping("/{type}/all")
+    public ResponseEntity<List<Question>> getAllQuestions(
+            @PathVariable String type,
+            Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            List<BehavioralQuestion> questions = service.getQuestionsByUser(currentUser);
+            List<Question> questions = service.getQuestionsByUser(currentUser, 
+                Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok(questions);
         } catch (Exception e) {
             logger.error("Error fetching all questions: ", e);
@@ -152,17 +168,18 @@ public class BehavioralQuestionController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{type}/{id}")
     public ResponseEntity<Void> deleteQuestion(
+            @PathVariable String type,
             @PathVariable Long id,
             Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            service.deleteQuestion(id, currentUser);
+            service.deleteQuestion(id, currentUser, Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             logger.error("Error deleting question: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-} 
+}

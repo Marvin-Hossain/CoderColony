@@ -4,17 +4,20 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "behavioral_questions")
-public class BehavioralQuestion {
+@Table(name = "questions")
+public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private QuestionType type;  // BEHAVIORAL, TECHNICAL
+
     @Column(length = 500)
     private String question;
 
-    @Column(name = "created_at")
-    private LocalDate createdAt;
+    @Column(name = "updated_at")
+    private LocalDate updatedAt;
 
     @Column(name = "response_text", length = 2000)
     private String responseText;
@@ -36,8 +39,8 @@ public class BehavioralQuestion {
     public String getQuestion() { return question; }
     public void setQuestion(String question) { this.question = question; }
 
-    public LocalDate getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
+    public LocalDate getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDate updatedAt) { this.updatedAt = updatedAt; }
 
     public String getResponseText() { return responseText; }
     public void setResponseText(String responseText) { this.responseText = responseText; }
@@ -48,16 +51,14 @@ public class BehavioralQuestion {
     public String getFeedback() { return feedback; }
     public void setFeedback(String feedback) { this.feedback = feedback; }
 
-    public User getUser() {
-        return user;
-    }
+    public QuestionType getType() { return type; }
+    public void setType(QuestionType type) { this.type = type; }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    // @PrePersist
-    // protected void onCreate() {
-    //     createdAt = LocalDate.now();
-    // }
+    public enum QuestionType {
+        BEHAVIORAL,
+        TECHNICAL
+    }
 } 

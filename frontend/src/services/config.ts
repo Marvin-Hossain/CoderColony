@@ -25,8 +25,8 @@ export const API_CONFIG: ApiConfig = {
     BASE_AUTH_URL: 'http://localhost:8080',
     ENDPOINTS: {
         JOBS: '/jobs',
-        BEHAVIORAL: '/behavioral',
-        TECHNICAL: '/technical',
+        BEHAVIORAL: '/questions/behavioral',
+        TECHNICAL: '/questions/technical',
         PROGRESS: '/progress',
         AUTH: {
             USER: '/auth/user',
