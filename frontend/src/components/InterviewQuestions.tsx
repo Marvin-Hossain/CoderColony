@@ -38,6 +38,7 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
 
     const fetchNewQuestion = async (): Promise<void> => {
         setLoading(true);
+        console.log('Fetching from:', `${API_BASE_URL}/question`);
         try {
             const response = await fetch(`${API_BASE_URL}/question`, {
                 credentials: 'include'
