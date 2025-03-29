@@ -14,9 +14,9 @@ public class User {
     private String githubId;
 
     private String username;
-    
+
     private String email;
-    
+
     // Add these fields for GitHub integration
     private String avatarUrl;
 
@@ -53,15 +53,15 @@ public class User {
     public String getGithubId() {
         return githubId;
     }
-    
+
     public void setGithubId(String githubId) {
         this.githubId = githubId;
     }
-    
+
     public String getAvatarUrl() {
         return avatarUrl;
     }
-    
+
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
     }

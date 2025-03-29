@@ -34,14 +34,15 @@ public class OpenAIService {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
+
     public String getResponse(String userInput, String aiPrompt) {
         try {
             HttpHeaders headers = createHeaders();
             Map<String, Object> requestBody = createRequestBody(aiPrompt, userInput);
-            
+
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
-            
+
             return processResponse(response.getBody());
         } catch (Exception e) {
             logger.error("Error in OpenAI request: {}", e.getMessage());
@@ -58,20 +59,20 @@ public class OpenAIService {
 
     private Map<String, Object> createRequestBody(String aiPrompt, String userInput) {
         return Map.of(
-            "model", DEFAULT_MODEL,
-            "messages", List.of(
-                Map.of("role", "system", "content", aiPrompt),
-                Map.of("role", "user", "content", userInput)
-            ),
-            "temperature", DEFAULT_TEMPERATURE,
-            "max_tokens", DEFAULT_MAX_TOKENS
+                "model", DEFAULT_MODEL,
+                "messages", List.of(
+                        Map.of("role", "system", "content", aiPrompt),
+                        Map.of("role", "user", "content", userInput)
+                ),
+                "temperature", DEFAULT_TEMPERATURE,
+                "max_tokens", DEFAULT_MAX_TOKENS
         );
     }
 
     private String processResponse(String responseBody) throws Exception {
         JsonNode jsonResponse = objectMapper.readTree(responseBody);
         String content = jsonResponse.path("choices").get(0).path("message").path("content").asText();
-        
+
         try {
             objectMapper.readTree(content);
             return content;
@@ -82,8 +83,8 @@ public class OpenAIService {
 
     private String formatInvalidJsonResponse(String content) throws Exception {
         return String.format(
-            "{\"rating\": 7, \"feedback\": %s}", 
-            objectMapper.writeValueAsString(content)
+                "{\"rating\": 7, \"feedback\": %s}",
+                objectMapper.writeValueAsString(content)
         );
     }
 

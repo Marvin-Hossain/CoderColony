@@ -7,6 +7,7 @@ import com.mindvoyager.mindvoyager.model.Question.QuestionType;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     long countByDateAndUserAndType(LocalDate date, User user, QuestionType type);
 
     @Query(value = "SELECT * FROM questions WHERE (updated_at <> CURRENT_DATE OR updated_at IS NULL) " +
-           "AND user_id = :userId AND type = :type ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
+            "AND user_id = :userId AND type = :type ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
     Question findRandomQuestionForUserAndType(Long userId, String type);
 
     @Modifying
@@ -27,10 +28,10 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     Question findByQuestionAndUserAndType(String question, User user, QuestionType type);
 
     List<Question> findByUserAndType(User user, QuestionType type);
-    
+
     long countByUserAndType(User user, QuestionType type);
 
     List<Question> findByUser(User user);
-    
+
     long countByUser(User user);
 } 

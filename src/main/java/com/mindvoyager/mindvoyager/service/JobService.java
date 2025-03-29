@@ -37,12 +37,12 @@ public class JobService {
     public Job getJobById(Long id, User user) {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found with id: " + id));
-        
+
         // Security check: ensure the job belongs to the requesting user
         if (!job.getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Access denied: Job does not belong to current user");
         }
-        
+
         return job;
     }
 
@@ -68,12 +68,12 @@ public class JobService {
         Job job = getJobById(id, user);
         jobRepository.delete(job);
     }
-    
+
     // Get job count for a specific user
     public long getJobCountByUser(User user) {
         return jobRepository.countByUser(user);
     }
-    
+
     // Get job count by status for a specific user
     public long getJobCountByUserAndStatus(User user, Job.Status status) {
         return jobRepository.countByUserAndStatus(user, status);

@@ -22,30 +22,30 @@ public class JobController {
 
     private final JobService jobService;
     private final UserService userService;
-    
+
     // Constructor injection instead of field injection
     public JobController(JobService jobService, UserService userService) {
         this.jobService = jobService;
         this.userService = userService;
     }
-    
+
     // Helper method to get current user
     private User getCurrentUser(Authentication authentication) {
         if (!(authentication instanceof OAuth2AuthenticationToken)) {
             throw new RuntimeException("User not authenticated");
         }
-        
+
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User oAuth2User = oauthToken.getPrincipal();
-        
+
         // Direct toString() call as in the original code
         String githubId = oAuth2User.getAttribute("id").toString();
-        
+
         Optional<User> userOptional = userService.findByGithubId(githubId);
         if (!userOptional.isPresent()) {
             throw new RuntimeException("User not found");
         }
-        
+
         return userOptional.get();
     }
 
@@ -108,23 +108,24 @@ public class JobController {
         long count = jobService.getTodayCount(currentUser);
         return Map.of("count", count);
     }
+
     // Get job counts by status for dashboard
     @GetMapping("/dashboard-stats")
     public Map<String, Object> getDashboardStats(Authentication authentication) {
         User currentUser = getCurrentUser(authentication);
-        
+
         long totalCount = jobService.getJobCountByUser(currentUser);
         long appliedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.APPLIED);
         long todayCount = jobService.getTodayCount(currentUser);
         long interviewedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.INTERVIEWED);
         long rejectedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.REJECTED);
-        
+
         return Map.of(
-            "totalCount", totalCount,
-            "appliedCount", appliedCount,
-            "todayCount", todayCount,
-            "interviewedCount", interviewedCount,
-            "rejectedCount", rejectedCount
+                "totalCount", totalCount,
+                "appliedCount", appliedCount,
+                "todayCount", todayCount,
+                "interviewedCount", interviewedCount,
+                "rejectedCount", rejectedCount
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.mindvoyager.mindvoyager.model;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 
 @Entity
@@ -33,29 +34,69 @@ public class Question {
     private User user;
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getQuestion() { return question; }
-    public void setQuestion(String question) { this.question = question; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public LocalDate getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDate updatedAt) { this.updatedAt = updatedAt; }
+    public String getQuestion() {
+        return question;
+    }
 
-    public String getResponseText() { return responseText; }
-    public void setResponseText(String responseText) { this.responseText = responseText; }
+    public void setQuestion(String question) {
+        this.question = question;
+    }
 
-    public Integer getRating() { return rating; }
-    public void setRating(Integer rating) { this.rating = rating; }
+    public LocalDate getUpdatedAt() {
+        return updatedAt;
+    }
 
-    public String getFeedback() { return feedback; }
-    public void setFeedback(String feedback) { this.feedback = feedback; }
+    public void setUpdatedAt(LocalDate updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
-    public QuestionType getType() { return type; }
-    public void setType(QuestionType type) { this.type = type; }
+    public String getResponseText() {
+        return responseText;
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public void setResponseText(String responseText) {
+        this.responseText = responseText;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
+    }
+
+    public QuestionType getType() {
+        return type;
+    }
+
+    public void setType(QuestionType type) {
+        this.type = type;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public enum QuestionType {
         BEHAVIORAL,

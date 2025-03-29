@@ -27,19 +27,19 @@ public class SecurityConfig {
                     auth.requestMatchers("/login/oauth2/code/**").permitAll();
                     auth.requestMatchers("/logout").permitAll();
                     auth.requestMatchers("/api/auth/logout").permitAll();
-                    
+
                     // Protected endpoints
                     auth.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2 -> oauth2
-                    .defaultSuccessUrl("http://localhost:3000/dashboard", true)
-                    .failureUrl("http://localhost:3000/?error=true")
+                        .defaultSuccessUrl("http://localhost:3000/dashboard", true)
+                        .failureUrl("http://localhost:3000/?error=true")
                 )
                 .logout(logout -> logout
-                    .logoutSuccessUrl("http://localhost:3000/")
-                    .invalidateHttpSession(true)
-                    .deleteCookies("JSESSIONID")
-                    .permitAll()
+                        .logoutSuccessUrl("http://localhost:3000/")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
                 )
                 .build();
     }
@@ -52,7 +52,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(Arrays.asList("Location"));
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

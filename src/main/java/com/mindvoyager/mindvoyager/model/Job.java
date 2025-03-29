@@ -1,6 +1,7 @@
 package com.mindvoyager.mindvoyager.model;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 
 @Entity

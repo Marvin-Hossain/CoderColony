@@ -18,7 +18,7 @@ import java.util.Optional;
 @RestController
 public class OAuth2Controller {
     private static final Logger logger = LoggerFactory.getLogger(OAuth2Controller.class);
-    
+
     private final UserService userService;
 
     public OAuth2Controller(UserService userService) {
@@ -29,7 +29,7 @@ public class OAuth2Controller {
     public RedirectView loginSuccess(@PathVariable String provider, OAuth2AuthenticationToken authenticationToken) {
         // Get user info from the authentication token
         OAuth2User oAuth2User = authenticationToken.getPrincipal();
-        
+
         // Check for null before calling toString()
         Object idAttribute = oAuth2User.getAttribute("id");
         if (idAttribute == null) {
@@ -37,11 +37,11 @@ public class OAuth2Controller {
             return new RedirectView("/login?error=missing_github_id");
         }
         String githubId = idAttribute.toString();
-        
+
         String login = oAuth2User.getAttribute("login");
         String email = oAuth2User.getAttribute("email");
         String avatarUrl = oAuth2User.getAttribute("avatar_url");
-        
+
         logger.info("User logged in: {}", login);
 
         // Find or create user
@@ -52,22 +52,22 @@ public class OAuth2Controller {
             user = existingUser.get();
             // Update user info if needed
             boolean needsUpdate = false;
-            
+
             if (user.getUsername() == null || !user.getUsername().equals(login)) {
                 user.setUsername(login);
                 needsUpdate = true;
             }
-            
+
             if (email != null && (user.getEmail() == null || !user.getEmail().equals(email))) {
                 user.setEmail(email);
                 needsUpdate = true;
             }
-            
+
             if (avatarUrl != null && (user.getAvatarUrl() == null || !user.getAvatarUrl().equals(avatarUrl))) {
                 user.setAvatarUrl(avatarUrl);
                 needsUpdate = true;
             }
-            
+
             if (needsUpdate) {
                 user = userService.save(user);
             }
@@ -84,35 +84,35 @@ public class OAuth2Controller {
         // Redirect to the dashboard
         return new RedirectView("http://localhost:3000/dashboard");
     }
-    
+
     @GetMapping("/api/auth/user")
     public Map<String, Object> getUser(Authentication authentication) {
         if (authentication == null || !(authentication instanceof OAuth2AuthenticationToken)) {
             return Map.of("authenticated", false);
         }
-        
+
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User oAuth2User = oauthToken.getPrincipal();
-        
+
         // Check for null before calling toString()
         Object idAttribute = oAuth2User.getAttribute("id");
         if (idAttribute == null) {
             return Map.of("authenticated", false);
         }
         String githubId = idAttribute.toString();
-        
+
         Optional<User> userOptional = userService.findByGithubId(githubId);
         if (!userOptional.isPresent()) {
             return Map.of("authenticated", false);
         }
-        
+
         User user = userOptional.get();
         return Map.of(
-            "authenticated", true,
-            "id", user.getId(),
-            "username", user.getUsername(),
-            "email", user.getEmail() != null ? user.getEmail() : "",
-            "avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : ""
+                "authenticated", true,
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail() != null ? user.getEmail() : "",
+                "avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : ""
         );
     }
 }

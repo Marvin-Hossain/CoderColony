@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.mindvoyager.mindvoyager.dto.EvaluateResponseRequest;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,6 +19,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+/**
+ * REST Controller for handling interview questions.
+ * Provides endpoints for both behavioral and technical questions.
+ */
 @RestController
 @RequestMapping("/api/questions")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -27,29 +32,31 @@ public class QuestionController {
     private final QuestionService service;
     private final UserService userService;
 
+    // Constructor injection
     public QuestionController(QuestionService service, UserService userService) {
         this.service = service;
         this.userService = userService;
     }
 
-    // Helper method to get current user (keep your existing implementation)
+    // Gets current user from authentication
     private User getCurrentUser(Authentication authentication) {
         if (!(authentication instanceof OAuth2AuthenticationToken)) {
             throw new RuntimeException("User not authenticated");
         }
-        
+
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User oAuth2User = oauthToken.getPrincipal();
         String githubId = oAuth2User.getAttribute("id").toString();
-        
+
         Optional<User> userOptional = userService.findByGithubId(githubId);
         if (!userOptional.isPresent()) {
             throw new RuntimeException("User not found");
         }
-        
+
         return userOptional.get();
     }
 
+    // Retrieves a random unanswered question for the user
     @GetMapping("/{type}/question")
     public ResponseEntity<Question> getRandomQuestion(
             @PathVariable String type,
@@ -57,8 +64,8 @@ public class QuestionController {
         logger.info("Received request for {} question", type);
         try {
             User currentUser = getCurrentUser(authentication);
-            Question question = service.getRandomQuestion(currentUser, 
-                Question.QuestionType.valueOf(type.toUpperCase()));
+            Question question = service.getRandomQuestion(currentUser,
+                    Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok(question);
         } catch (Exception e) {
             logger.error("Error getting random question: ", e);
@@ -66,6 +73,7 @@ public class QuestionController {
         }
     }
 
+    // Submits user's response for AI evaluation
     @PostMapping("/{type}/evaluate")
     public ResponseEntity<Question> evaluateResponse(
             @PathVariable String type,
@@ -75,13 +83,13 @@ public class QuestionController {
             if (!request.isValid()) {
                 return ResponseEntity.badRequest().build();
             }
-            
+
             User currentUser = getCurrentUser(authentication);
             Question result = service.evaluateResponse(
-                request.getQuestion(), 
-                request.getResponse(),
-                currentUser,
-                Question.QuestionType.valueOf(type.toUpperCase())
+                    request.getQuestion(),
+                    request.getResponse(),
+                    currentUser,
+                    Question.QuestionType.valueOf(type.toUpperCase())
             );
             return ResponseEntity.ok(result);
         } catch (Exception e) {
@@ -90,14 +98,15 @@ public class QuestionController {
         }
     }
 
+    // Gets count of successfully answered questions for today
     @GetMapping("/{type}/count")
     public ResponseEntity<Map<String, Long>> getTodayCount(
             @PathVariable String type,
             Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            long count = service.getTodayCount(currentUser, 
-                Question.QuestionType.valueOf(type.toUpperCase()));
+            long count = service.getTodayCount(currentUser,
+                    Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok(Map.of("count", count));
         } catch (Exception e) {
             logger.error("Error getting today's count: {}", e.getMessage());
@@ -105,14 +114,15 @@ public class QuestionController {
         }
     }
 
+    // Resets all questions of specific type for user (marks them as unanswered)
     @PostMapping("/{type}/reset")
     public ResponseEntity<Void> resetQuestions(
             @PathVariable String type,
             Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            service.resetAllQuestions(currentUser, 
-                Question.QuestionType.valueOf(type.toUpperCase()));
+            service.resetAllQuestions(currentUser,
+                    Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error resetting questions: ", e);
@@ -120,6 +130,7 @@ public class QuestionController {
         }
     }
 
+    // Resets a specific question (marks it as unanswered)
     @PostMapping("/{type}/reset-date")
     public ResponseEntity<Void> resetQuestionDate(
             @PathVariable String type,
@@ -128,8 +139,8 @@ public class QuestionController {
         try {
             User currentUser = getCurrentUser(authentication);
             String question = request.get("question");
-            service.resetQuestionDate(question, currentUser, 
-                Question.QuestionType.valueOf(type.toUpperCase()));
+            service.resetQuestionDate(question, currentUser,
+                    Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error resetting question date: ", e);
@@ -137,6 +148,7 @@ public class QuestionController {
         }
     }
 
+    // Adds a new question for the user
     @PostMapping("/{type}/add")
     public ResponseEntity<Question> addQuestion(
             @PathVariable String type,
@@ -144,8 +156,8 @@ public class QuestionController {
             Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            Question savedQuestion = service.addQuestion(question, currentUser, 
-                Question.QuestionType.valueOf(type.toUpperCase()));
+            Question savedQuestion = service.addQuestion(question, currentUser,
+                    Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.status(HttpStatus.CREATED).body(savedQuestion);
         } catch (Exception e) {
             logger.error("Error adding question: ", e);
@@ -153,14 +165,15 @@ public class QuestionController {
         }
     }
 
+    // Gets all questions of a specific type
     @GetMapping("/{type}/all")
     public ResponseEntity<List<Question>> getAllQuestions(
             @PathVariable String type,
             Authentication authentication) {
         try {
             User currentUser = getCurrentUser(authentication);
-            List<Question> questions = service.getQuestionsByUser(currentUser, 
-                Question.QuestionType.valueOf(type.toUpperCase()));
+            List<Question> questions = service.getQuestionsByUser(currentUser,
+                    Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok(questions);
         } catch (Exception e) {
             logger.error("Error fetching all questions: ", e);
@@ -168,6 +181,7 @@ public class QuestionController {
         }
     }
 
+    // Deletes a question after security checks
     @DeleteMapping("/{type}/{id}")
     public ResponseEntity<Void> deleteQuestion(
             @PathVariable String type,
