@@ -24,9 +24,10 @@ public class JobController {
     public JobController(JobService jobService, UserService userService) {
         this.jobService = jobService;
         this.userService = userService;
+
     }
 
-    // Create a new job
+    // CRUD Endpoints
     @PostMapping
     public ResponseEntity<Job> createJob(@RequestBody Job job, Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
@@ -34,7 +35,6 @@ public class JobController {
         return new ResponseEntity<>(createdJob, HttpStatus.CREATED);
     }
 
-    // Get all jobs for current user
     @GetMapping
     public List<Job> getAllJobs(Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
@@ -71,38 +71,29 @@ public class JobController {
         return ResponseEntity.ok("Job deleted successfully!");
     }
 
-    // Get job count for current user
+    // Stats Endpoints
     @GetMapping("/count")
     public Map<String, Long> getJobCount(Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
-        long count = jobService.getJobCountByUser(currentUser);
-        return Map.of("count", count);
+        return Map.of("count", jobService.getJobCountByUser(currentUser));
     }
 
     @GetMapping("/today-count")
     public Map<String, Long> getTodayCount(Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
-        long count = jobService.getTodayCount(currentUser);
-        return Map.of("count", count);
+        return Map.of("count", jobService.getTodayCount(currentUser));
     }
 
-    // Get job counts by status for dashboard
+    // Dashboard stats with status breakdown
     @GetMapping("/dashboard-stats")
     public Map<String, Object> getDashboardStats(Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
-
-        long totalCount = jobService.getJobCountByUser(currentUser);
-        long appliedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.APPLIED);
-        long todayCount = jobService.getTodayCount(currentUser);
-        long interviewedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.INTERVIEWED);
-        long rejectedCount = jobService.getJobCountByUserAndStatus(currentUser, Job.Status.REJECTED);
-
         return Map.of(
-                "totalCount", totalCount,
-                "appliedCount", appliedCount,
-                "todayCount", todayCount,
-                "interviewedCount", interviewedCount,
-                "rejectedCount", rejectedCount
+            "totalCount", jobService.getJobCountByUser(currentUser),
+            "appliedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.APPLIED),
+            "todayCount", jobService.getTodayCount(currentUser),
+            "interviewedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.INTERVIEWED),
+            "rejectedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.REJECTED)
         );
     }
 }

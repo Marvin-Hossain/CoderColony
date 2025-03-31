@@ -10,8 +10,14 @@ import com.mindvoyager.mindvoyager.service.UserService;
 import java.util.Objects;
 
 public final class AuthenticationUtils {
-    private AuthenticationUtils() {} // Prevent instantiation
+    // Utility class - no instances needed
+    private AuthenticationUtils() {}
 
+    // Gets the current User from OAuth2 authentication
+    // Throws RuntimeException if:
+    // - Not authenticated via OAuth2
+    // - GitHub ID not found
+    // - User not in our database
     public static User getCurrentUser(Authentication authentication, UserService userService) {
         if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
             throw new RuntimeException("User not authenticated");

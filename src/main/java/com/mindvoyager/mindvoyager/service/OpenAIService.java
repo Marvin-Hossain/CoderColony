@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
 public class OpenAIService {
+    // Default GPT-4 settings
     private static final String DEFAULT_MODEL = "gpt-4";
     private static final double DEFAULT_TEMPERATURE = 0.7;
     private static final int DEFAULT_MAX_TOKENS = 1000;
@@ -35,11 +36,12 @@ public class OpenAIService {
         this.objectMapper = objectMapper;
     }
 
+    // Main method to get AI response
     public String getResponse(String userInput, String aiPrompt) {
         try {
             HttpHeaders headers = createHeaders();
             Map<String, Object> requestBody = createRequestBody(aiPrompt, userInput);
-
+            
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
 
@@ -50,6 +52,7 @@ public class OpenAIService {
         }
     }
 
+    // Helper methods for OpenAI API interaction
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -88,6 +91,7 @@ public class OpenAIService {
         );
     }
 
+    // Fallback response if something goes wrong
     private String createErrorResponse() {
         return "{\"rating\": 5, \"feedback\": \"I apologize, but I'm having trouble processing your request right now.\"}";
     }

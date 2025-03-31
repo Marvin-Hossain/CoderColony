@@ -40,15 +40,12 @@ public class QuestionService {
         this.zoneId = zoneId;
     }
 
-    // Gets a random unanswered question for the user
+    // Get an unanswered question randomly
     public Question getRandomQuestion(User user, QuestionType type) {
         try {
             Question question = repository.findRandomQuestionForUserAndType(user.getId(), type.toString());
             if (question == null) {
-                // Return a special Question indicating no more questions
-                Question noMoreQuestions = new Question();
-                noMoreQuestions.setQuestion("No more questions for today! Please reset or come back tomorrow!");
-                return noMoreQuestions;
+                return createNoMoreQuestionsResponse();
             }
             return question;
         } catch (Exception e) {
@@ -95,13 +92,15 @@ public class QuestionService {
                       "feedback": "<Start with strengths, then areas for improvement, and end with actionable tips.>"
                     }""";
 
-    // Sends response to OpenAI for evaluation and updates question with feedback
+    // Send response to GPT-4 for evaluation
     public Question evaluateResponse(String question, String response, User user, QuestionType type) {
         try {
             Question questionEntity = repository.findByQuestionAndUserAndType(question, user, type);
             if (questionEntity == null) {
                 throw new ResourceNotFoundException("Question", "text", question);
             }
+
+            // Use different prompts for behavioral vs technical
             String prompt = type == Question.QuestionType.BEHAVIORAL ?
                     BEHAVIORAL_EVALUATION_PROMPT_TEMPLATE :
                     TECHNICAL_EVALUATION_PROMPT_TEMPLATE;
@@ -112,26 +111,20 @@ public class QuestionService {
 
             updateQuestion(questionEntity, response, jsonResponse);
             return repository.save(questionEntity);
-        } catch (ResourceNotFoundException e) {
-            throw e; // Re-throw ResourceNotFoundException as is
         } catch (Exception e) {
             logger.error("Error evaluating response", e);
             throw new InvalidRequestException("Failed to evaluate response: " + e.getMessage());
         }
     }
 
-    // Updates question with response and AI feedback
+    // Mark question as completed if rating > 5
     private void updateQuestion(Question question, String response, JsonNode evaluation) {
         question.setResponseText(response);
         int rating = evaluation.get("rating").asInt();
-        question.setRating(evaluation.get("rating").asInt());
+        question.setRating(rating);
         question.setFeedback(evaluation.get("feedback").asText());
-        // Mark as completed if rating > 5
-        if (rating > 5) {
-            question.setUpdatedAt(LocalDate.now(zoneId));
-        } else {
-            question.setUpdatedAt(null); // Reset date if rating is too low
-        }
+        
+        question.setUpdatedAt(rating > 5 ? LocalDate.now(zoneId) : null);
     }
 
     // Gets count of successfully answered questions for today
@@ -195,5 +188,11 @@ public class QuestionService {
             throw new ResourceNotFoundException("No questions found for user and type");
         }
         return questions;
+    }
+
+    private Question createNoMoreQuestionsResponse() {
+        Question noMoreQuestions = new Question();
+        noMoreQuestions.setQuestion("No more questions for today! Please reset or come back tomorrow!");
+        return noMoreQuestions;
     }
 } 

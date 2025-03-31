@@ -19,6 +19,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // Main security setup:
+        // - Enables CORS
+        // - Disables CSRF (needed for our REST API)
+        // - Public endpoints: auth routes
+        // - Everything else requires authentication
+        // - OAuth2 login redirects to dashboard
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -48,6 +54,8 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        // CORS setup for frontend (localhost:3000)
+        // Allows credentials and standard HTTP methods
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

@@ -17,35 +17,29 @@ public class User {
 
     private String email;
 
-    // Add these fields for GitHub integration
     private String avatarUrl;
 
-    // Getter for ID
+    // Getters and Setters
     public Long getId() {
         return id;
     }
 
-    // Setter for ID
     public void setId(Long id) {
         this.id = id;
     }
 
-    // Getter for Username
     public String getUsername() {
         return username;
     }
 
-    // Setter for Username
     public void setUsername(String username) {
         this.username = username;
     }
 
-    // Getter for Email
     public String getEmail() {
         return email;
     }
 
-    // Setter for Email
     public void setEmail(String email) {
         this.email = email;
     }

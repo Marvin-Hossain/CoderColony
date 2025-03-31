@@ -92,8 +92,7 @@ public class QuestionController {
             @RequestBody Map<String, String> request,
             Authentication authentication) {
             User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
-            String question = request.get("question");
-            service.resetQuestionDate(question, currentUser,
+            service.resetQuestionDate(request.get("question"), currentUser,
                     Question.QuestionType.valueOf(type.toUpperCase()));
             return ResponseEntity.ok().build();
     }

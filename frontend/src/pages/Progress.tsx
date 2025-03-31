@@ -162,7 +162,6 @@ const Progress: React.FC = () => {
         setAllTimeStats(statsData);
         setError(null);
       } catch (err) {
-        // Type guard to check if error is an Error object
         if (err instanceof Error) {
           if (err.message.includes('401') || err.message.includes('403')) {
             navigate('/');
@@ -177,7 +176,7 @@ const Progress: React.FC = () => {
     };
 
     fetchData();
-  }, [selectedCategory, navigate]);
+  }, [navigate, selectedCategory]);
 
   // Extract components for better organization
   const renderStats = () => {

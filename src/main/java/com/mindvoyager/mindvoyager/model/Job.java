@@ -15,8 +15,8 @@ public class Job {
     private String company;
     private String location;
 
-    @Enumerated(EnumType.STRING) // Enum to enforce specific status values
-    private Status status;
+    @Enumerated(EnumType.STRING)
+    private Status status; // APPLIED, REJECTED, INTERVIEWED
 
     @Column(name = "created_at")
     private LocalDate createdAt;

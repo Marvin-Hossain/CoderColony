@@ -21,14 +21,17 @@ import org.springframework.lang.NonNull;
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     
+    // Logger for unexpected errors
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // Custom exceptions as static nested classes
+    // Custom exceptions
     public static class ResourceNotFoundException extends RuntimeException {
+        // Generic "not found" message
         public ResourceNotFoundException(String message) {
             super(message);
         }
         
+        // Formatted message like "User not found with id: '123'"
         public ResourceNotFoundException(String resourceName, String fieldName, Object fieldValue) {
             super(String.format("%s not found with %s: '%s'", resourceName, fieldName, fieldValue));
         }
@@ -46,7 +49,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
     }
 
-    // Exception handlers
+    // Handles 401 Unauthorized
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -58,6 +61,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
 
+    // Handles 404 Not Found
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Object> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -80,6 +84,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    // Catches validation errors and returns field-specific messages
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             @NonNull MethodArgumentNotValidException ex,
@@ -104,6 +109,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             headers, HttpStatus.BAD_REQUEST, request);
     }
 
+    // Fallback handler for any unhandled exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllUncaughtException(Exception ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(

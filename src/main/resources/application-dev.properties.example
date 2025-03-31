@@ -1,0 +1,25 @@
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/mindvoyager
+spring.datasource.username=your_db_username
+spring.datasource.password=your_db_password
+
+# Hibernate Settings
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# OpenAI Configuration
+openai.api.key=your_openai_api_key
+
+# GitHub OAuth2 Configuration
+spring.security.oauth2.client.registration.github.client-id=your_github_client_id
+spring.security.oauth2.client.registration.github.client-secret=your_github_client_secret
+spring.security.oauth2.client.registration.github.redirect-uri=http://localhost:8080/login/oauth2/code/github
+spring.security.oauth2.client.registration.github.scope=user:email,read:user
+
+# Server Configuration
+server.port=8080
+
+# Development Debugging
+debug=true
+logging.level.org.springframework.security=TRACE 
