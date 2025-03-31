@@ -11,7 +11,8 @@ import java.util.Objects;
 
 public final class AuthenticationUtils {
     // Utility class - no instances needed
-    private AuthenticationUtils() {}
+    private AuthenticationUtils() {
+    }
 
     // Gets the current User from OAuth2 authentication
     // Throws RuntimeException if:
@@ -27,6 +28,6 @@ public final class AuthenticationUtils {
         String githubId = Objects.requireNonNull(oAuth2User.getAttribute("id")).toString();
 
         return userService.findByGithubId(githubId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import com.mindvoyager.mindvoyager.utils.AuthenticationUtils;
 import com.mindvoyager.mindvoyager.service.JobService;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Map;
@@ -32,12 +33,12 @@ public class ProgressController {
             @PathVariable String category,
             Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
-        
+
         if (category.equals("jobs")) {
             LocalDate today = LocalDate.now(zoneId);
             return ResponseEntity.ok(jobService.getWeeklyJobStats(currentUser, today.minusDays(6), today));
         }
-        
+
         return ResponseEntity.ok(new HashMap<>()); // Ready for future categories
     }
 
@@ -47,11 +48,11 @@ public class ProgressController {
             @PathVariable String category,
             Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
-        
+
         if (category.equals("jobs")) {
             return ResponseEntity.ok(jobService.getAllTimeJobStats(currentUser));
         }
-        
+
         return ResponseEntity.ok(new HashMap<>()); // Ready for future categories
     }
 }

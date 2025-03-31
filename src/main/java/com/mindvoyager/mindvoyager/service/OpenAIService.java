@@ -41,7 +41,7 @@ public class OpenAIService {
         try {
             HttpHeaders headers = createHeaders();
             Map<String, Object> requestBody = createRequestBody(aiPrompt, userInput);
-            
+
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
 

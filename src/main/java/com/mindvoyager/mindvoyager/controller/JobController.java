@@ -89,11 +89,11 @@ public class JobController {
     public Map<String, Object> getDashboardStats(Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
         return Map.of(
-            "totalCount", jobService.getJobCountByUser(currentUser),
-            "appliedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.APPLIED),
-            "todayCount", jobService.getTodayCount(currentUser),
-            "interviewedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.INTERVIEWED),
-            "rejectedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.REJECTED)
+                "totalCount", jobService.getJobCountByUser(currentUser),
+                "appliedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.APPLIED),
+                "todayCount", jobService.getTodayCount(currentUser),
+                "interviewedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.INTERVIEWED),
+                "rejectedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.REJECTED)
         );
     }
 }

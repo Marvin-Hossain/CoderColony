@@ -25,9 +25,9 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     // Get daily job counts within a date range
     @Query("SELECT j.createdAt as date, COUNT(j) as count FROM Job j " +
-           "WHERE j.user = :user AND j.createdAt BETWEEN :startDate AND :endDate " +
-           "GROUP BY j.createdAt " +
-           "ORDER BY j.createdAt")
+            "WHERE j.user = :user AND j.createdAt BETWEEN :startDate AND :endDate " +
+            "GROUP BY j.createdAt " +
+            "ORDER BY j.createdAt")
     List<Object[]> getJobCountsByDateRange(User user, LocalDate startDate, LocalDate endDate);
 
     // Get count of jobs by status
@@ -36,9 +36,9 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     // Get highest number of jobs submitted in a single day
     @Query("SELECT MAX(cnt) FROM " +
-           "(SELECT COUNT(j) as cnt FROM Job j " +
-           "WHERE j.user = :user " +
-           "GROUP BY j.createdAt)")
+            "(SELECT COUNT(j) as cnt FROM Job j " +
+            "WHERE j.user = :user " +
+            "GROUP BY j.createdAt)")
     Integer findBestDayCount(User user);
 
     // Get count of distinct days with job submissions

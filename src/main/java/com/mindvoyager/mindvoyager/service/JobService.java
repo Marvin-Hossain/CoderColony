@@ -37,7 +37,7 @@ public class JobService {
 
     public Job getJobById(Long id, User user) {
         Job job = jobRepository.findById(id)
-            .orElseThrow(() -> new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id));
+                .orElseThrow(() -> new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id));
         // 404 if job doesn't belong to user (security through obscurity)
         if (!job.getUser().getId().equals(user.getId())) {
             throw new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id);
@@ -90,58 +90,58 @@ public class JobService {
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             dateCountMap.put(date, 0L);
         }
-        
+
         // Fill in actual counts and transform for frontend chart
         jobRepository.getJobCountsByDateRange(user, startDate, endDate)
-            .forEach(count -> dateCountMap.put((LocalDate) count[0], ((Number) count[1]).longValue()));
-        
+                .forEach(count -> dateCountMap.put((LocalDate) count[0], ((Number) count[1]).longValue()));
+
         List<Map<String, Object>> chartData = dateCountMap.entrySet().stream()
-            .sorted(Map.Entry.comparingByKey())
-            .map(entry -> {
-                Map<String, Object> point = new HashMap<>();
-                point.put("date", entry.getKey().toString());
-                point.put("count", entry.getValue());
-                return point;
-            })
-            .collect(Collectors.toList());
-        
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    Map<String, Object> point = new HashMap<>();
+                    point.put("date", entry.getKey().toString());
+                    point.put("count", entry.getValue());
+                    return point;
+                })
+                .collect(Collectors.toList());
+
         // Get all status counts in one query
         Map<Job.Status, Long> statusCounts = jobRepository.getStatusCounts(user).stream()
-            .collect(Collectors.toMap(
-                arr -> (Job.Status) arr[0],
-                arr -> ((Number) arr[1]).longValue()
-            ));
-        
+                .collect(Collectors.toMap(
+                        arr -> (Job.Status) arr[0],
+                        arr -> ((Number) arr[1]).longValue()
+                ));
+
         // Build response with all stats
         return Map.of(
-            "chartData", chartData,
-            "total", getJobCountByUser(user),
-            "todayCount", getTodayCount(user),
-            "applied", statusCounts.getOrDefault(Job.Status.APPLIED, 0L),
-            "interviewed", statusCounts.getOrDefault(Job.Status.INTERVIEWED, 0L),
-            "rejected", statusCounts.getOrDefault(Job.Status.REJECTED, 0L)
+                "chartData", chartData,
+                "total", getJobCountByUser(user),
+                "todayCount", getTodayCount(user),
+                "applied", statusCounts.getOrDefault(Job.Status.APPLIED, 0L),
+                "interviewed", statusCounts.getOrDefault(Job.Status.INTERVIEWED, 0L),
+                "rejected", statusCounts.getOrDefault(Job.Status.REJECTED, 0L)
         );
     }
 
     public Map<String, Object> getAllTimeJobStats(User user) {
         long total = jobRepository.countByUser(user);
         long distinctDates = jobRepository.countDistinctDates(user);
-        
+
         // Calculate daily average, handle division by zero
         double average = distinctDates > 0 ? (double) total / distinctDates : 0.0;
-        
+
         // Get best day count (defaults to 0 if null)
-        int bestDay = jobRepository.findBestDayCount(user) != null ? 
-                     jobRepository.findBestDayCount(user) : 0;
-        
+        int bestDay = jobRepository.findBestDayCount(user) != null ?
+                jobRepository.findBestDayCount(user) : 0;
+
         // Get status breakdown
         return Map.of(
-            "total", total,
-            "average", String.format("%.1f", average),
-            "bestDay", bestDay,
-            "applied", jobRepository.countByUserAndStatus(user, Job.Status.APPLIED),
-            "interviewed", jobRepository.countByUserAndStatus(user, Job.Status.INTERVIEWED),
-            "rejected", jobRepository.countByUserAndStatus(user, Job.Status.REJECTED)
+                "total", total,
+                "average", String.format("%.1f", average),
+                "bestDay", bestDay,
+                "applied", jobRepository.countByUserAndStatus(user, Job.Status.APPLIED),
+                "interviewed", jobRepository.countByUserAndStatus(user, Job.Status.INTERVIEWED),
+                "rejected", jobRepository.countByUserAndStatus(user, Job.Status.REJECTED)
         );
     }
 }

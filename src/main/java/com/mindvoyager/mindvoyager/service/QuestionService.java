@@ -123,7 +123,7 @@ public class QuestionService {
         int rating = evaluation.get("rating").asInt();
         question.setRating(rating);
         question.setFeedback(evaluation.get("feedback").asText());
-        
+
         question.setUpdatedAt(rating > 5 ? LocalDate.now(zoneId) : null);
     }
 

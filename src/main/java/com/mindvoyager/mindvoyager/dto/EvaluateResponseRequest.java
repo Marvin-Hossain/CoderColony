@@ -23,7 +23,7 @@ public class EvaluateResponseRequest {
 
     // Basic validation - checks if both fields are non-empty
     public boolean isValid() {
-        return question != null && !question.trim().isEmpty() 
-            && response != null && !response.trim().isEmpty();
+        return question != null && !question.trim().isEmpty()
+                && response != null && !response.trim().isEmpty();
     }
 }
