@@ -3,7 +3,6 @@ package com.mindvoyager.mindvoyager.service;
 import com.mindvoyager.mindvoyager.model.Progress;
 import com.mindvoyager.mindvoyager.model.Job;
 import com.mindvoyager.mindvoyager.repository.ProgressRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,14 +21,18 @@ import com.mindvoyager.mindvoyager.model.User;
 public class ProgressService {
     private static final Logger logger = LoggerFactory.getLogger(ProgressService.class);
 
-    @Autowired
-    private ProgressRepository progressRepository;
+    private final ProgressRepository progressRepository;
+    private final JobService jobService;
+    private final ZoneId zoneId;
 
-    @Autowired
-    private JobService jobService;
+    public ProgressService(ProgressRepository progressRepository, JobService jobService, ZoneId zoneId) {
+        this.progressRepository = progressRepository;
+        this.jobService = jobService;
+        this.zoneId = zoneId;
+    }
 
     public Map<String, Object> getWeeklyProgress(String category, User user) {
-        LocalDate today = LocalDate.now(ZoneId.of("America/Chicago"));
+        LocalDate today = LocalDate.now(zoneId);
         LocalDate startDate = today.minusDays(6);
         Map<String, Object> result = new HashMap<>();
 

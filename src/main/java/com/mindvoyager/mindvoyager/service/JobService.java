@@ -3,8 +3,8 @@ package com.mindvoyager.mindvoyager.service;
 import com.mindvoyager.mindvoyager.model.Job;
 import com.mindvoyager.mindvoyager.model.User;
 import com.mindvoyager.mindvoyager.repository.JobRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.mindvoyager.mindvoyager.exception.GlobalExceptionHandler;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -13,13 +13,18 @@ import java.util.List;
 @Service
 public class JobService {
 
-    @Autowired
-    private JobRepository jobRepository;
+    private final JobRepository jobRepository;
+    private final ZoneId zoneId;
+
+    public JobService(JobRepository jobRepository, ZoneId zoneId) {
+        this.jobRepository = jobRepository;
+        this.zoneId = zoneId;
+    }
 
     // Create a new job with user
     public Job createJob(Job job, User user) {
         job.setUser(user);
-        job.setCreatedAt(LocalDate.now(ZoneId.of("America/Chicago")));
+        job.setCreatedAt(LocalDate.now(zoneId));
         return jobRepository.save(job);
     }
 
@@ -31,11 +36,11 @@ public class JobService {
     // Get job by id (with security check)
     public Job getJobById(Long id, User user) {
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found with id: " + id));
+            .orElseThrow(() -> new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id));
 
         // Security check: ensure the job belongs to the requesting user
         if (!job.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied: Job does not belong to current user");
+            throw new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id);
         }
 
         return job;
@@ -74,7 +79,8 @@ public class JobService {
         return jobRepository.countByUserAndStatus(user, status);
     }
 
+    // Get job count for today
     public long getTodayCount(User user) {
-        return jobRepository.countByCreatedAtAndUser(LocalDate.now(), user);
+        return jobRepository.countByCreatedAtAndUser(LocalDate.now(zoneId), user);
     }
 }

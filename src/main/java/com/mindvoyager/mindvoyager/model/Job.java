@@ -25,11 +25,6 @@ public class Job {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDate.now();
-    }
-
     // Getters and Setters
     public Long getId() {
         return id;

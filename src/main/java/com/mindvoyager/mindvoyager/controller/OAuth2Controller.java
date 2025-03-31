@@ -8,7 +8,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -25,8 +24,8 @@ public class OAuth2Controller {
         this.userService = userService;
     }
 
-    @GetMapping("/login/oauth2/code/{provider}")
-    public RedirectView loginSuccess(@PathVariable String provider, OAuth2AuthenticationToken authenticationToken) {
+    @GetMapping("/login/oauth2/code/**")
+    public RedirectView loginSuccess(OAuth2AuthenticationToken authenticationToken) {
         // Get user info from the authentication token
         OAuth2User oAuth2User = authenticationToken.getPrincipal();
 
@@ -69,7 +68,7 @@ public class OAuth2Controller {
             }
 
             if (needsUpdate) {
-                user = userService.save(user);
+                userService.save(user);
             }
         } else {
             // Create new user
@@ -78,7 +77,7 @@ public class OAuth2Controller {
             user.setUsername(login);
             user.setEmail(email);
             user.setAvatarUrl(avatarUrl);
-            user = userService.save(user);
+            userService.save(user);
         }
 
         // Redirect to the dashboard
@@ -87,11 +86,10 @@ public class OAuth2Controller {
 
     @GetMapping("/api/auth/user")
     public Map<String, Object> getUser(Authentication authentication) {
-        if (authentication == null || !(authentication instanceof OAuth2AuthenticationToken)) {
+        if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
             return Map.of("authenticated", false);
         }
 
-        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User oAuth2User = oauthToken.getPrincipal();
 
         // Check for null before calling toString()

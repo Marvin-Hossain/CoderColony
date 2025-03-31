@@ -3,6 +3,9 @@ package com.mindvoyager.mindvoyager.service;
 import com.mindvoyager.mindvoyager.model.Question;
 import com.mindvoyager.mindvoyager.repository.QuestionRepository;
 import com.mindvoyager.mindvoyager.model.Question.QuestionType;
+import com.mindvoyager.mindvoyager.exception.GlobalExceptionHandler.ResourceNotFoundException;
+import com.mindvoyager.mindvoyager.exception.GlobalExceptionHandler.AuthenticationException;
+import com.mindvoyager.mindvoyager.exception.GlobalExceptionHandler.InvalidRequestException;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.time.ZoneId;
 
 import com.mindvoyager.mindvoyager.model.User;
 
@@ -23,14 +27,17 @@ public class QuestionService {
     private final QuestionRepository repository;
     private final OpenAIService openAIService;
     private final ObjectMapper objectMapper;
+    private final ZoneId zoneId;
 
     // Constructor injection
     public QuestionService(
             QuestionRepository repository,
-            OpenAIService openAIService) {
+            OpenAIService openAIService,
+            ZoneId zoneId) {
         this.repository = repository;
         this.openAIService = openAIService;
         this.objectMapper = new ObjectMapper();
+        this.zoneId = zoneId;
     }
 
     // Gets a random unanswered question for the user
@@ -46,48 +53,54 @@ public class QuestionService {
             return question;
         } catch (Exception e) {
             logger.error("Error getting random question: ", e);
-            throw new RuntimeException("Failed to get random question", e);
+            throw new InvalidRequestException("Failed to get random question: " + e.getMessage());
         }
     }
 
     private static final String TECHNICAL_EVALUATION_PROMPT_TEMPLATE =
-            "You are an experienced technical interview coach specializing in technical questions. " +
-                    "Evaluate responses based on:\n" +
-                    "1. Technical accuracy and understanding\n" +
-                    "2. Problem-solving approach\n" +
-                    "3. Code quality and best practices (if code is involved)\n" +
-                    "4. Communication of technical concepts\n\n" +
-                    "Question: '%s'\n" +
-                    "Response: '%s'\n\n" +
-                    "Provide feedback in this JSON format:\n" +
-                    "{\n" +
-                    "  \"rating\": <number 1-10>,\n" +
-                    "  \"feedback\": \"<Start with technical strengths, then areas for improvement, and end with actionable tips.>\"\n" +
-                    "}";
+            """
+                    You are an experienced technical interview coach specializing in technical questions. \
+                    Evaluate responses based on:
+                    1. Technical accuracy and understanding
+                    2. Problem-solving approach
+                    3. Code quality and best practices (if code is involved)
+                    4. Communication of technical concepts
+                    
+                    Question: '%s'
+                    Response: '%s'
+                    
+                    Provide feedback in this JSON format:
+                    {
+                      "rating": <number 1-10>,
+                      "feedback": "<Start with technical strengths, then areas for improvement, and end with actionable tips.>"
+                    }""";
 
     private static final String BEHAVIORAL_EVALUATION_PROMPT_TEMPLATE =
-            "           You are an experienced technical interview coach specializing in behavioral questions. " +
-                    "Evaluate responses using the STAR method (Situation, Task, Action, Result). " +
-                    "Be constructive but firm in your feedback. " +
-                    "For each response, analyze:\n" +
-                    "1. Structure and completeness\n" +
-                    "2. Specific examples and details\n" +
-                    "3. Professional impact and results\n" +
-                    "4. Communication clarity\n\n" +
-                    "Question: '%s'\n" +
-                    "Response: '%s'\n\n" +
-                    "Provide feedback in this JSON format:\n" +
-                    "{\n" +
-                    "  \"rating\": <number 1-10>,\n" +
-                    "  \"feedback\": \"<Start with strengths, then areas for improvement, and end with actionable tips.>\"\n" +
-                    "}";
+            """
+                               You are an experienced technical interview coach specializing in behavioral questions. \
+                    Evaluate responses using the STAR method (Situation, Task, Action, Result). \
+                    Be constructive but firm in your feedback. \
+                    For each response, analyze:
+                    1. Structure and completeness
+                    2. Specific examples and details
+                    3. Professional impact and results
+                    4. Communication clarity
+                    
+                    Question: '%s'
+                    Response: '%s'
+                    
+                    Provide feedback in this JSON format:
+                    {
+                      "rating": <number 1-10>,
+                      "feedback": "<Start with strengths, then areas for improvement, and end with actionable tips.>"
+                    }""";
 
     // Sends response to OpenAI for evaluation and updates question with feedback
     public Question evaluateResponse(String question, String response, User user, QuestionType type) {
         try {
             Question questionEntity = repository.findByQuestionAndUserAndType(question, user, type);
             if (questionEntity == null) {
-                throw new RuntimeException("No existing question found to update.");
+                throw new ResourceNotFoundException("Question", "text", question);
             }
             String prompt = type == Question.QuestionType.BEHAVIORAL ?
                     BEHAVIORAL_EVALUATION_PROMPT_TEMPLATE :
@@ -99,9 +112,11 @@ public class QuestionService {
 
             updateQuestion(questionEntity, response, jsonResponse);
             return repository.save(questionEntity);
+        } catch (ResourceNotFoundException e) {
+            throw e; // Re-throw ResourceNotFoundException as is
         } catch (Exception e) {
             logger.error("Error evaluating response", e);
-            throw new RuntimeException("Failed to evaluate response", e);
+            throw new InvalidRequestException("Failed to evaluate response: " + e.getMessage());
         }
     }
 
@@ -113,7 +128,7 @@ public class QuestionService {
         question.setFeedback(evaluation.get("feedback").asText());
         // Mark as completed if rating > 5
         if (rating > 5) {
-            question.setUpdatedAt(LocalDate.now());
+            question.setUpdatedAt(LocalDate.now(zoneId));
         } else {
             question.setUpdatedAt(null); // Reset date if rating is too low
         }
@@ -121,7 +136,7 @@ public class QuestionService {
 
     // Gets count of successfully answered questions for today
     public long getTodayCount(User user, QuestionType type) {
-        return repository.countByDateAndUserAndType(LocalDate.now(), user, type);
+        return repository.countByDateAndUserAndType(LocalDate.now(zoneId), user, type);
     }
 
     // Resets all questions of specific type for user (marks them as unanswered)
@@ -131,23 +146,25 @@ public class QuestionService {
             repository.resetAllDatesForUserAndType(user, type);
         } catch (Exception e) {
             logger.error("Error resetting questions: {}", e.getMessage());
-            throw new RuntimeException("Failed to reset questions", e);
+            throw new InvalidRequestException("Failed to reset questions: " + e.getMessage());
         }
     }
 
     // Resets a specific question (marks it as unanswered)
     public void resetQuestionDate(String question, User user, QuestionType type) {
         Question questionEntity = repository.findByQuestionAndUserAndType(question, user, type);
-        if (questionEntity != null) {
-            questionEntity.setUpdatedAt(null);
-            repository.save(questionEntity);
-        } else {
-            throw new RuntimeException("Question not found");
+        if (questionEntity == null) {
+            throw new ResourceNotFoundException("Question", "text", question);
         }
+        questionEntity.setUpdatedAt(null);
+        repository.save(questionEntity);
     }
 
     // Creates a new question for the user
     public Question addQuestion(Question question, User user, QuestionType type) {
+        if (question == null || question.getQuestion() == null || question.getQuestion().trim().isEmpty()) {
+            throw new InvalidRequestException("Question text cannot be empty");
+        }
         question.setUpdatedAt(null);
         question.setUser(user);
         question.setType(type);
@@ -157,15 +174,15 @@ public class QuestionService {
     // Deletes a question after security checks
     public void deleteQuestion(Long id, User user, QuestionType type) {
         Question question = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
 
         // Security check: ensure the question belongs to the requesting user
         if (!question.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied: Question does not belong to current user");
+            throw new AuthenticationException("Not authorized to delete this question");
         }
 
         if (type != question.getType()) {
-            throw new RuntimeException("Access denied: Question type does not match");
+            throw new InvalidRequestException("Question type does not match");
         }
 
         repository.delete(question);
@@ -173,6 +190,10 @@ public class QuestionService {
 
     // Gets all questions for a specific user and type
     public List<Question> getQuestionsByUser(User user, QuestionType type) {
-        return repository.findByUserAndType(user, type);
+        List<Question> questions = repository.findByUserAndType(user, type);
+        if (questions.isEmpty()) {
+            throw new ResourceNotFoundException("No questions found for user and type");
+        }
+        return questions;
     }
 } 

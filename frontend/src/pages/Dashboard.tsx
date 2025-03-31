@@ -9,7 +9,7 @@ interface UserData {
     username: string;
     id?: string;
     email?: string;
-    // add other user properties as needed
+    avatarUrl?: string;
 }
 
 interface JobStats {
@@ -133,7 +133,17 @@ const Dashboard: React.FC = () => {
                     className="settings-button"
                 />
                 <div className="user-section">
-                    <p>Welcome, {user?.username || 'User'}&nbsp;|&nbsp;
+                    <p>{user?.avatarUrl && (
+                        <>
+                            <img 
+                                src={user.avatarUrl} 
+                                alt={`${user.username}'s avatar`}
+                                className="avatar"
+                            />
+                            &nbsp;
+                        </>
+                    )}
+                       Welcome, {user?.username || 'User'}&nbsp;|&nbsp;
                         <span className="logout-link" onClick={handleLogout}>
                             Logout
                         </span>

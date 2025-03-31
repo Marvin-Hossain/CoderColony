@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./Progress.css";
 import { Line } from "react-chartjs-2";
-import Button from "../components/Button";
 import { API_CONFIG } from '../services/config';
 import PageHeader from '../components/PageHeader';
 import {
@@ -16,6 +15,7 @@ import {
   Legend,
 } from "chart.js";
 import CategoryTabs from '../components/CategoryTabs';
+import { formatChartDate } from '../services/dateUtils';
 
 // Move chart registration outside component
 ChartJS.register(
@@ -109,13 +109,7 @@ const Progress: React.FC = () => {
 
   // Use useMemo for complex calculations
   const chartData = useMemo(() => ({
-    labels: weeklyData?.chartData?.map(item => {
-      const date = new Date(item.date + 'T00:00:00');
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
-    }) || [],
+    labels: weeklyData?.chartData?.map(item => formatChartDate(item.date)) || [],
     datasets: [
       {
         label: CATEGORIES.find(c => c.id === selectedCategory)?.label || '',

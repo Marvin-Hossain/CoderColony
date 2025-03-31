@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import { useNavigate } from 'react-router-dom';
 import { API_CONFIG } from '../services/config';
 import PageHeader from "../components/PageHeader";
+import { formatDate } from '../services/dateUtils';
 
 const API_BASE_URL = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS;
 
@@ -282,7 +283,7 @@ const JobApps: React.FC = () => {
                                             {job.status}
                                         </span>
                                         <span className="date">
-                                            {new Date(job.createdAt).toLocaleDateString()}
+                                            {formatDate(job.createdAt)}
                                         </span>
                                     </div>
                                 </div>
