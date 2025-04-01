@@ -26,8 +26,16 @@ public class JobService {
 
     // Basic CRUD operations - all include user security checks
     public Job createJob(Job job, User user) {
+        // Validate required fields
+        validateJob(job);
+
+        // Force status to APPLIED for new jobs
+        job.setStatus(Job.Status.APPLIED);
+        
+        // Set correct user and date
         job.setUser(user);
         job.setCreatedAt(LocalDate.now(zoneId));
+
         return jobRepository.save(job);
     }
 
@@ -47,11 +55,23 @@ public class JobService {
 
     // Update job (with security check)
     public Job updateJob(Long id, Job jobDetails, User user) {
-        Job job = getJobById(id, user);
+        Job job = getJobById(id, user);  // This already checks user ownership
+
+        // Validate required fields
+        validateJob(jobDetails);
+
+        // Validate status enum
+        if (jobDetails.getStatus() != null && 
+            !java.util.Arrays.asList(Job.Status.values()).contains(jobDetails.getStatus())) {
+            throw new GlobalExceptionHandler.InvalidRequestException("Invalid status value");
+        }
+
+        // Update fields but preserve user and creation date
         job.setTitle(jobDetails.getTitle());
         job.setCompany(jobDetails.getCompany());
         job.setLocation(jobDetails.getLocation());
         job.setStatus(jobDetails.getStatus());
+
         return jobRepository.save(job);
     }
 
@@ -143,5 +163,17 @@ public class JobService {
                 "interviewed", jobRepository.countByUserAndStatus(user, Job.Status.INTERVIEWED),
                 "rejected", jobRepository.countByUserAndStatus(user, Job.Status.REJECTED)
         );
+    }
+
+    private void validateJob(Job job) {
+        if (job.getTitle() == null || job.getTitle().trim().isEmpty() ||
+            job.getCompany() == null || job.getCompany().trim().isEmpty() ||
+            job.getLocation() == null || job.getLocation().trim().isEmpty()) {
+            throw new GlobalExceptionHandler.InvalidRequestException("Title, company, and location are required");
+        }
+        if (!job.getLocation().equals("Remote") && 
+            !job.getLocation().matches("^[A-Za-z\\s]+,\\s*[A-Z]{2}$")) {
+            throw new GlobalExceptionHandler.InvalidRequestException("Location must be 'City, ST' or 'Remote'");
+        }
     }
 }
