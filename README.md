@@ -1,6 +1,6 @@
 # JobHuntHub
 
-A full-stack application to help job seekers track applications and practice interview questions with AI assistance.
+A full-stack application to help job seekers track applications and practice interview questions with AI assistance. This project demonstrates full-stack development skills with Java/Spring Boot and React/TypeScript.
 
 ## Features
 - Job application tracking with progress visualization
@@ -34,7 +34,7 @@ A full-stack application to help job seekers track applications and practice int
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/JobHuntHub.git
+git clone https://github.com/Marvin-Hossain/JobHuntHub.git
 cd JobHuntHub
 ```
 
@@ -44,12 +44,16 @@ cd JobHuntHub
 3. Note your database username and password
 
 ### 3. Backend Configuration
-1. Create `application-dev.properties` in `src/main/resources`:
+1. Copy `application-dev.properties.example` to `application-dev.properties` in the `src/main/resources` directory:
+```bash
+cp src/main/resources/application-dev.properties.example src/main/resources/application-dev.properties
+```
+2. Edit `application-dev.properties` and replace the placeholder values with your actual configuration:
 ```properties
 # Database Configuration
 spring.datasource.url=jdbc:postgresql://localhost:5432/jobhunthub
-spring.datasource.username=your_username
-spring.datasource.password=your_password
+spring.datasource.username=your_db_username  # Replace with your actual database username
+spring.datasource.password=your_db_password  # Replace with your actual database password
 
 # Hibernate Settings
 spring.jpa.hibernate.ddl-auto=update
@@ -57,11 +61,11 @@ spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 
 # OpenAI Configuration
-openai.api.key=your_openai_api_key
+openai.api.key=your_openai_api_key  # Replace with your actual OpenAI API key
 
 # GitHub OAuth2 Configuration
-spring.security.oauth2.client.registration.github.client-id=your_github_client_id
-spring.security.oauth2.client.registration.github.client-secret=your_github_client_secret
+spring.security.oauth2.client.registration.github.client-id=your_github_client_id  # Replace with your GitHub OAuth client ID
+spring.security.oauth2.client.registration.github.client-secret=your_github_client_secret  # Replace with your GitHub OAuth client secret
 spring.security.oauth2.client.registration.github.redirect-uri=http://localhost:8080/login/oauth2/code/github
 spring.security.oauth2.client.registration.github.scope=user:email,read:user
 
@@ -101,14 +105,3 @@ The application will be available at:
 - Never commit `application-dev.properties` (contains sensitive data)
 - Keep API keys and credentials secure
 - Production deployments should use environment variables
-
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-This project is licensed under the MIT License
-```
