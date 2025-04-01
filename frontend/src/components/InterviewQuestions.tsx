@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import './InterviewQuestions.css';
 import { API_CONFIG } from '../services/config';
 import PageHeader from './PageHeader';
+
+// Add these type declarations after imports
+declare global {
+    interface Window {
+        SpeechRecognition: any;
+        webkitSpeechRecognition: any;
+    }
+}
 
 interface FeedbackData {
     rating: number;
@@ -34,6 +42,9 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [showResetButton, setShowResetButton] = useState<boolean>(false);
+    const [isListening, setIsListening] = useState<boolean>(false);
+    const recognitionRef = useRef<any>(null);
+    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
     const navigate = useNavigate();
 
     const fetchNewQuestion = async (): Promise<void> => {
@@ -76,6 +87,9 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
             return;
         }
 
+        // Stop voice recognition if it's active
+        stopRecognition();
+        
         setLoading(true);
         try {
             const result = await fetch(`${API_BASE_URL}/evaluate`, {
@@ -143,6 +157,8 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
     };
 
     const handleSkip = async (): Promise<void> => {
+        // Stop voice recognition if it's active
+        stopRecognition();
         setLoading(true);
         try {
             await fetchNewQuestion(); // Fetch a new question
@@ -179,8 +195,54 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
         }
     };
 
+    const stopRecognition = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+            recognitionRef.current = null;
+        }
+        setIsListening(false);
+    };
+
+    const toggleListening = () => {
+        if (isListening) {
+            stopRecognition();
+        } else {
+            try {
+                recognitionRef.current = new SpeechRecognition();
+                const recognition = recognitionRef.current;
+                
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                
+                recognition.onresult = (event: any) => {
+                    const transcript = Array.from(event.results)
+                        .map((result: any) => result[0])
+                        .map((result) => result.transcript)
+                        .join('');
+                    setResponse(transcript);
+                };
+
+                recognition.onend = () => {
+                    stopRecognition();
+                };
+
+                recognition.start();
+                setIsListening(true);
+            } catch (error) {
+                console.error('Speech recognition error:', error);
+                stopRecognition();
+            }
+        }
+    };
+
     useEffect(() => {
         fetchNewQuestion();
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            stopRecognition();
+        };
     }, []);
 
     return (
@@ -226,14 +288,21 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
                                     placeholder="Use the STAR method: Describe the Situation, Task, Action, and Result..."
                                     disabled={loading || question === "No more questions for today! Please reset or come back tomorrow!"}
                                 />
-                                <button 
-                                    onClick={submitResponse}
-                                    disabled={loading || !response.trim() || question === "No more questions for today! Please reset or come back tomorrow!"}
-                                    className="submit-button"
-                                >
-                                    Get Feedback
-                                </button>
-                            </div>
+                                    <button 
+                                        onClick={submitResponse}
+                                        disabled={loading || !response.trim() || question === "No more questions for today! Please reset or come back tomorrow!"}
+                                        className="submit-button"
+                                    >
+                                        Get Feedback
+                                    </button>
+                                    <button 
+                                        onClick={toggleListening}
+                                        disabled={!SpeechRecognition || loading || question === "No more questions for today! Please reset or come back tomorrow!"}
+                                        className={`mic-button ${isListening ? 'active' : ''}`}
+                                    >
+                                        🎤
+                                    </button>
+                                </div>
                         ) : (
                             <div className="feedback-section">
                                 <h3>Feedback:</h3>
