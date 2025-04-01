@@ -142,6 +142,17 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
         }
     };
 
+    const handleSkip = async (): Promise<void> => {
+        setLoading(true);
+        try {
+            await fetchNewQuestion(); // Fetch a new question
+        } catch (error) {
+            setError('Failed to load new question. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const resetQuestions = async (): Promise<void> => {
         setLoading(true);
         try {
@@ -178,11 +189,18 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
                 title={title}
                 subtitle="Practice your responses and get AI feedback"
                 onBack={() => navigate('/dashboard')}
-                rightButton={showResetButton && (
+                rightButton={showResetButton ? (
                     <Button 
                         text="Reset" 
                         onClick={resetQuestions} 
                         className="reset-button"
+                        disabled={loading}
+                    />
+                ) : (
+                    <Button 
+                        text="Skip" 
+                        onClick={handleSkip} // Use the handleSkip function here
+                        className="skip-button"
                         disabled={loading}
                     />
                 )}

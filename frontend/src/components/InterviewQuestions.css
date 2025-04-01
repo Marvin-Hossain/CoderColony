@@ -12,9 +12,25 @@
 }
 
 .reset-button {
+    background-color: #f4a3a3;
     position: absolute;
     right: 0;
     top: 0;
+}
+
+.reset-button:hover {
+    background-color: #f08c8c; /* Slightly darker red on hover */
+}
+
+.skip-button {
+    background-color: #a3c1e0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.skip-button:hover {
+    background-color: #80a0c0; /* Slightly darker blue on hover */
 }
 
 .error-message {
