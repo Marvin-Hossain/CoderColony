@@ -1,4 +1,4 @@
-# MindVoyager
+# JobHuntHub
 
 A full-stack application to help job seekers track applications and practice interview questions with AI assistance.
 
