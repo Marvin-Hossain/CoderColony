@@ -8,11 +8,11 @@
         <version>3.3.10</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.mindvoyager</groupId>
-    <artifactId>MindVoyager</artifactId>
+    <groupId>com.jobhunthub</groupId>
+    <artifactId>JobHuntHub</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>MindVoyager</name>
-    <description>MindVoyager</description>
+    <name>JobHuntHub</name>
+    <description>JobHuntHub</description>
     <url/>
     <licenses>
         <license/>

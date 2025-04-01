@@ -34,20 +34,20 @@ A full-stack application to help job seekers track applications and practice int
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/MindVoyager.git
-cd MindVoyager
+git clone https://github.com/yourusername/JobHuntHub.git
+cd JobHuntHub
 ```
 
 ### 2. Database Setup
 1. Install PostgreSQL
-2. Create a database named `mindvoyager`
+2. Create a database named `jobhunthub`
 3. Note your database username and password
 
 ### 3. Backend Configuration
 1. Create `application-dev.properties` in `src/main/resources`:
 ```properties
 # Database Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/mindvoyager
+spring.datasource.url=jdbc:postgresql://localhost:5432/jobhunthub
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 

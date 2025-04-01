@@ -1,5 +1,5 @@
 # Database Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/mindvoyager
+spring.datasource.url=jdbc:postgresql://localhost:5432/jobhunthub
 spring.datasource.username=your_db_username
 spring.datasource.password=your_db_password
 
