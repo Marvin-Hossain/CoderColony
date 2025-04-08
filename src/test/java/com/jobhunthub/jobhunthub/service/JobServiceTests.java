@@ -1,4 +1,5 @@
 package com.jobhunthub.jobhunthub.service;
+
 import com.jobhunthub.jobhunthub.model.Job;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.repository.JobRepository;
@@ -8,9 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -21,8 +19,6 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 public class JobServiceTests {
 
     @Mock
@@ -45,8 +41,6 @@ public class JobServiceTests {
                 .username("testuser")
                 .email("test@test.com")
                 .build();
-
-        
 
         job = Job.builder()
                 .id(1L)

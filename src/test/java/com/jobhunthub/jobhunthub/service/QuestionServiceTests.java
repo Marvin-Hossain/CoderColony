@@ -7,7 +7,6 @@ import com.jobhunthub.jobhunthub.repository.QuestionRepository;
 import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.InvalidRequestException;
 import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.ResourceNotFoundException;
 import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.AuthenticationException;
-import com.jobhunthub.jobhunthub.service.OpenAIService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,20 +29,17 @@ public class QuestionServiceTests {
     @Mock
     private OpenAIService openAIService;
 
-    private ZoneId zoneId;
-
     @InjectMocks
     private QuestionService questionService;
 
     private User user;
     private Question question;
-    private Question question2;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        zoneId = ZoneId.systemDefault();
-        
+        ZoneId zoneId = ZoneId.systemDefault();
+
         questionService = new QuestionService(questionRepository, openAIService, zoneId);
 
         user = User.builder()
@@ -64,17 +60,6 @@ public class QuestionServiceTests {
                 .feedback("Good answer.")
                 .user(user)
                 .build();
-
-//        question2 = Question.builder()
-//                .id(1L)
-//                .type(QuestionType.TECHNICAL)
-//                .question("What is the difference between a stack and a queue?")
-//                .updatedAt(LocalDate.now())
-//                .responseText("The difference is...")
-//                .rating(7)
-//                .feedback("Good answer.")
-//                .user(user)
-//                .build();
     }
 
     @Test
@@ -109,27 +94,27 @@ public class QuestionServiceTests {
         // Arrange
         Long questionId = 1L;
         when(questionRepository.findById(questionId)).thenReturn(Optional.of(question));
-    
+
         // Act
         questionService.deleteQuestion(questionId, user, QuestionType.TECHNICAL);
-    
+
         // Assert
         verify(questionRepository, times(1)).findById(questionId);
         verify(questionRepository, times(1)).delete(question);
     }
-    
+
     @Test
     public void QuestionService_deleteQuestion_throwsResourceNotFoundExceptionWhenQuestionNotFound() {
         // Arrange
         Long questionId = 1L;
         when(questionRepository.findById(questionId)).thenReturn(Optional.empty());
-    
+
         // Act & Assert
-        Assertions.assertThatThrownBy(() -> 
-            questionService.deleteQuestion(questionId, user, QuestionType.TECHNICAL)
-        ).isInstanceOf(ResourceNotFoundException.class)
-         .hasMessageContaining("Question")
-         .hasMessageContaining(String.valueOf(questionId));
+        Assertions.assertThatThrownBy(() ->
+                        questionService.deleteQuestion(questionId, user, QuestionType.TECHNICAL)
+                ).isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Question")
+                .hasMessageContaining(String.valueOf(questionId));
     }
 
     @Test
@@ -156,10 +141,10 @@ public class QuestionServiceTests {
         when(questionRepository.findById(questionId)).thenReturn(Optional.of(question));
 
         // Act & Assert
-        Assertions.assertThatThrownBy(() -> 
-            questionService.deleteQuestion(questionId, wrongUser, QuestionType.TECHNICAL)
-        ).isInstanceOf(AuthenticationException.class)
-         .hasMessageContaining("Not authorized to access this question");
+        Assertions.assertThatThrownBy(() ->
+                        questionService.deleteQuestion(questionId, wrongUser, QuestionType.TECHNICAL)
+                ).isInstanceOf(AuthenticationException.class)
+                .hasMessageContaining("Not authorized to access this question");
     }
 
     @Test
@@ -169,10 +154,10 @@ public class QuestionServiceTests {
         when(questionRepository.findById(questionId)).thenReturn(Optional.of(question));
 
         // Act & Assert
-        Assertions.assertThatThrownBy(() -> 
-            questionService.deleteQuestion(questionId, user, QuestionType.BEHAVIORAL)
-        ).isInstanceOf(InvalidRequestException.class)
-         .hasMessageContaining("Question type does not match");
+        Assertions.assertThatThrownBy(() ->
+                        questionService.deleteQuestion(questionId, user, QuestionType.BEHAVIORAL)
+                ).isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("Question type does not match");
     }
 
     @Test
@@ -183,10 +168,10 @@ public class QuestionServiceTests {
                 .build();
 
         // Act & Assert
-        Assertions.assertThatThrownBy(() -> 
-            questionService.addQuestion(emptyQuestion, user, QuestionType.TECHNICAL)
-        ).isInstanceOf(InvalidRequestException.class)
-         .hasMessageContaining("Question text cannot be empty");
+        Assertions.assertThatThrownBy(() ->
+                        questionService.addQuestion(emptyQuestion, user, QuestionType.TECHNICAL)
+                ).isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("Question text cannot be empty");
     }
 
     @Test
@@ -195,24 +180,24 @@ public class QuestionServiceTests {
         Question nullQuestion = Question.builder().build();
 
         // Act & Assert
-        Assertions.assertThatThrownBy(() -> 
-            questionService.addQuestion(nullQuestion, user, QuestionType.TECHNICAL)
-        ).isInstanceOf(InvalidRequestException.class)
-         .hasMessageContaining("Question text cannot be empty");
+        Assertions.assertThatThrownBy(() ->
+                        questionService.addQuestion(nullQuestion, user, QuestionType.TECHNICAL)
+                ).isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("Question text cannot be empty");
     }
 
     @Test
     public void QuestionService_addQuestion_throwsInvalidRequestException_whenDuplicateQuestion() {
         // Arrange
         when(questionRepository.findByQuestionAndUserAndType(
-            question.getQuestion(), user, QuestionType.TECHNICAL))
-            .thenReturn(question);  // Simulate finding a duplicate
+                question.getQuestion(), user, QuestionType.TECHNICAL))
+                .thenReturn(question);  // Simulate finding a duplicate
 
         // Act & Assert
-        Assertions.assertThatThrownBy(() -> 
-            questionService.addQuestion(question, user, QuestionType.TECHNICAL)
-        ).isInstanceOf(InvalidRequestException.class)
-         .hasMessageContaining("This question already exists for your account");
+        Assertions.assertThatThrownBy(() ->
+                        questionService.addQuestion(question, user, QuestionType.TECHNICAL)
+                ).isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("This question already exists for your account");
     }
 
     @Test
@@ -221,14 +206,14 @@ public class QuestionServiceTests {
         String questionText = "What is 2x4?";
         String response = "The answer is 8";
         String jsonResponse = """
-            {
-                "rating": 8,
-                "feedback": "Great answer!"
-            }
-            """;
-        
+                {
+                    "rating": 8,
+                    "feedback": "Great answer!"
+                }
+                """;
+
         when(questionRepository.findByQuestionAndUserAndType(questionText, user, QuestionType.TECHNICAL))
-            .thenReturn(question);
+                .thenReturn(question);
         when(openAIService.getResponse(anyString(), anyString())).thenReturn(jsonResponse);
         when(questionRepository.save(any(Question.class))).thenReturn(question);
 
@@ -247,14 +232,14 @@ public class QuestionServiceTests {
         String questionText = "What is 2x4?";
         String response = "The answer is 7";
         String jsonResponse = """
-            {
-                "rating": 4,
-                "feedback": "Incorrect answer"
-            }
-            """;
-        
+                {
+                    "rating": 4,
+                    "feedback": "Incorrect answer"
+                }
+                """;
+
         when(questionRepository.findByQuestionAndUserAndType(questionText, user, QuestionType.TECHNICAL))
-            .thenReturn(question);
+                .thenReturn(question);
         when(openAIService.getResponse(anyString(), anyString())).thenReturn(jsonResponse);
         when(questionRepository.save(any(Question.class))).thenReturn(question);
 
