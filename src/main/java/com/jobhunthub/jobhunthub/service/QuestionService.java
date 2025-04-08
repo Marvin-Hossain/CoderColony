@@ -212,13 +212,13 @@ public class QuestionService {
         }
     }
 
-    // Mark question as completed if rating > 5
+    // Mark question as completed if rating > 6
     private void updateQuestion(Question question, String response, JsonNode evaluation) {
         question.setResponseText(response);
         int rating = evaluation.get("rating").asInt();
         question.setRating(rating);
         question.setFeedback(evaluation.get("feedback").asText());
-        question.setUpdatedAt(rating > 5 ? LocalDate.now(zoneId) : null);
+        question.setUpdatedAt(rating > 6 ? LocalDate.now(zoneId) : null);
     }
 
     private Question createNoMoreQuestionsResponse() {

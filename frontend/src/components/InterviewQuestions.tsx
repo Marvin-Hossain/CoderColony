@@ -306,11 +306,11 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
                         ) : (
                             <div className="feedback-section">
                                 <h3>Feedback:</h3>
-                                <div className={`rating ${feedback.rating < 5 ? 'low-score' : ''}`}>
+                                <div className={`rating ${feedback.rating < 6 ? 'low-score' : ''}`}>
                                     Score: {feedback.rating}/10
-                                    {feedback.rating < 5 && (
+                                    {feedback.rating < 6 && (
                                         <span className="score-warning">
-                                            (Need at least 5/10 to advance)
+                                            (Need at least 6/10 to advance)
                                         </span>
                                     )}
                                 </div>
@@ -326,7 +326,7 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
                                     <button 
                                         onClick={handleNext}
                                         className="next-button"
-                                        disabled={loading || feedback.rating < 5}
+                                        disabled={loading || feedback.rating < 6}
                                     >
                                         Next Question
                                     </button>
