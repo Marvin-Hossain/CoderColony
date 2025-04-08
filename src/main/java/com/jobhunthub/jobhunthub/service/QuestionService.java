@@ -52,6 +52,20 @@ public class QuestionService {
             2. Problem-solving approach
             3. Code quality and best practices (if code is involved)
             4. Communication of technical concepts
+
+            Important Notes:
+            - This is a voice-to-text input, so IGNORE:
+                * Grammatical errors
+                * Punctuation issues
+                * Sentence fragments
+                * Unnecessary pauses
+                * Filler words (um, uh, like, you know)
+            - Focus ONLY on:
+                * STAR method implementation
+                * Content relevance
+                * Specific examples provided
+                * Professional achievements
+            * Overall story structure
             
             Question: '%s'
             Response: '%s'
@@ -72,6 +86,20 @@ public class QuestionService {
             2. Specific examples and details
             3. Professional impact and results
             4. Communication clarity
+
+            Important Notes:
+            - This is a voice-to-text input, so IGNORE:
+                * Grammatical errors
+                * Punctuation issues
+                * Sentence fragments
+                * Unnecessary pauses
+                * Filler words (um, uh, like, you know)
+            - Focus ONLY on:
+                * STAR method implementation
+                * Content relevance
+                * Specific examples provided
+                * Professional achievements
+            * Overall story structure
             
             Question: '%s'
             Response: '%s'
