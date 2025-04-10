@@ -251,4 +251,21 @@ public class QuestionServiceTests {
         Assertions.assertThat(result.getFeedback()).isEqualTo("Incorrect answer");
         Assertions.assertThat(result.getUpdatedAt()).isNull(); // Should be null because rating <= 5
     }
+
+    @Test
+    public void QuestionService_resetQuestionDate_resetsUpdatedDate() {
+        // Arrange
+        String questionText = "What is 2x4?";
+        when(questionRepository.findByQuestionAndUserAndType(questionText, user, QuestionType.TECHNICAL))
+                .thenReturn(question);
+        when(questionRepository.save(any(Question.class))).thenReturn(question);
+
+        // Act
+        questionService.resetQuestionDate(questionText, user, QuestionType.TECHNICAL);
+
+        // Assert
+        verify(questionRepository).findByQuestionAndUserAndType(questionText, user, QuestionType.TECHNICAL);
+        verify(questionRepository).save(question);
+        Assertions.assertThat(question.getUpdatedAt()).isNull();
+    }
 }
