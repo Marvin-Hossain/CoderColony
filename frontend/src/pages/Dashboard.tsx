@@ -82,7 +82,7 @@ const Dashboard: React.FC = () => {
                     throw new Error('Failed to fetch stats');
                 }
 
-                const jobData = await jobStats.json();
+                const jobData: JobStats = await jobStats.json();
                 const technicalData = await technicalCount.json();
                 const behavioralData = await behavioralCount.json();
 
