@@ -88,7 +88,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 2. Start the frontend (in a new terminal):
 ```bash
 cd frontend
-npm start
+npm run dev
 ```
 
 The application will be available at:
