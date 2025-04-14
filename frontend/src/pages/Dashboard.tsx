@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import "./Dashboard.css";
 import Button from "../components/Button";
 import LogoutButton from "../components/LogoutButton";
-import { useNavigate } from 'react-router-dom';
-import { API_CONFIG } from '@/services/config';
+import {useNavigate} from 'react-router-dom';
+import {API_CONFIG} from '@/services/config';
 
 
 interface UserData {
@@ -105,13 +105,13 @@ const Dashboard = () => {
     return (
         <div className="dashboard">
             <header className="dashboard-header">
-                <Button 
+                <Button
                     text="Progress"
                     onClick={() => navigate('/progress')}
                     className="progress-button"
                 />
                 <h1>Welcome to Your Dashboard</h1>
-                <Button 
+                <Button
                     text="Settings"
                     onClick={() => navigate('/settings')}
                     className="settings-button"
@@ -119,16 +119,16 @@ const Dashboard = () => {
                 <div className="user-section">
                     <p>{user?.avatarUrl && (
                         <>
-                            <img 
-                                src={user.avatarUrl} 
+                            <img
+                                src={user.avatarUrl}
                                 alt={`${user.username}'s avatar`}
                                 className="avatar"
                             />
                             &nbsp;
                         </>
                     )}
-                       Welcome, {user?.username || 'User'}&nbsp;|&nbsp;
-                        <LogoutButton />
+                        Welcome, {user?.username || 'User'}&nbsp;|&nbsp;
+                        <LogoutButton/>
                     </p>
                 </div>
             </header>
@@ -141,25 +141,26 @@ const Dashboard = () => {
                         <p>Apply to {jobGoal} Jobs</p>
                         <progress value={jobCount} max={jobGoal}></progress>
                         <span>{jobCount}/{jobGoal}</span>
-                        <Button text="Go!" onClick={() => navigate('/job-apps')} className="go-button" />
+                        <Button text="Go!" onClick={() => navigate('/job-apps')} className="go-button"/>
                     </div>
                     <div className="goal">
                         <p>Practice Behavioral Qs</p>
                         <progress value={behavioralCount} max={behavioralGoal}></progress>
                         <span>{behavioralCount}/{behavioralGoal}</span>
-                        <Button text="Go!" onClick={() => navigate('/behavioral-questions')} className="go-button" />
+                        <Button text="Go!" onClick={() => navigate('/behavioral-questions')} className="go-button"/>
                     </div>
                     <div className="goal">
                         <p>Practice Technical Qs</p>
                         <progress value={technicalCount} max={technicalGoal}></progress>
                         <span>{technicalCount}/{technicalGoal}</span>
-                        <Button text="Go!" onClick={() => navigate('/technical-questions')} className="go-button" />
+                        <Button text="Go!" onClick={() => navigate('/technical-questions')} className="go-button"/>
                     </div>
                     <div className="goal">
                         <p>Practice LeetCode Qs<br></br>(Coming Soon!)</p>
                         <progress value={0} max="0"></progress>
                         <span>0/0</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/leetcode")} className="go-button" disabled />
+                        <Button text="Go!" onClick={() => (window.location.href = "/leetcode")} className="go-button"
+                                disabled/>
                     </div>
                 </section>
 
@@ -170,13 +171,15 @@ const Dashboard = () => {
                         <p>Contact Connections<br></br>(Coming soon!)</p>
                         <progress value={0} max="0"></progress>
                         <span>0/0</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/connections")} className="go-button" disabled/>
+                        <Button text="Go!" onClick={() => (window.location.href = "/connections")} className="go-button"
+                                disabled/>
                     </div>
                     <div className="goal">
                         <p>Learn New Concepts<br></br>(Coming soon!)</p>
                         <progress value={0} max="0"></progress>
                         <span>0/0</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/new-concepts")} className="go-button" disabled />
+                        <Button text="Go!" onClick={() => (window.location.href = "/new-concepts")}
+                                className="go-button" disabled/>
                     </div>
                 </section>
             </main>

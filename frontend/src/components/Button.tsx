@@ -9,12 +9,12 @@ interface ButtonProps {
 }
 
 const Button = ({
-    onClick,
-    text,
-    className = '',
-    disabled = false,
-    type = 'button'
-}: ButtonProps) => {
+                    onClick,
+                    text,
+                    className = '',
+                    disabled = false,
+                    type = 'button'
+                }: ButtonProps) => {
     return (
         <button
             className={`custom-button ${className}`}

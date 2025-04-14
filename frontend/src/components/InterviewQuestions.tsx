@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useState, useEffect, useRef} from 'react';
+import {useNavigate} from 'react-router-dom';
 import Button from './Button';
 import './InterviewQuestions.css';
-import { API_CONFIG } from '@/services/config';
+import {API_CONFIG} from '@/services/config';
 import PageHeader from './PageHeader';
 
 declare global {
@@ -27,7 +27,7 @@ interface InterviewQuestionsProps {
     subtitle?: string;
 }
 
-const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) => {
+const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) => {
     const API_BASE_URL = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS[type.toUpperCase() as keyof typeof API_CONFIG.ENDPOINTS];
     const [question, setQuestion] = useState<string>('');
     const [response, setResponse] = useState<string>('');
@@ -47,13 +47,13 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
             const response = await fetch(`${API_BASE_URL}/question`, {
                 credentials: 'include'
             });
-            
+
             if (response.ok) {
                 const data: QuestionResponse = await response.json();
                 setQuestion(data.question);
                 setResponse('');
                 setFeedback(null);
-                
+
                 if (data.question === "No more questions for today! Please reset or come back tomorrow!") {
                     setShowResetButton(true);
                 } else {
@@ -81,19 +81,19 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
         }
 
         stopRecognition();
-        
+
         setLoading(true);
         try {
             const result = await fetch(`${API_BASE_URL}/evaluate`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
-                body: JSON.stringify({ 
-                    question, 
+                body: JSON.stringify({
+                    question,
                     response
                 })
             });
-            
+
             if (!result.ok) {
                 if (result.status === 401 || result.status === 403) {
                     navigate('/');
@@ -129,9 +129,9 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
         try {
             const result = await fetch(`${API_BASE_URL}/reset-date`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
-                body: JSON.stringify({ question })
+                body: JSON.stringify({question})
             });
 
             if (!result.ok) {
@@ -164,10 +164,10 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
         try {
             const result = await fetch(`${API_BASE_URL}/reset`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 credentials: 'include'
             });
-            
+
             if (!result.ok) {
                 if (result.status === 401 || result.status === 403) {
                     navigate('/');
@@ -200,10 +200,10 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
             try {
                 recognitionRef.current = new SpeechRecognition();
                 const recognition = recognitionRef.current;
-                
+
                 recognition.continuous = true;
                 recognition.interimResults = true;
-                
+
                 recognition.onresult = (event: any) => {
                     const transcript = Array.from(event.results)
                         .map((result: any) => result[0])
@@ -241,20 +241,20 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
 
     return (
         <div className={`${type}-questions`}>
-            <PageHeader 
+            <PageHeader
                 title={title}
                 subtitle={subtitle || "Practice your responses and get AI feedback"}
                 onBack={() => navigate('/dashboard')}
                 rightButton={showResetButton ? (
-                    <Button 
-                        text="Reset" 
-                        onClick={resetQuestions} 
+                    <Button
+                        text="Reset"
+                        onClick={resetQuestions}
                         className="reset-button"
                         disabled={loading}
                     />
                 ) : (
-                    <Button 
-                        text="Skip" 
+                    <Button
+                        text="Skip"
                         onClick={handleSkip}
                         className="skip-button"
                         disabled={loading}

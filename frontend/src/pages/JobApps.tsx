@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import "./JobApps.css";
 import Button from "../components/Button";
-import { useNavigate } from 'react-router-dom';
-import { API_CONFIG } from '@/services/config';
+import {useNavigate} from 'react-router-dom';
+import {API_CONFIG} from '@/services/config';
 import PageHeader from "../components/PageHeader";
-import { formatDate } from '@/services/dateUtils';
+import {formatDate} from '@/services/dateUtils';
 
 const API_BASE_URL = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS;
 
@@ -47,11 +47,11 @@ const JobApps = () => {
                 credentials: 'include',
                 signal
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const data: JobApplication[] = await response.json();
             if (!signal.aborted) {
                 setJobs(data);
@@ -83,15 +83,15 @@ const JobApps = () => {
         try {
             const response = await fetch(API_BASE_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData),
                 credentials: 'include'
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             await fetchJobs(abortController.signal);
             if (!abortController.signal.aborted) {
                 setFormData(INITIAL_FORM_STATE);
@@ -119,15 +119,15 @@ const JobApps = () => {
         try {
             const response = await fetch(`${API_BASE_URL}/${editingJobId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(formData),
                 credentials: 'include'
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             await fetchJobs(abortController.signal);
             if (!abortController.signal.aborted) {
                 setFormData(INITIAL_FORM_STATE);
@@ -148,7 +148,7 @@ const JobApps = () => {
 
     const deleteJob = async (id: number): Promise<void> => {
         if (!window.confirm("Are you sure you want to delete this job?")) return;
-        
+
         setLoading(true);
         setError(null);
         const abortController = new AbortController();
@@ -157,11 +157,11 @@ const JobApps = () => {
                 method: 'DELETE',
                 credentials: 'include'
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             await fetchJobs(abortController.signal);
         } catch (err) {
             if (err instanceof Error) {
@@ -177,7 +177,7 @@ const JobApps = () => {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setFormData({
             ...formData,
             [name]: value
@@ -218,7 +218,7 @@ const JobApps = () => {
 
     return (
         <div className="job-apps">
-            <PageHeader 
+            <PageHeader
                 title="Job Applications"
                 subtitle="Track your job applications"
                 onBack={() => navigate('/dashboard')}

@@ -13,10 +13,10 @@ interface CategoryTabsProps {
 }
 
 const CategoryTabs = ({
-    categories,
-    selectedCategory,
-    onCategoryChange
-}: CategoryTabsProps) => (
+                          categories,
+                          selectedCategory,
+                          onCategoryChange
+                      }: CategoryTabsProps) => (
     <div className="category-tabs">
         {categories.map((category) => (
             <button

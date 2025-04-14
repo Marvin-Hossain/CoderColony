@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { API_CONFIG } from '@/services/config';
+import {useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {API_CONFIG} from '@/services/config';
 
 interface AuthTestResponse {
     authenticated: boolean;
@@ -30,7 +30,7 @@ const AuthSuccess = () => {
             try {
                 const testResponse = await fetch(
                     API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.TEST,
-                    { credentials: 'include', signal }
+                    {credentials: 'include', signal}
                 );
 
                 if (signal.aborted) return;
@@ -46,7 +46,7 @@ const AuthSuccess = () => {
                 if (testData.authenticated) {
                     const userResponse = await fetch(
                         API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
-                        { credentials: 'include', signal }
+                        {credentials: 'include', signal}
                     );
 
                     if (signal.aborted) return;
@@ -60,7 +60,7 @@ const AuthSuccess = () => {
                     if (signal.aborted) return;
 
                     if (userData.authenticated && userData.user) {
-                        navigate('/dashboard', { replace: true });
+                        navigate('/dashboard', {replace: true});
                     } else {
                         setError(`Authentication check passed but user data couldn't be retrieved: ${userData.reason || 'unknown reason'}`);
                     }
@@ -101,7 +101,7 @@ const AuthSuccess = () => {
         return (
             <div>
                 Authentication failed: {error}
-                <br />
+                <br/>
                 <button onClick={() => navigate('/')}>Return to Login</button>
             </div>
         );

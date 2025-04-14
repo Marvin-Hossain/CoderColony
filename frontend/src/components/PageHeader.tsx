@@ -10,15 +10,15 @@ interface PageHeaderProps {
 }
 
 const PageHeader = ({
-    title,
-    subtitle,
-    onBack,
-    rightButton
-}: PageHeaderProps) => (
+                        title,
+                        subtitle,
+                        onBack,
+                        rightButton
+                    }: PageHeaderProps) => (
     <header className="page-header">
-        <Button 
-            text="Back" 
-            onClick={onBack} 
+        <Button
+            text="Back"
+            onClick={onBack}
             className="back-button"
         />
         <div className="page-header-titles">

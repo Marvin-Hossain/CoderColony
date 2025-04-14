@@ -1,6 +1,6 @@
 export const formatDate = (date: string) => {
     const chicagoDate = new Date(`${date}T12:00:00-06:00`);
-    return new Intl.DateTimeFormat('en-US', { 
+    return new Intl.DateTimeFormat('en-US', {
         timeZone: 'America/Chicago',
         year: 'numeric',
         month: '2-digit',
@@ -10,7 +10,7 @@ export const formatDate = (date: string) => {
 
 export const formatChartDate = (date: string) => {
     const chicagoDate = new Date(`${date}T12:00:00-06:00`);
-    return new Intl.DateTimeFormat('en-US', { 
+    return new Intl.DateTimeFormat('en-US', {
         timeZone: 'America/Chicago',
         month: 'short',
         day: 'numeric'

@@ -2,7 +2,7 @@ import InterviewQuestions from '../components/InterviewQuestions';
 
 const BehavioralQuestions = () => {
     return (
-        <InterviewQuestions 
+        <InterviewQuestions
             type="behavioral"
             title="Behavioral Interview Practice"
         />

@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import Button from './Button';
-import { API_CONFIG } from '@/services/config';
+import {API_CONFIG} from '@/services/config';
 
 const LogoutButton = () => {
     const navigate = useNavigate();
@@ -9,7 +9,7 @@ const LogoutButton = () => {
         try {
             const response = await fetch(
                 API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.LOGOUT,
-                { method: 'POST', credentials: 'include' }
+                {method: 'POST', credentials: 'include'}
             );
 
             if (response.ok) {
@@ -25,8 +25,8 @@ const LogoutButton = () => {
     };
 
     return (
-        <Button 
-            text="Logout" 
+        <Button
+            text="Logout"
             onClick={handleLogout}
             className="logout-button"
         />

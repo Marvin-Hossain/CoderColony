@@ -2,7 +2,7 @@ import InterviewQuestions from '../components/InterviewQuestions';
 
 const TechnicalQuestions = () => {
     return (
-        <InterviewQuestions 
+        <InterviewQuestions
             type="technical"
             title="Technical Interview Practice"
         />

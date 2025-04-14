@@ -121,7 +121,7 @@
     opacity: 0.7;
 }
 
-.submit-button, 
+.submit-button,
 .next-button {
     background-color: #78c0a8;
     color: white;
@@ -133,7 +133,7 @@
     transition: background-color 0.3s;
 }
 
-.submit-button:hover, 
+.submit-button:hover,
 .next-button:hover {
     background-color: #56a68a;
 }

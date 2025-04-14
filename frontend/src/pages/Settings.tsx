@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useState, useEffect, useCallback} from 'react';
+import {useNavigate} from 'react-router-dom';
 import Button from '../components/Button';
 import './Settings.css';
-import { API_CONFIG } from '@/services/config';
+import {API_CONFIG} from '@/services/config';
 import PageHeader from '../components/PageHeader';
 import CategoryTabs from '../components/CategoryTabs';
 
@@ -38,24 +38,24 @@ const API_BASE_URLS: Record<string, string> = {
 };
 
 const SETTINGS_CATEGORIES = [
-    { id: 'behavioral', label: 'Behavioral Questions' },
-    { id: 'technical', label: 'Technical Questions' }
+    {id: 'behavioral', label: 'Behavioral Questions'},
+    {id: 'technical', label: 'Technical Questions'}
 ];
 
 const QuestionPanel = ({
-    type,
-    error,
-    success,
-    confirmation,
-    question,
-    setQuestion,
-    handleSubmit,
-    questions,
-    handleDelete,
-    confirmDelete,
-    cancelDelete,
-    isLoading
-}: QuestionPanelProps) => (
+                           type,
+                           error,
+                           success,
+                           confirmation,
+                           question,
+                           setQuestion,
+                           handleSubmit,
+                           questions,
+                           handleDelete,
+                           confirmDelete,
+                           cancelDelete,
+                           isLoading
+                       }: QuestionPanelProps) => (
     <div className={`${type}-tab`}>
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
@@ -63,8 +63,9 @@ const QuestionPanel = ({
             <div className="confirmation-message">
                 <p>{confirmation.message}</p>
                 <div className="confirmation-buttons">
-                    <Button onClick={cancelDelete} text="Cancel" className="cancel-button" disabled={isLoading} />
-                    <Button onClick={() => confirmDelete(confirmation.id)} text="Confirm" className="confirm-button" disabled={isLoading} />
+                    <Button onClick={cancelDelete} text="Cancel" className="cancel-button" disabled={isLoading}/>
+                    <Button onClick={() => confirmDelete(confirmation.id)} text="Confirm" className="confirm-button"
+                            disabled={isLoading}/>
                 </div>
             </div>
         )}
@@ -78,7 +79,8 @@ const QuestionPanel = ({
                         required
                         disabled={isLoading}
                     />
-                    <Button type="submit" className="submit-button" text="Add Question" disabled={isLoading || !question.trim()} />
+                    <Button type="submit" className="submit-button" text="Add Question"
+                            disabled={isLoading || !question.trim()}/>
                 </form>
 
                 <div className="question-list">
@@ -89,7 +91,8 @@ const QuestionPanel = ({
                         {questions.map((q: Question) => (
                             <li key={q.id} className="question-item">
                                 <span className="question-text">{q.question}</span>
-                                <Button onClick={() => handleDelete(q.id)} text="Delete" className="delete-button" disabled={isLoading} />
+                                <Button onClick={() => handleDelete(q.id)} text="Delete" className="delete-button"
+                                        disabled={isLoading}/>
                             </li>
                         ))}
                     </ul>
@@ -163,9 +166,9 @@ const Settings = () => {
         try {
             const response = await fetch(`${API_BASE_URLS[activeTab]}/add`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
-                body: JSON.stringify({ question })
+                body: JSON.stringify({question})
             });
 
             if (!response.ok) {
@@ -246,18 +249,18 @@ const Settings = () => {
 
     return (
         <div className="settings">
-            <PageHeader 
+            <PageHeader
                 title="Settings"
                 onBack={() => navigate('/dashboard')}
             />
-            
-            <CategoryTabs 
+
+            <CategoryTabs
                 categories={SETTINGS_CATEGORIES}
                 selectedCategory={activeTab}
                 onCategoryChange={handleTabChange}
             />
 
-            <QuestionPanel 
+            <QuestionPanel
                 type={activeTab}
                 error={error}
                 success={success}
