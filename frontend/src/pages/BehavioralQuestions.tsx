@@ -1,11 +1,12 @@
-import React from 'react';
 import InterviewQuestions from '../components/InterviewQuestions';
 
-const BehavioralQuestions: React.FC = () => {
+const BehavioralQuestions = () => {
     return (
         <InterviewQuestions 
             type="behavioral"
             title="Behavioral Interview Practice"
+            // Add subtitle if desired, e.g.:
+            // subtitle="Prepare for behavioral questions using the STAR method"
         />
     );
 };

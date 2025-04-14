@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./Dashboard.css";
 import Button from "../components/Button"; // Reusable Button component
+import LogoutButton from "../components/LogoutButton";
 import { useNavigate } from 'react-router-dom';
-import { API_CONFIG } from '../services/config';
+import { API_CONFIG } from '@/services/config';
+
 
 interface UserData {
     authenticated: boolean;
@@ -16,14 +18,7 @@ interface JobStats {
     todayCount: number;
 }
 
-interface QuestionCounts {
-    date: string;
-    behavioral: number;
-    technical: number;
-    [key: string]: string | number;
-}
-
-const Dashboard: React.FC = () => {
+const Dashboard = () => {
     const [user, setUser] = useState<UserData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [jobCount, setJobCount] = useState<number>(0);
@@ -35,87 +30,76 @@ const Dashboard: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const checkAuth = async (): Promise<void> => {
+        const abortController = new AbortController();
+        const signal = abortController.signal;
+
+        const fetchDashboardData = async (): Promise<void> => {
+            setLoading(true);
             try {
-                const response = await fetch(
-                    API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER, 
-                    { credentials: 'include' }
-                );
-
-                if (!response.ok) {
-                    throw new Error('Not authenticated');
-                }
-
-                const userData: UserData = await response.json();
-                
-                if (!userData.authenticated) {
-                    navigate('/');
-                    return;
-                }
-
-                setUser(userData);
-                fetchStats();
-                
-            } catch (error) {
-                console.error('Authentication check failed:', error);
-                navigate('/');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const fetchStats = async (): Promise<void> => {
-            try {
-                const [jobStats, technicalCount, behavioralCount] = await Promise.all([
+                const [userResponse, jobStatsRes, technicalCountRes, behavioralCountRes] = await Promise.all([
+                    fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER, {
+                        credentials: 'include', signal
+                    }),
                     fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS_STATS, {
-                        credentials: 'include'
+                        credentials: 'include', signal
                     }),
                     fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.TECHNICAL + '/count', {
-                        credentials: 'include'
+                        credentials: 'include', signal
                     }),
                     fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.BEHAVIORAL + '/count', {
-                        credentials: 'include'
+                        credentials: 'include', signal
                     })
                 ]);
 
-                if (!jobStats.ok || !technicalCount.ok || !behavioralCount.ok) {
-                    throw new Error('Failed to fetch stats');
+                if (signal.aborted) return;
+
+                if (userResponse.ok) {
+                    const userData: UserData = await userResponse.json();
+                    setUser(userData);
+                } else {
+                    console.error('Failed to fetch user data for dashboard');
                 }
 
-                const jobData: JobStats = await jobStats.json();
-                const technicalData = await technicalCount.json();
-                const behavioralData = await behavioralCount.json();
+                if (jobStatsRes.ok && technicalCountRes.ok && behavioralCountRes.ok) {
+                    const jobData: JobStats = await jobStatsRes.json();
+                    const technicalData = await technicalCountRes.json();
+                    const behavioralData = await behavioralCountRes.json();
 
-                setJobCount(jobData.todayCount);
-                setTechnicalCount(technicalData.count);
-                setBehavioralCount(behavioralData.count);
+                    if (signal.aborted) return;
+
+                    setJobCount(jobData.todayCount);
+                    setTechnicalCount(technicalData.count);
+                    setBehavioralCount(behavioralData.count);
+                } else {
+                    console.error('Failed to fetch one or more stats');
+                }
+
             } catch (error) {
-                console.error('Error fetching stats:', error);
+                if (error instanceof Error) {
+                    if (error.name !== 'AbortError' && !signal.aborted) {
+                        console.error('Error fetching dashboard data:', error);
+                    }
+                } else {
+                    if (!signal.aborted) {
+                        console.error('An unexpected error occurred fetching dashboard data:', error);
+                    }
+                }
+            } finally {
+                if (!signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
-        checkAuth();
-    }, [navigate]);
+        void fetchDashboardData();
 
-    const handleLogout = async () => {
-        try {
-            const response = await fetch(
-                API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.LOGOUT,
-                { method: 'POST', credentials: 'include' }
-            );
-            
-            if (response.ok) {
-                navigate('/');
-            }
-        } catch (error) {
-            console.error('Logout failed:', error);
-            // Fallback to direct navigation if the API call fails
-            navigate('/');
-        }
-    };
+        return () => {
+            abortController.abort();
+        };
+    }, []);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div>Loading Dashboard Data...</div>;
     }
 
     return (
@@ -144,9 +128,7 @@ const Dashboard: React.FC = () => {
                         </>
                     )}
                        Welcome, {user?.username || 'User'}&nbsp;|&nbsp;
-                        <span className="logout-link" onClick={handleLogout}>
-                            Logout
-                        </span>
+                        <LogoutButton />
                     </p>
                 </div>
             </header>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import './InterviewQuestions.css';
-import { API_CONFIG } from '../services/config';
+import { API_CONFIG } from '@/services/config';
 import PageHeader from './PageHeader';
 
 // Add these type declarations after imports
@@ -22,19 +22,13 @@ interface QuestionResponse {
     question: string;
 }
 
-interface QuestionCounts {
-    date: string;
-    behavioral: number;
-    technical: number;
-    [key: string]: string | number;
-}
-
 interface InterviewQuestionsProps {
     type: 'behavioral' | 'technical';
     title: string;
+    subtitle?: string;
 }
 
-const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) => {
+const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) => {
     const API_BASE_URL = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS[type.toUpperCase() as keyof typeof API_CONFIG.ENDPOINTS];
     const [question, setQuestion] = useState<string>('');
     const [response, setResponse] = useState<string>('');
@@ -186,7 +180,7 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
                 throw new Error('Failed to reset questions');
             }
 
-            fetchNewQuestion();
+            await fetchNewQuestion();
         } catch (error) {
             console.error('Error resetting questions:', error);
             setError('Failed to reset questions. Please try again.');
@@ -245,11 +239,15 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
         };
     }, []);
 
+    const noInteraction = loading || question === "No more questions for today! Please reset or come back tomorrow!";
+    const canSubmit = !loading && !!response.trim() && question !== "No more questions for today! Please reset or come back tomorrow!";
+    const micDisabled = !SpeechRecognition || noInteraction;
+
     return (
         <div className={`${type}-questions`}>
             <PageHeader 
                 title={title}
-                subtitle="Practice your responses and get AI feedback"
+                subtitle={subtitle || "Practice your responses and get AI feedback"}
                 onBack={() => navigate('/dashboard')}
                 rightButton={showResetButton ? (
                     <Button 
@@ -261,7 +259,7 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
                 ) : (
                     <Button 
                         text="Skip" 
-                        onClick={handleSkip} // Use the handleSkip function here
+                        onClick={handleSkip}
                         className="skip-button"
                         disabled={loading}
                     />
@@ -286,23 +284,21 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
                                     value={response}
                                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setResponse(e.target.value)}
                                     placeholder="Use the STAR method: Describe the Situation, Task, Action, and Result..."
-                                    disabled={loading || question === "No more questions for today! Please reset or come back tomorrow!"}
+                                    disabled={noInteraction}
                                 />
-                                    <button 
-                                        onClick={submitResponse}
-                                        disabled={loading || !response.trim() || question === "No more questions for today! Please reset or come back tomorrow!"}
-                                        className="submit-button"
-                                    >
-                                        Get Feedback
-                                    </button>
-                                    <button 
-                                        onClick={toggleListening}
-                                        disabled={!SpeechRecognition || loading || question === "No more questions for today! Please reset or come back tomorrow!"}
-                                        className={`mic-button ${isListening ? 'active' : ''}`}
-                                    >
-                                        🎤
-                                    </button>
-                                </div>
+                                <Button
+                                    text="Get Feedback"
+                                    onClick={submitResponse}
+                                    disabled={!canSubmit}
+                                    className="submit-button"
+                                />
+                                <Button
+                                    text="🎤"
+                                    onClick={toggleListening}
+                                    disabled={micDisabled}
+                                    className={`mic-button ${isListening ? 'active' : ''}`}
+                                />
+                            </div>
                         ) : (
                             <div className="feedback-section">
                                 <h3>Feedback:</h3>
@@ -316,20 +312,18 @@ const InterviewQuestions: React.FC<InterviewQuestionsProps> = ({ type, title }) 
                                 </div>
                                 <div className="feedback-text">{feedback.feedback}</div>
                                 <div className="button-group">
-                                    <button 
+                                    <Button
+                                        text="Try Again"
                                         onClick={handleRetry}
                                         className="retry-button"
                                         disabled={loading}
-                                    >
-                                        Try Again
-                                    </button>
-                                    <button 
+                                    />
+                                    <Button
+                                        text="Next Question"
                                         onClick={handleNext}
                                         className="next-button"
                                         disabled={loading || feedback.rating < 6}
-                                    >
-                                        Next Question
-                                    </button>
+                                    />
                                 </div>
                             </div>
                         )}

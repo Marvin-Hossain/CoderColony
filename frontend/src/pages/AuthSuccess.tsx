@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_CONFIG } from '../services/config';
+import { API_CONFIG } from '@/services/config';
 
 interface AuthTestResponse {
     authenticated: boolean;
@@ -17,56 +17,82 @@ interface UserResponse {
     reason?: string;
 }
 
-const AuthSuccess: React.FC = () => {
+const AuthSuccess = () => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigate();
 
     useEffect(() => {
+        const abortController = new AbortController();
+        const signal = abortController.signal;
+
         const checkAuthStatus = async (): Promise<void> => {
+            setError(null);
             try {
-                // First try the test endpoint
                 const testResponse = await fetch(
                     API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.TEST,
-                    { credentials: 'include' }
+                    { credentials: 'include', signal }
                 );
 
+                if (signal.aborted) return;
+
                 if (!testResponse.ok) {
-                    throw new Error(`Test endpoint failed: ${testResponse.status}`);
+                    throw new Error(`Authentication test endpoint failed: ${testResponse.status}`);
                 }
 
                 const testData: AuthTestResponse = await testResponse.json();
-                
+
+                if (signal.aborted) return;
+
                 if (testData.authenticated) {
                     const userResponse = await fetch(
                         API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
-                        { credentials: 'include' }
+                        { credentials: 'include', signal }
                     );
-                    
+
+                    if (signal.aborted) return;
+
                     if (!userResponse.ok) {
-                        throw new Error(`User endpoint failed: ${userResponse.status}`);
+                        throw new Error(`Fetching user data failed: ${userResponse.status}`);
                     }
-                    
+
                     const userData: UserResponse = await userResponse.json();
-                    
+
+                    if (signal.aborted) return;
+
                     if (userData.authenticated && userData.user) {
                         localStorage.setItem('user', JSON.stringify(userData.user));
-                        navigate('/dashboard');
+                        navigate('/dashboard', { replace: true });
                     } else {
-                        setError(`Authentication succeeded but user data couldn't be retrieved: ${userData.reason || 'unknown reason'}`);
+                        setError(`Authentication check passed but user data couldn't be retrieved: ${userData.reason || 'unknown reason'}`);
                     }
                 } else {
-                    setError("Not authenticated according to test endpoint");
+                    setError("Authentication check failed.");
                 }
             } catch (error) {
-                console.error('Error in authentication flow:', error);
-                setError(error instanceof Error ? error.message : 'Unknown error occurred');
+                if (error instanceof Error) {
+                    if (error.name !== 'AbortError' && !signal.aborted) {
+                        console.error('Error in authentication flow:', error);
+                        setError(`Authentication process error: ${error.message}`);
+                    }
+                } else {
+                    if (!signal.aborted) {
+                        console.error('Unknown error in authentication flow:', error);
+                        setError('An unknown error occurred during authentication.');
+                    }
+                }
             } finally {
-                setLoading(false);
+                if (!signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
-        
+
         checkAuthStatus();
+
+        return () => {
+            abortController.abort();
+        };
     }, [navigate]);
 
     if (loading) {
@@ -74,7 +100,13 @@ const AuthSuccess: React.FC = () => {
     }
 
     if (error) {
-        return <div>Authentication failed: {error}</div>;
+        return (
+            <div>
+                Authentication failed: {error}
+                <br />
+                <button onClick={() => navigate('/')}>Return to Login</button>
+            </div>
+        );
     }
 
     return <div>Authentication successful, redirecting...</div>;

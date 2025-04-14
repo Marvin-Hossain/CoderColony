@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./Progress.css";
 import { Line } from "react-chartjs-2";
-import { API_CONFIG } from '../services/config';
+import { API_CONFIG } from '@/services/config';
 import PageHeader from '../components/PageHeader';
 import {
   Chart as ChartJS,
@@ -15,7 +15,7 @@ import {
   Legend,
 } from "chart.js";
 import CategoryTabs from '../components/CategoryTabs';
-import { formatChartDate } from '../services/dateUtils';
+import { formatChartDate } from '@/services/dateUtils';
 
 // Move chart registration outside component
 ChartJS.register(
@@ -71,30 +71,30 @@ const CATEGORIES: Category[] = [
 
 // Move API calls to separate service
 const progressService = {
-  async fetchWeeklyData(category: string): Promise<WeeklyData> {
+  async fetchWeeklyData(category: string, signal?: AbortSignal): Promise<WeeklyData> {
     const response = await fetch(
       API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROGRESS + `/${category}`,
-      { credentials: 'include' }
+      { credentials: 'include', signal }
     );
     if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
+      throw new Error(`HTTP error fetching weekly data: ${response.status}`);
     }
     return response.json();
   },
 
-  async fetchAllTimeStats(category: string): Promise<AllTimeStats> {
+  async fetchAllTimeStats(category: string, signal?: AbortSignal): Promise<AllTimeStats> {
     const response = await fetch(
       API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROGRESS + `/${category}/all-time`,
-      { credentials: 'include' }
+      { credentials: 'include', signal }
     );
     if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
+      throw new Error(`HTTP error fetching all-time stats: ${response.status}`);
     }
     return response.json();
   }
 };
 
-const Progress: React.FC = () => {
+const Progress = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("jobs");
   const [weeklyData, setWeeklyData] = useState<WeeklyData | null>(null);
   const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | null>(null);
@@ -150,33 +150,47 @@ const Progress: React.FC = () => {
 
   // Fetch data with proper error handling
   useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+
     const fetchData = async (): Promise<void> => {
       setIsLoading(true);
+      setError(null);
       try {
-        const [weeklyData, statsData] = await Promise.all([
-          progressService.fetchWeeklyData(selectedCategory),
-          progressService.fetchAllTimeStats(selectedCategory)
+        const [fetchedWeeklyData, fetchedStatsData] = await Promise.all([
+          progressService.fetchWeeklyData(selectedCategory, signal),
+          progressService.fetchAllTimeStats(selectedCategory, signal)
         ]);
 
-        setWeeklyData(weeklyData);
-        setAllTimeStats(statsData);
-        setError(null);
+        if (!signal.aborted) {
+          setWeeklyData(fetchedWeeklyData);
+          setAllTimeStats(fetchedStatsData);
+        }
       } catch (err) {
         if (err instanceof Error) {
-          if (err.message.includes('401') || err.message.includes('403')) {
-            navigate('/');
-            return;
+          if (err.name !== 'AbortError' && !signal.aborted) {
+            setError('Failed to load progress data. Please try again.');
+            console.error('Error fetching progress data:', err);
+          }
+        } else {
+          if (!signal.aborted) {
+            setError('An unknown error occurred while fetching progress data.');
+            console.error('Unknown error fetching progress data:', err);
           }
         }
-        setError('Failed to load progress data');
-        console.error('Error fetching progress data:', err);
       } finally {
-        setIsLoading(false);
+        if (!signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchData();
-  }, [navigate, selectedCategory]);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [selectedCategory]);
 
   // Extract components for better organization
   const renderStats = () => {
@@ -223,7 +237,7 @@ const Progress: React.FC = () => {
 };
 
 // Extract smaller components
-const StatsSection: React.FC<StatsSectionProps> = React.memo(({ title, stats }) => (
+const StatsSection = React.memo(({ title, stats }: StatsSectionProps) => (
   <div className="stats-section">
     <h3>{title}</h3>
     <div className="stat-item">
@@ -241,7 +255,7 @@ const StatsSection: React.FC<StatsSectionProps> = React.memo(({ title, stats }) 
   </div>
 ));
 
-const StatusBreakdown: React.FC<StatusBreakdownProps> = React.memo(({ stats }) => (
+const StatusBreakdown = React.memo(({ stats }: StatusBreakdownProps) => (
   <div className="stats-section">
     <h3>Status Breakdown</h3>
     <div className="stat-item">

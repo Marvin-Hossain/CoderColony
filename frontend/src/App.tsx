@@ -1,5 +1,4 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Intro from './pages/Intro';
 import Dashboard from './pages/Dashboard';
 import JobApps from './pages/JobApps';
@@ -11,7 +10,7 @@ import AuthSuccess from './pages/AuthSuccess';
 import "bootstrap/dist/css/bootstrap.min.css";
 import ProtectedRoute from './components/ProtectedRoute';
 
-const App: React.FC = () => {
+const App = () => {
     return (
         <Router>
             <Routes>

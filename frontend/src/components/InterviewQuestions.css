@@ -74,8 +74,7 @@
 
 .response-section textarea {
     min-height: 200px;
-    padding: 15px;
-    padding-right: 60px;
+    padding: 15px 60px 15px 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 1rem;

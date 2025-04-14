@@ -1,25 +1,26 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
-import { API_CONFIG } from '../services/config';
+import { API_CONFIG } from '@/services/config';
 
-const LogoutButton: React.FC = () => {
+const LogoutButton = () => {
     const navigate = useNavigate();
 
     const handleLogout = async (): Promise<void> => {
         try {
             const response = await fetch(
                 API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.LOGOUT,
-                { credentials: 'include' }
+                { method: 'POST', credentials: 'include' }
             );
 
             if (response.ok) {
                 navigate('/');
             } else {
-                console.error('Logout failed');
+                console.error('Logout failed on server:', await response.text());
+                navigate('/');
             }
         } catch (error) {
             console.error('Logout error:', error);
+            navigate('/');
         }
     };
 

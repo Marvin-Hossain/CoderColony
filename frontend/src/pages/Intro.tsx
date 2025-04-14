@@ -1,11 +1,8 @@
-import React from "react";
-import { useNavigate } from "react-router-dom"; // Import the navigation hook
 import "./Intro.css";
 import Button from "../components/Button"; // Reusable Button component
-import { API_CONFIG } from "../services/config"; // Import API_CONFIG
+import { API_CONFIG } from "@/services/config"; // Import API_CONFIG
 
-const Intro: React.FC = () => {
-    const navigate = useNavigate();
+const Intro = () => {
     
     // Function to handle GitHub login
     const handleGithubLogin = (): void => {
