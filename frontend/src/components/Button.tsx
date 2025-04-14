@@ -1,15 +1,13 @@
-import './Button.css';  // Import the CSS file for the button
+import './Button.css';
 
-// This just tells us what props our Button can accept
 interface ButtonProps {
     text: string;
-    onClick?: () => void;  // Make onClick optional
-    className?: string;   // optional string
-    disabled?: boolean;   // optional boolean
-    type?: 'button' | 'submit' | 'reset';  // Add type prop
+    onClick?: () => void;
+    className?: string;
+    disabled?: boolean;
+    type?: 'button' | 'submit' | 'reset';
 }
 
-// Remove React.FC
 const Button = ({
     onClick,
     text,

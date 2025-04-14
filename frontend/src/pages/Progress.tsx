@@ -17,7 +17,6 @@ import {
 import CategoryTabs from '../components/CategoryTabs';
 import { formatChartDate } from '@/services/dateUtils';
 
-// Move chart registration outside component
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -59,7 +58,6 @@ interface StatusBreakdownProps {
   stats: AllTimeStats;
 }
 
-// Move categories to constants
 const CATEGORIES: Category[] = [
   { id: "jobs", label: "Job Applications", goal: 10 },
   // { id: "behavioral", label: "Behavioral Questions", goal: 10 },
@@ -69,7 +67,6 @@ const CATEGORIES: Category[] = [
   // { id: "concepts", label: "New Concepts", goal: 0 },
 ];
 
-// Move API calls to separate service
 const progressService = {
   async fetchWeeklyData(category: string, signal?: AbortSignal): Promise<WeeklyData> {
     const response = await fetch(
@@ -102,12 +99,10 @@ const Progress = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  // Use useCallback for event handlers
   const handleCategoryChange = useCallback((categoryId: string): void => {
     setSelectedCategory(categoryId);
   }, []);
 
-  // Use useMemo for complex calculations
   const chartData = useMemo(() => ({
     labels: weeklyData?.chartData?.map(item => formatChartDate(item.date)) || [],
     datasets: [
@@ -148,7 +143,6 @@ const Progress = () => {
     }
   }), [selectedCategory, selectedCategoryData]);
 
-  // Fetch data with proper error handling
   useEffect(() => {
     const abortController = new AbortController();
     const signal = abortController.signal;
@@ -185,14 +179,13 @@ const Progress = () => {
       }
     };
 
-    fetchData();
+    void fetchData();
 
     return () => {
       abortController.abort();
     };
   }, [selectedCategory]);
 
-  // Extract components for better organization
   const renderStats = () => {
     if (!allTimeStats) return null;
     return (
@@ -236,7 +229,6 @@ const Progress = () => {
   );
 };
 
-// Extract smaller components
 const StatsSection = React.memo(({ title, stats }: StatsSectionProps) => (
   <div className="stats-section">
     <h3>{title}</h3>

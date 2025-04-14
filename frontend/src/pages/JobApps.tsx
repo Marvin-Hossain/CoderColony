@@ -201,7 +201,7 @@ const JobApps = () => {
 
     useEffect(() => {
         const abortController = new AbortController();
-        fetchJobs(abortController.signal);
+        void fetchJobs(abortController.signal);
 
         return () => {
             abortController.abort();

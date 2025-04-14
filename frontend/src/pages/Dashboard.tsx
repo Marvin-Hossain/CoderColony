@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Dashboard.css";
-import Button from "../components/Button"; // Reusable Button component
+import Button from "../components/Button";
 import LogoutButton from "../components/LogoutButton";
 import { useNavigate } from 'react-router-dom';
 import { API_CONFIG } from '@/services/config';

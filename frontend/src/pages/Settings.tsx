@@ -237,7 +237,7 @@ const Settings = () => {
 
     useEffect(() => {
         const abortController = new AbortController();
-        fetchQuestions(abortController.signal);
+        void fetchQuestions(abortController.signal);
 
         return () => {
             abortController.abort();

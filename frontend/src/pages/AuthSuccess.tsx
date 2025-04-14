@@ -12,7 +12,6 @@ interface UserResponse {
     user?: {
         username: string;
         id: string;
-        // add other user properties as needed
     };
     reason?: string;
 }
@@ -61,7 +60,6 @@ const AuthSuccess = () => {
                     if (signal.aborted) return;
 
                     if (userData.authenticated && userData.user) {
-                        localStorage.setItem('user', JSON.stringify(userData.user));
                         navigate('/dashboard', { replace: true });
                     } else {
                         setError(`Authentication check passed but user data couldn't be retrieved: ${userData.reason || 'unknown reason'}`);
@@ -88,7 +86,7 @@ const AuthSuccess = () => {
             }
         };
 
-        checkAuthStatus();
+        void checkAuthStatus();
 
         return () => {
             abortController.abort();

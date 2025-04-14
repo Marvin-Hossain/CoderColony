@@ -5,7 +5,6 @@ import './InterviewQuestions.css';
 import { API_CONFIG } from '@/services/config';
 import PageHeader from './PageHeader';
 
-// Add these type declarations after imports
 declare global {
     interface Window {
         SpeechRecognition: any;
@@ -81,7 +80,6 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
             return;
         }
 
-        // Stop voice recognition if it's active
         stopRecognition();
         
         setLoading(true);
@@ -116,7 +114,6 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
     const handleNext = async (): Promise<void> => {
         setLoading(true);
         try {
-            // Then fetch new question
             await fetchNewQuestion();
         } catch (error) {
             setError('Failed to load next question. Please try again.');
@@ -151,11 +148,10 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
     };
 
     const handleSkip = async (): Promise<void> => {
-        // Stop voice recognition if it's active
         stopRecognition();
         setLoading(true);
         try {
-            await fetchNewQuestion(); // Fetch a new question
+            await fetchNewQuestion();
         } catch (error) {
             setError('Failed to load new question. Please try again.');
         } finally {
@@ -230,7 +226,7 @@ const InterviewQuestions = ({ type, title, subtitle }: InterviewQuestionsProps) 
     };
 
     useEffect(() => {
-        fetchNewQuestion();
+        void fetchNewQuestion();
     }, []);
 
     useEffect(() => {

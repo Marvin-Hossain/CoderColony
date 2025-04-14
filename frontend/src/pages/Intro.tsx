@@ -1,10 +1,9 @@
 import "./Intro.css";
-import Button from "../components/Button"; // Reusable Button component
-import { API_CONFIG } from "@/services/config"; // Import API_CONFIG
+import Button from "../components/Button";
+import { API_CONFIG } from "@/services/config";
 
 const Intro = () => {
     
-    // Function to handle GitHub login
     const handleGithubLogin = (): void => {
         window.location.href = API_CONFIG.BASE_AUTH_URL + API_CONFIG.ENDPOINTS.AUTH.GITHUB;
     };

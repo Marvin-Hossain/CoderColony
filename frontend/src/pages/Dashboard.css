@@ -118,14 +118,14 @@
 
 .logout-button {
     cursor: pointer;
-    color: #005700; /* Darker shade of green */
+    color: #005700;
     text-decoration: underline;
     padding: 2px 6px;
     font-size: 0.9em;
 }
 
 .logout-button:hover {
-    color: #004400; /* Even darker shade on hover */
+    color: #004400;
 }
 
 .avatar {
