@@ -52,6 +52,20 @@ public class QuestionService {
             2. Problem-solving approach
             3. Code quality and best practices (if code is involved)
             4. Communication of technical concepts
+
+            Important Notes:
+            - This is a voice-to-text input, so IGNORE:
+                * Grammatical errors
+                * Punctuation issues
+                * Sentence fragments
+                * Unnecessary pauses
+                * Filler words (um, uh, like, you know)
+            - Focus ONLY on:
+                * STAR method implementation
+                * Content relevance
+                * Specific examples provided
+                * Professional achievements
+            * Overall story structure
             
             Question: '%s'
             Response: '%s'
@@ -72,6 +86,20 @@ public class QuestionService {
             2. Specific examples and details
             3. Professional impact and results
             4. Communication clarity
+
+            Important Notes:
+            - This is a voice-to-text input, so IGNORE:
+                * Grammatical errors
+                * Punctuation issues
+                * Sentence fragments
+                * Unnecessary pauses
+                * Filler words (um, uh, like, you know)
+            - Focus ONLY on:
+                * STAR method implementation
+                * Content relevance
+                * Specific examples provided
+                * Professional achievements
+            * Overall story structure
             
             Question: '%s'
             Response: '%s'
@@ -184,13 +212,13 @@ public class QuestionService {
         }
     }
 
-    // Mark question as completed if rating > 5
+    // Mark question as completed if rating > 6
     private void updateQuestion(Question question, String response, JsonNode evaluation) {
         question.setResponseText(response);
         int rating = evaluation.get("rating").asInt();
         question.setRating(rating);
         question.setFeedback(evaluation.get("feedback").asText());
-        question.setUpdatedAt(rating > 5 ? LocalDate.now(zoneId) : null);
+        question.setUpdatedAt(rating > 6 ? LocalDate.now(zoneId) : null);
     }
 
     private Question createNoMoreQuestionsResponse() {

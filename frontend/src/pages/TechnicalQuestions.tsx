@@ -1,9 +1,8 @@
-import React from 'react';
 import InterviewQuestions from '../components/InterviewQuestions';
 
-const TechnicalQuestions: React.FC = () => {
+const TechnicalQuestions = () => {
     return (
-        <InterviewQuestions 
+        <InterviewQuestions
             type="technical"
             title="Technical Interview Practice"
         />

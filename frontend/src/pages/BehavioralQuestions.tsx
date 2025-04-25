@@ -1,9 +1,8 @@
-import React from 'react';
 import InterviewQuestions from '../components/InterviewQuestions';
 
-const BehavioralQuestions: React.FC = () => {
+const BehavioralQuestions = () => {
     return (
-        <InterviewQuestions 
+        <InterviewQuestions
             type="behavioral"
             title="Behavioral Interview Practice"
         />

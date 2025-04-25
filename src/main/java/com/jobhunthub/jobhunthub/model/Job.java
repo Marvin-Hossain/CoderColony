@@ -1,11 +1,17 @@
 package com.jobhunthub.jobhunthub.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Entity
+@Builder
 @Table(name = "jobs")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Job {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -12,11 +12,11 @@ interface CategoryTabsProps {
     onCategoryChange: (categoryId: string) => void;
 }
 
-const CategoryTabs: React.FC<CategoryTabsProps> = ({ 
-    categories, 
-    selectedCategory, 
-    onCategoryChange 
-}) => (
+const CategoryTabs = ({
+                          categories,
+                          selectedCategory,
+                          onCategoryChange
+                      }: CategoryTabsProps) => (
     <div className="category-tabs">
         {categories.map((category) => (
             <button

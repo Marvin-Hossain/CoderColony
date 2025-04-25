@@ -9,21 +9,23 @@ interface PageHeaderProps {
     rightButton?: React.ReactNode;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({
-    title,
-    subtitle,
-    onBack,
-    rightButton
-}) => (
+const PageHeader = ({
+                        title,
+                        subtitle,
+                        onBack,
+                        rightButton
+                    }: PageHeaderProps) => (
     <header className="page-header">
-        <Button 
-            text="Back" 
-            onClick={onBack} 
+        <Button
+            text="Back"
+            onClick={onBack}
             className="back-button"
         />
-        <h1>{title}</h1>
-        {subtitle && <p>{subtitle}</p>}
-        {rightButton}
+        <div className="page-header-titles">
+            <h1>{title}</h1>
+            {subtitle && <p className="page-header-subtitle">{subtitle}</p>}
+        </div>
+        {rightButton && <div className="page-header-right">{rightButton}</div>}
     </header>
 );
 

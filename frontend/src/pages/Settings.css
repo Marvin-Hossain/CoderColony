@@ -92,7 +92,6 @@ textarea {
     background-color: #a71d2a;
 }
 
-/* New loading state styles */
 .loading-indicator {
     text-align: center;
     padding: 20px;
@@ -117,7 +116,7 @@ textarea:disabled {
 }
 
 .success-message {
-    background-color: rgba(76, 175, 80, 0.1);
+    background-color: #e8f5e9;
     color: #4CAF50;
     padding: 10px;
     margin-bottom: 15px;
@@ -126,7 +125,7 @@ textarea:disabled {
 }
 
 .confirmation-message {
-    background-color: rgba(128, 128, 128, 0.1);
+    background-color: #f0f0f0;
     color: #555;
     padding: 15px;
     margin-bottom: 15px;

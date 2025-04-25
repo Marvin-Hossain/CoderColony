@@ -1,4 +1,3 @@
-/* Common styles for both types */
 .technical-questions,
 .behavioral-questions {
     max-width: 800px;
@@ -19,7 +18,7 @@
 }
 
 .reset-button:hover {
-    background-color: #f08c8c; /* Slightly darker red on hover */
+    background-color: #f08c8c;
 }
 
 .skip-button {
@@ -30,7 +29,7 @@
 }
 
 .skip-button:hover {
-    background-color: #80a0c0; /* Slightly darker blue on hover */
+    background-color: #80a0c0;
 }
 
 .error-message {
@@ -74,8 +73,7 @@
 
 .response-section textarea {
     min-height: 200px;
-    padding: 15px;
-    padding-right: 60px;
+    padding: 15px 60px 15px 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 1rem;
@@ -123,7 +121,7 @@
     opacity: 0.7;
 }
 
-.submit-button, 
+.submit-button,
 .next-button {
     background-color: #78c0a8;
     color: white;
@@ -135,7 +133,7 @@
     transition: background-color 0.3s;
 }
 
-.submit-button:hover, 
+.submit-button:hover,
 .next-button:hover {
     background-color: #56a68a;
 }
