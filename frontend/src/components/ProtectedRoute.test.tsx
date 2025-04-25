@@ -35,7 +35,7 @@ describe('ProtectedRoute', () => {
       </MemoryRouter>
     );
     
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    expect(screen.getByText('Authenticating...')).toBeInTheDocument();
   });
 
   it('shows protected content when authenticated', async () => {

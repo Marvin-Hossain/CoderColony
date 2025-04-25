@@ -91,12 +91,11 @@
     cursor: pointer;
     font-size: 0.9rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s, transform 0.2s;
+    transition: background-color 0.3s ease;
 }
 
 .go-button:hover {
     background-color: #56a68a;
-    transform: scale(1.05);
 }
 
 .go-button:disabled {
