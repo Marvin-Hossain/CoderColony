@@ -16,18 +16,26 @@ interface UserResponse {
     reason?: string;
 }
 
+/**
+ * Component rendered after successful external authentication (e.g., OAuth redirect).
+ * It verifies the session with the backend and redirects the user to the dashboard
+ * or displays an error if verification fails.
+ */
 const AuthSuccess = () => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigate();
 
+    /** Effect runs on mount to verify the authentication status post-redirect. */
     useEffect(() => {
         const abortController = new AbortController();
         const signal = abortController.signal;
 
+        /** Verifies authentication first with a test endpoint, then fetches user data. */
         const checkAuthStatus = async (): Promise<void> => {
             setError(null);
             try {
+                // First, hit a simple endpoint to confirm backend session validity
                 const testResponse = await fetch(
                     API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.TEST,
                     {credentials: 'include', signal}
@@ -44,6 +52,7 @@ const AuthSuccess = () => {
                 if (signal.aborted) return;
 
                 if (testData.authenticated) {
+                    // If the test passes, attempt to fetch user details to complete the process
                     const userResponse = await fetch(
                         API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
                         {credentials: 'include', signal}
@@ -59,6 +68,7 @@ const AuthSuccess = () => {
 
                     if (signal.aborted) return;
 
+                    // Final success condition: both test and user endpoints confirm authentication
                     if (userData.authenticated && userData.user) {
                         navigate('/dashboard', {replace: true});
                     } else {
@@ -68,6 +78,7 @@ const AuthSuccess = () => {
                     setError("Authentication check failed.");
                 }
             } catch (error) {
+                // Handle network errors or other exceptions during the process
                 if (error instanceof Error) {
                     if (error.name !== 'AbortError' && !signal.aborted) {
                         console.error('Error in authentication flow:', error);
@@ -88,6 +99,7 @@ const AuthSuccess = () => {
 
         void checkAuthStatus();
 
+        // Cleanup function to abort fetch if the component unmounts
         return () => {
             abortController.abort();
         };
@@ -97,6 +109,7 @@ const AuthSuccess = () => {
         return <div>Processing authentication, please wait...</div>;
     }
 
+    // Display error message and a way back if authentication failed
     if (error) {
         return (
             <div>

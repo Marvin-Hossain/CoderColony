@@ -31,6 +31,10 @@ const INITIAL_FORM_STATE: FormData = {
     status: "APPLIED"
 };
 
+/**
+ * Page component for managing job applications (CRUD operations).
+ * Displays a list of applications and a form to add or edit entries.
+ */
 const JobApps = () => {
     const [jobs, setJobs] = useState<JobApplication[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -39,6 +43,7 @@ const JobApps = () => {
     const [formData, setFormData] = useState<FormData>(INITIAL_FORM_STATE);
     const navigate = useNavigate();
 
+    /** Fetches all job applications from the backend. Accepts AbortSignal for cancellation. */
     const fetchJobs = async (signal: AbortSignal): Promise<void> => {
         setLoading(true);
         setError(null);
@@ -75,6 +80,7 @@ const JobApps = () => {
         }
     };
 
+    /** Handles form submission for adding a new job application. */
     const addJob = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
@@ -109,6 +115,7 @@ const JobApps = () => {
         }
     };
 
+    /** Handles form submission for updating an existing job application. */
     const updateJob = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         if (!editingJobId) return;
@@ -146,6 +153,7 @@ const JobApps = () => {
         }
     };
 
+    /** Handles deleting a job application after user confirmation. */
     const deleteJob = async (id: number): Promise<void> => {
         if (!window.confirm("Are you sure you want to delete this job?")) return;
 
@@ -176,6 +184,7 @@ const JobApps = () => {
         }
     };
 
+    /** Updates form data state when input fields change. */
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
         const {name, value} = e.target;
         setFormData({
@@ -184,6 +193,7 @@ const JobApps = () => {
         });
     };
 
+    /** Populates the form with data from an existing job for editing. */
     const startEdit = (job: JobApplication): void => {
         setFormData({
             title: job.title,
@@ -194,11 +204,13 @@ const JobApps = () => {
         setEditingJobId(job.id);
     };
 
+    /** Resets the form and exits editing mode. */
     const cancelEdit = (): void => {
         setFormData(INITIAL_FORM_STATE);
         setEditingJobId(null);
     };
 
+    /** Effect to fetch initial job applications when the component mounts. */
     useEffect(() => {
         const abortController = new AbortController();
         void fetchJobs(abortController.signal);
@@ -208,6 +220,7 @@ const JobApps = () => {
         };
     }, []);
 
+    /** Memoized calculation to sort jobs by creation date (newest first). */
     const sortedJobs = useMemo(() => {
         return [...jobs].sort((a, b) => {
             const dateA = new Date(a.createdAt);

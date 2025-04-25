@@ -18,6 +18,10 @@ interface JobStats {
     todayCount: number;
 }
 
+/**
+ * The main dashboard component displayed after successful login.
+ * Shows user information, daily goals, and provides navigation to other sections.
+ */
 const Dashboard = () => {
     const [user, setUser] = useState<UserData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -29,10 +33,12 @@ const Dashboard = () => {
     const technicalGoal = 10;
     const navigate = useNavigate();
 
+    /** Effect to fetch necessary user data and goal statistics when the component mounts. */
     useEffect(() => {
         const abortController = new AbortController();
         const signal = abortController.signal;
 
+        /** Fetches user details and various counts concurrently. */
         const fetchDashboardData = async (): Promise<void> => {
             setLoading(true);
             try {
@@ -55,9 +61,10 @@ const Dashboard = () => {
 
                 if (userResponse.ok) {
                     const userData: UserData = await userResponse.json();
-                    setUser(userData);
+                    if (!signal.aborted) setUser(userData);
                 } else {
                     console.error('Failed to fetch user data for dashboard');
+                    if (!signal.aborted) setUser(null);
                 }
 
                 if (jobStatsRes.ok && technicalCountRes.ok && behavioralCountRes.ok) {
@@ -65,11 +72,11 @@ const Dashboard = () => {
                     const technicalData = await technicalCountRes.json();
                     const behavioralData = await behavioralCountRes.json();
 
-                    if (signal.aborted) return;
-
-                    setJobCount(jobData.todayCount);
-                    setTechnicalCount(technicalData.count);
-                    setBehavioralCount(behavioralData.count);
+                    if (!signal.aborted) {
+                        setJobCount(jobData.todayCount);
+                        setTechnicalCount(technicalData.count);
+                        setBehavioralCount(behavioralData.count);
+                    }
                 } else {
                     console.error('Failed to fetch one or more stats');
                 }

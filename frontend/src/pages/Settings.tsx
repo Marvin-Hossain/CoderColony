@@ -42,6 +42,10 @@ const SETTINGS_CATEGORIES = [
     {id: 'technical', label: 'Technical Questions'}
 ];
 
+/**
+ * Renders the UI panel for adding and listing questions for a specific category.
+ * This includes the input form, question list, and message displays.
+ */
 const QuestionPanel = ({
                            type,
                            error,
@@ -69,6 +73,7 @@ const QuestionPanel = ({
                 </div>
             </div>
         )}
+        {/* Form and list are hidden during delete confirmation */}
         {!confirmation && (
             <>
                 <form onSubmit={handleSubmit}>
@@ -102,6 +107,10 @@ const QuestionPanel = ({
     </div>
 );
 
+/**
+ * Settings page component allowing users to manage their custom
+ * behavioral and technical interview questions via different tabs.
+ */
 const Settings = () => {
     const [activeTab, setActiveTab] = useState<'behavioral' | 'technical'>('behavioral');
     const [question, setQuestion] = useState<string>('');
@@ -112,8 +121,10 @@ const Settings = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
+    /** Fetches all questions for the currently active tab from the backend API. */
     const fetchQuestions = async (signal?: AbortSignal): Promise<void> => {
         setIsLoading(true);
+        // Avoid clearing messages on read operations, only on actions
         try {
             const response = await fetch(`${API_BASE_URLS[activeTab]}/all`, {
                 credentials: 'include',
@@ -146,6 +157,7 @@ const Settings = () => {
         }
     };
 
+    /** Handles switching between 'behavioral' and 'technical' tabs. */
     const handleTabChange = useCallback((categoryId: string): void => {
         setError(null);
         setSuccess(null);
@@ -153,8 +165,10 @@ const Settings = () => {
         setQuestion('');
         setQuestions([]);
         setActiveTab(categoryId as 'behavioral' | 'technical');
-    }, []);
+        // The useEffect hook watching activeTab will trigger fetchQuestions
+    }, []); // Memoized as it doesn't depend on changing state/props
 
+    /** Handles the form submission to add a new question via API POST request. */
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setIsLoading(true);
@@ -189,9 +203,11 @@ const Settings = () => {
                 setError('An unknown error occurred adding question.');
                 console.error('Unknown error adding question:', err);
             }
+            // Loading state is handled by the fetchQuestions finally block
         }
     };
 
+    /** Sets state to show the delete confirmation dialog for a specific question. */
     const handleDelete = (id: number): void => {
         setError(null);
         setSuccess(null);
@@ -201,6 +217,7 @@ const Settings = () => {
         });
     };
 
+    /** Sends the API request to delete the confirmed question. */
     const confirmDelete = async (id: number): Promise<void> => {
         setIsLoading(true);
         setError(null);
@@ -231,13 +248,16 @@ const Settings = () => {
                 setError('An unknown error occurred deleting question.');
                 console.error('Unknown error deleting question:', err);
             }
+            // Loading state is handled by the fetchQuestions finally block
         }
     };
 
+    /** Hides the delete confirmation dialog. */
     const cancelDelete = (): void => {
         setConfirmation(null);
     };
 
+    /** Effect hook to fetch questions when the active tab changes. */
     useEffect(() => {
         const abortController = new AbortController();
         void fetchQuestions(abortController.signal);
@@ -260,6 +280,7 @@ const Settings = () => {
                 onCategoryChange={handleTabChange}
             />
 
+            {/* Render the panel containing the form and list for the active tab */}
             <QuestionPanel
                 type={activeTab}
                 error={error}

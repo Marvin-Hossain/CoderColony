@@ -67,7 +67,9 @@ const CATEGORIES: Category[] = [
     // { id: "concepts", label: "New Concepts", goal: 0 },
 ];
 
+/** Service object containing functions to fetch progress-related data from the backend. */
 const progressService = {
+    /** Fetches weekly progress data (counts per day) for a given category. */
     async fetchWeeklyData(category: string, signal?: AbortSignal): Promise<WeeklyData> {
         const response = await fetch(
             API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROGRESS + `/${category}`,
@@ -79,6 +81,7 @@ const progressService = {
         return response.json();
     },
 
+    /** Fetches all-time statistics (total, average, etc.) for a given category. */
     async fetchAllTimeStats(category: string, signal?: AbortSignal): Promise<AllTimeStats> {
         const response = await fetch(
             API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROGRESS + `/${category}/all-time`,
@@ -91,6 +94,10 @@ const progressService = {
     }
 };
 
+/**
+ * Page component to display progress statistics and charts for different categories.
+ * Fetches weekly and all-time data based on the selected category tab.
+ */
 const Progress = () => {
     const [selectedCategory, setSelectedCategory] = useState<string>("jobs");
     const [weeklyData, setWeeklyData] = useState<WeeklyData | null>(null);
@@ -99,10 +106,12 @@ const Progress = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const navigate = useNavigate();
 
+    /** Memoized callback to handle changing the selected category tab. */
     const handleCategoryChange = useCallback((categoryId: string): void => {
         setSelectedCategory(categoryId);
     }, []);
 
+    /** Memoized calculation for chart data structure required by react-chartjs-2. */
     const chartData = useMemo(() => ({
         labels: weeklyData?.chartData?.map(item => formatChartDate(item.date)) || [],
         datasets: [
@@ -117,6 +126,7 @@ const Progress = () => {
         ]
     }), [weeklyData, selectedCategory]);
 
+    /** Memoized calculation for chart configuration options. */
     const selectedCategoryData = CATEGORIES.find(c => c.id === selectedCategory);
     const chartOptions = useMemo(() => ({
         responsive: true,
@@ -143,10 +153,12 @@ const Progress = () => {
         }
     }), [selectedCategory, selectedCategoryData]);
 
+    /** Effect to fetch data whenever the selected category changes. */
     useEffect(() => {
         const abortController = new AbortController();
         const signal = abortController.signal;
 
+        /** Fetches both weekly and all-time data concurrently for the selected category. */
         const fetchData = async (): Promise<void> => {
             setIsLoading(true);
             setError(null);
@@ -186,6 +198,7 @@ const Progress = () => {
         };
     }, [selectedCategory]);
 
+    /** Helper function to render the statistics sections based on available data. */
     const renderStats = () => {
         if (!allTimeStats) return null;
         return (
@@ -229,6 +242,7 @@ const Progress = () => {
     );
 };
 
+/** Memoized component to display general all-time statistics. */
 const StatsSection = React.memo(({title, stats}: StatsSectionProps) => (
     <div className="stats-section">
         <h3>{title}</h3>
@@ -247,20 +261,21 @@ const StatsSection = React.memo(({title, stats}: StatsSectionProps) => (
     </div>
 ));
 
+/** Memoized component to display job application status breakdown statistics. */
 const StatusBreakdown = React.memo(({stats}: StatusBreakdownProps) => (
     <div className="stats-section">
         <h3>Status Breakdown</h3>
         <div className="stat-item">
             <span>Applied:</span>
-            <span>{stats.applied}</span>
+            <span>{stats.applied ?? 'N/A'}</span>
         </div>
         <div className="stat-item">
             <span>Interviewed:</span>
-            <span>{stats.interviewed}</span>
+            <span>{stats.interviewed ?? 'N/A'}</span>
         </div>
         <div className="stat-item">
             <span>Rejected:</span>
-            <span>{stats.rejected}</span>
+            <span>{stats.rejected ?? 'N/A'}</span>
         </div>
     </div>
 ));
