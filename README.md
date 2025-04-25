@@ -9,6 +9,10 @@ A full-stack application to help job seekers track applications and practice int
 - Progress tracking and statistics
 - Timezone-aware date handling
 
+## Project Status
+
+**Actively Under Development:** This project is currently in progress. Core features like job tracking and AI interview practice are functional, demonstrating the core full-stack architecture. Ongoing development focuses on UI refinement, usability improvements, and expanding test coverage across the application.
+
 ## Tech Stack
 ### Backend
 - Java 17
@@ -22,6 +26,14 @@ A full-stack application to help job seekers track applications and practice int
 - TypeScript
 - Bootstrap
 - Chart.js
+
+## Testing Strategy
+
+This project prioritizes code quality and reliability through testing:
+
+*   **Backend:** Comprehensive unit and integration tests cover service logic, repository interactions, and API endpoints (using JUnit and Mockito/Spring Test), ensuring backend stability.
+*   **Frontend:** Unit tests for individual React components are implemented using Vitest/React Testing Library, verifying component logic and rendering accuracy.
+*   **Ongoing Work:** Currently expanding test coverage with frontend integration tests and exploring end-to-end (E2E) testing strategies (e.g., using Cypress or Playwright) to validate key user flows across the application.
 
 ## Prerequisites
 - Java 17 or higher
