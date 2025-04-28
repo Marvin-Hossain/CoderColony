@@ -81,7 +81,7 @@ public class OAuth2Controller {
         }
 
         // Redirect to the dashboard
-        return new RedirectView("http://localhost:3000/dashboard");
+        return new RedirectView(System.getenv("FRONTEND_URL") + "/dashboard");
     }
 
     @GetMapping("/api/auth/user")

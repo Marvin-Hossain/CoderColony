@@ -1,11 +1,11 @@
 package com.jobhunthub.jobhunthub.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 
+@Setter
+@Getter
 @Entity
 @Builder
 @NoArgsConstructor
@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 @Table(name = "users")
 public class User {
 
+    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,44 +27,4 @@ public class User {
 
     private String avatarUrl;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getGithubId() {
-        return githubId;
-    }
-
-    public void setGithubId(String githubId) {
-        this.githubId = githubId;
-    }
-
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-    }
 }
