@@ -21,8 +21,8 @@ interface ApiConfig {
 }
 
 export const API_CONFIG: ApiConfig = {
-    BASE_URL: 'http://localhost:8080/api',
-    BASE_AUTH_URL: 'http://localhost:8080',
+    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+    BASE_AUTH_URL: import.meta.env.VITE_AUTH_URL || 'http://localhost:8080',
     ENDPOINTS: {
         JOBS: '/jobs',
         BEHAVIORAL: '/questions/behavioral',

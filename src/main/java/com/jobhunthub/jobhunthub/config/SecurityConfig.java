@@ -40,11 +40,11 @@ public class SecurityConfig {
                     auth.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("http://localhost:3000/dashboard", true)
-                        .failureUrl("http://localhost:3000/?error=true")
+                        .defaultSuccessUrl(System.getenv("FRONTEND_URL") + "/dashboard", true)
+                        .failureUrl(System.getenv("FRONTEND_URL") + "/?error=true")
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("http://localhost:3000/")
+                        .logoutSuccessUrl(System.getenv("FRONTEND_URL") + "/")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
@@ -54,10 +54,10 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        // CORS setup for frontend (localhost:3000)
-        // Allows credentials and standard HTTP methods
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        // Use environment variable for allowed origins
+        String allowedOrigin = System.getenv("ALLOWED_ORIGIN");
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigin != null ? allowedOrigin : "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
