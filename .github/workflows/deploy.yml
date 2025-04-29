@@ -114,11 +114,11 @@ jobs:
             },
             {
               "Name": "GITHUB_CLIENT_ID",
-              "Value": "${{ secrets.GITHUB_CLIENT_ID }}"
+              "Value": "${{ secrets.OAUTH_CLIENT_ID }}"
             },
             {
               "Name": "GITHUB_CLIENT_SECRET",
-              "Value": "${{ secrets.GITHUB_CLIENT_SECRET }}"
+              "Value": "${{ secrets.OAUTH_CLIENT_SECRET }}"
             },
             {
               "Name": "APP_URL",
