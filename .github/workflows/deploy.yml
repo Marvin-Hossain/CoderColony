@@ -113,11 +113,11 @@ jobs:
               "Value": "${{ secrets.OPENAI_API_KEY }}"
             },
             {
-              "Name": "GITHUB_CLIENT_ID",
+              "Name": "OAUTH_CLIENT_ID",
               "Value": "${{ secrets.OAUTH_CLIENT_ID }}"
             },
             {
-              "Name": "GITHUB_CLIENT_SECRET",
+              "Name": "OAUTH_CLIENT_SECRET",
               "Value": "${{ secrets.OAUTH_CLIENT_SECRET }}"
             },
             {
