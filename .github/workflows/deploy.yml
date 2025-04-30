@@ -84,7 +84,7 @@ jobs:
         }' > .elasticbeanstalk/config.yml
         
         echo '{
-          "AWSEBDockerrunVersion": "2",
+          "AWSEBDockerrunVersion": "3",
           "containerDefinitions": [
             {
               "name": "backend",
