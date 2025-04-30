@@ -84,53 +84,69 @@ jobs:
         }' > .elasticbeanstalk/config.yml
         
         echo '{
-          "AWSEBDockerrunVersion": "1",
-          "Image": {
-            "Name": "${{ secrets.DOCKER_HUB_USERNAME }}/jobhunthub-backend:latest",
-            "Update": "true"
-          },
-          "Ports": [
+          "AWSEBDockerrunVersion": "2",
+          "containerDefinitions": [
             {
-              "ContainerPort": "8080",
-              "HostPort": "80"
-            }
-          ],
-          "Environment": [
-            {
-              "Name": "JDBC_DATABASE_URL",
-              "Value": "${{ secrets.JDBC_DATABASE_URL }}"
+              "name": "backend",
+              "image": "${{ secrets.DOCKER_HUB_USERNAME }}/jobhunthub-backend:latest",
+              "essential": true,
+              "memory": 512,
+              "portMappings": [
+                {
+                  "hostPort": 8080,
+                  "containerPort": 8080
+                }
+              ],
+              "environment": [
+                {
+                  "name": "JDBC_DATABASE_URL",
+                  "value": "${{ secrets.JDBC_DATABASE_URL }}"
+                },
+                {
+                  "name": "JDBC_DATABASE_USERNAME",
+                  "value": "${{ secrets.JDBC_DATABASE_USERNAME }}"
+                },
+                {
+                  "name": "JDBC_DATABASE_PASSWORD",
+                  "value": "${{ secrets.JDBC_DATABASE_PASSWORD }}"
+                },
+                {
+                  "name": "OPENAI_API_KEY",
+                  "value": "${{ secrets.OPENAI_API_KEY }}"
+                },
+                {
+                  "name": "OAUTH_CLIENT_ID",
+                  "value": "${{ secrets.OAUTH_CLIENT_ID }}"
+                },
+                {
+                  "name": "OAUTH_CLIENT_SECRET",
+                  "value": "${{ secrets.OAUTH_CLIENT_SECRET }}"
+                },
+                {
+                  "name": "APP_URL",
+                  "value": "${{ secrets.APP_URL }}"
+                },
+                {
+                  "name": "FRONTEND_URL",
+                  "value": "${{ secrets.FRONTEND_URL }}"
+                },
+                {
+                  "name": "ALLOWED_ORIGIN",
+                  "value": "${{ secrets.ALLOWED_ORIGIN }}"
+                }
+              ]
             },
             {
-              "Name": "JDBC_DATABASE_USERNAME",
-              "Value": "${{ secrets.JDBC_DATABASE_USERNAME }}"
-            },
-            {
-              "Name": "JDBC_DATABASE_PASSWORD",
-              "Value": "${{ secrets.JDBC_DATABASE_PASSWORD }}"
-            },
-            {
-              "Name": "OPENAI_API_KEY",
-              "Value": "${{ secrets.OPENAI_API_KEY }}"
-            },
-            {
-              "Name": "OAUTH_CLIENT_ID",
-              "Value": "${{ secrets.OAUTH_CLIENT_ID }}"
-            },
-            {
-              "Name": "OAUTH_CLIENT_SECRET",
-              "Value": "${{ secrets.OAUTH_CLIENT_SECRET }}"
-            },
-            {
-              "Name": "APP_URL",
-              "Value": "${{ secrets.APP_URL }}"
-            },
-            {
-              "Name": "FRONTEND_URL",
-              "Value": "${{ secrets.FRONTEND_URL }}"
-            },
-            {
-              "Name": "ALLOWED_ORIGIN",
-              "Value": "${{ secrets.ALLOWED_ORIGIN }}"
+              "name": "frontend",
+              "image": "${{ secrets.DOCKER_HUB_USERNAME }}/jobhunthub-frontend:latest",
+              "essential": true,
+              "memory": 256,
+              "portMappings": [
+                {
+                  "hostPort": 80,
+                  "containerPort": 80
+                }
+              ]
             }
           ]
         }' > Dockerrun.aws.json
