@@ -120,6 +120,7 @@ const AuthSuccess = () => {
         );
     }
 
+
     return <div>Authentication successful, redirecting...</div>;
 };
 
