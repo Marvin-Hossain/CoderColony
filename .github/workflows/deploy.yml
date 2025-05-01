@@ -139,7 +139,7 @@ jobs:
         }' > Dockerrun.aws.json
         
     - name: Create deployment package (Zip)
-      run: zip -r deploy-package.zip Dockerrun.aws.json .ebextensions # Add .ebextensions to zip
+      run: zip -r deploy-package.zip Dockerrun.aws.json .platform # Change this back to .platform
 
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v21
@@ -149,5 +149,5 @@ jobs:
         application_name: JobHuntHub
         environment_name: ${{ secrets.EB_ENVIRONMENT_NAME }}
         region: ${{ secrets.AWS_REGION }}
-        deployment_package: deploy-package.zip # Change this to the zip file
+        deployment_package: deploy-package.zip
         version_label: ${{ github.sha }}
