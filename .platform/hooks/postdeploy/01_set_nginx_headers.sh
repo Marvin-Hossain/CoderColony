@@ -8,7 +8,7 @@ echo "Creating Nginx custom headers snippet at ${CONFIG_SNIPPET}"
 
 # Use sudo tee to write the file as root
 sudo tee "${CONFIG_SNIPPET}" > /dev/null <<EOF
-proxy_set_header X-Forwarded-Proto \$scheme;
+proxy_set_header X-Forwarded-Proto https;
 proxy_set_header Host \$host;
 proxy_set_header X-Real-IP \$remote_addr;
 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
