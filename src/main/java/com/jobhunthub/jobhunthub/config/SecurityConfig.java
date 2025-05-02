@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
                     // Public endpoints
-                    auth.requestMatchers("/", "/error", "/api/public/**").permitAll();
+                    auth.requestMatchers("/", "/error", "/api/public/**", "/health").permitAll();
                     auth.requestMatchers("/oauth2/authorization/**").permitAll();
                     auth.requestMatchers("/login/oauth2/code/**").permitAll();
                     auth.requestMatchers("/logout").permitAll();
