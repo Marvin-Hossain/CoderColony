@@ -16,15 +16,18 @@ EOF
 
 # Check if the file was created successfully
 if [ -f "${CONFIG_SNIPPET}" ]; then
-  echo "Nginx custom headers snippet created successfully."
-  # Optionally, try reloading nginx gently. EB might do this automatically anyway.
-  # echo "Attempting to reload Nginx configuration..."
-  # sudo service nginx reload
-  # if [ \$? -eq 0 ]; then
-  #   echo "Nginx reloaded successfully."
-  # else
-  #   echo "Nginx reload failed. EB will likely restart it later in the deployment."
-  # fi
+  echo "Nginx custom headers snippet created successfully at ${CONFIG_SNIPPET}."
+  # Explicitly reload Nginx to apply the new configuration
+  echo "Attempting to reload Nginx configuration..."
+  sudo service nginx reload
+  RELOAD_STATUS=$? # Capture the exit status of the reload command
+  if [ ${RELOAD_STATUS} -eq 0 ]; then
+    echo "Nginx reloaded successfully."
+  else
+    echo "ERROR: Nginx reload failed with status ${RELOAD_STATUS}. The new headers might not be applied." >&2
+    # Decide if this should be a fatal error for the deployment
+    # exit 1 # Uncomment this to make deployment fail if reload fails
+  fi
 else
   echo "ERROR: Failed to create Nginx custom headers snippet at ${CONFIG_SNIPPET}" >&2
   exit 1
