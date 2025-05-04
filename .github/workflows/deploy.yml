@@ -62,9 +62,6 @@ jobs:
     if: success()
     
     steps:
-    - name: Checkout code # Need to checkout code again to get .ebextensions
-      uses: actions/checkout@v3
-
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -72,7 +69,7 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
         
-    - name: Generate Elastic Beanstalk config and Dockerrun
+    - name: Generate Elastic Beanstalk config
       run: |
         mkdir -p .elasticbeanstalk
         echo '{
@@ -138,9 +135,6 @@ jobs:
           ]
         }' > Dockerrun.aws.json
         
-    - name: Create deployment package (Zip)
-      run: zip -r deploy-package.zip Dockerrun.aws.json .platform # Change this back to .platform
-
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v21
       with:
@@ -149,5 +143,5 @@ jobs:
         application_name: JobHuntHub
         environment_name: ${{ secrets.EB_ENVIRONMENT_NAME }}
         region: ${{ secrets.AWS_REGION }}
-        deployment_package: deploy-package.zip
+        deployment_package: Dockerrun.aws.json
         version_label: ${{ github.sha }}
