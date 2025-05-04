@@ -145,3 +145,4 @@ jobs:
         region: ${{ secrets.AWS_REGION }}
         deployment_package: Dockerrun.aws.json
         version_label: ${{ github.sha }}
+        
