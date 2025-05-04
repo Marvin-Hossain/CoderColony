@@ -68,7 +68,15 @@ public class OAuth2Controller {
             }
 
             if (needsUpdate) {
-                userService.save(user);
+                logger.info("Attempting to update existing user: {}", user.getUsername());
+                try {
+                    userService.save(user);
+                    logger.info("Successfully updated user: {}", user.getUsername());
+                } catch (Exception e) {
+                    logger.error("Error updating user: {}", user.getUsername(), e);
+                }
+            } else {
+                logger.info("No updates needed for existing user: {}", user.getUsername());
             }
         } else {
             // Create new user
@@ -77,7 +85,13 @@ public class OAuth2Controller {
             user.setUsername(login);
             user.setEmail(email);
             user.setAvatarUrl(avatarUrl);
-            userService.save(user);
+            logger.info("Attempting to save new user: {}", user.getUsername());
+            try {
+                userService.save(user);
+                logger.info("Successfully saved new user: {}", user.getUsername());
+            } catch (Exception e) {
+                logger.error("Error saving new user: {}", user.getUsername(), e);
+            }
         }
 
         // Redirect to the dashboard
