@@ -25,13 +25,27 @@ const ProtectedRoute = () => {
         const checkAuth = async (): Promise<void> => {
             try {
                 console.log("Checking auth status...");
+
+                // --- TEMPORARY DIAGNOSTIC ---
+                const headersToSend = new Headers();
+                // Manually add headers we expect to be sent (or check if they exist)
+                // Browsers might restrict adding some like Cookie directly, but this helps visualize
+                headersToSend.append('Accept', '*/*'); 
+                // Add any other standard headers if needed
+
+                // This is primarily for logging, credentials: 'include' actually controls cookie sending
+                console.log("Intending to send fetch with credentials: include"); 
+
                 const response = await fetch(
                     API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
                     {
-                        credentials: 'include',
+                        method: 'GET', // Explicitly GET
+                        headers: headersToSend, // Logged above
+                        credentials: 'include', 
                         signal
                     }
                 );
+                // --- END TEMPORARY DIAGNOSTIC ---
 
                 if (signal.aborted) return;
 
