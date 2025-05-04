@@ -97,15 +97,15 @@ jobs:
           ],
           "Environment": [
             {
-              "Name": "JDBC_DATABASE_URL",
+              "Name": "SPRING_DATASOURCE_URL",
               "Value": "${{ secrets.JDBC_DATABASE_URL }}"
             },
             {
-              "Name": "JDBC_DATABASE_USERNAME",
+              "Name": "SPRING_DATASOURCE_USERNAME",
               "Value": "${{ secrets.JDBC_DATABASE_USERNAME }}"
             },
             {
-              "Name": "JDBC_DATABASE_PASSWORD",
+              "Name": "SPRING_DATASOURCE_PASSWORD",
               "Value": "${{ secrets.JDBC_DATABASE_PASSWORD }}"
             },
             {
