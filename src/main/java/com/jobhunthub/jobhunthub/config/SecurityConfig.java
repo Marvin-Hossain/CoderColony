@@ -36,6 +36,10 @@ public class SecurityConfig {
                     auth.requestMatchers("/logout").permitAll();
                     auth.requestMatchers("/api/auth/logout").permitAll();
 
+                    // --- Allow the auth check endpoint ---
+                    auth.requestMatchers("/api/auth/user").permitAll(); 
+                    // --- End Change ---
+
                     // Protected endpoints
                     auth.anyRequest().authenticated();
                 })
@@ -57,7 +61,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // Use environment variable for allowed origins
         String allowedOrigin = System.getenv("ALLOWED_ORIGIN");
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigin != null ? allowedOrigin : "http://localhost:3000"));
+        List<String> origins = Arrays.asList(
+            allowedOrigin != null ? allowedOrigin : "http://localhost:3000"
+        );
+        configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
