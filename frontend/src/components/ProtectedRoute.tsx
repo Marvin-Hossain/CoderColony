@@ -24,30 +24,58 @@ const ProtectedRoute = () => {
         /** Calls the backend to verify the current user's session validity. */
         const checkAuth = async (): Promise<void> => {
             try {
+                console.log("Checking auth status...");
+
+                // --- TEMPORARY DIAGNOSTIC ---
+                const headersToSend = new Headers();
+                // Manually add headers we expect to be sent (or check if they exist)
+                // Browsers might restrict adding some like Cookie directly, but this helps visualize
+                headersToSend.append('Accept', '*/*'); 
+                // Add any other standard headers if needed
+
+                // This is primarily for logging, credentials: 'include' actually controls cookie sending
+                console.log("Intending to send fetch with credentials: include"); 
+
                 const response = await fetch(
                     API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
-                    {credentials: 'include', signal}
+                    {
+                        method: 'GET', // Explicitly GET
+                        headers: headersToSend, // Logged above
+                        credentials: 'include', 
+                        signal
+                    }
                 );
+                // --- END TEMPORARY DIAGNOSTIC ---
 
                 if (signal.aborted) return;
 
+                if (response.redirected && !response.url.startsWith(API_CONFIG.BASE_URL)) {
+                   console.log(`Redirected away from API to: ${response.url}. Assuming auth redirect.`);
+                   return; 
+                }
+
                 if (response.ok) {
+                    console.log("Auth check successful (response.ok)");
                     const data: AuthResponse = await response.json();
                     if (!signal.aborted) {
                         setIsAuthenticated(data.authenticated);
+                        console.log(`Authentication status from API: ${data.authenticated}`);
+                    }
+                } else if (response.status === 401 || response.status === 403) {
+                    console.log(`Auth check failed: Status ${response.status}. User is unauthenticated.`);
+                    if (!signal.aborted) {
+                        setIsAuthenticated(false);
                     }
                 } else {
-                    // If the check fails (e.g., 401, 403, 500), treat as unauthenticated
+                    console.error(`Auth check failed with status: ${response.status}`);
                     if (!signal.aborted) {
-                        console.error(`Auth check failed with status: ${response.status}`);
                         setIsAuthenticated(false);
                     }
                 }
             } catch (error) {
-                // Treat network errors or other exceptions as unauthenticated
                 if (error instanceof Error) {
                     if (error.name !== 'AbortError' && !signal.aborted) {
-                        console.error('Auth check fetch failed:', error.message);
+                        console.error('Auth check fetch failed:', error.name, error.message);
                         setIsAuthenticated(false);
                     }
                 } else {
@@ -57,29 +85,32 @@ const ProtectedRoute = () => {
                     }
                 }
             } finally {
-                // Ensure loading state is updated unless the request was aborted
                 if (!signal.aborted) {
                     setLoading(false);
+                    console.log("Finished auth check, setting loading to false.");
                 }
             }
         };
 
-        // Fire off the auth check; internal error handling manages state
         void checkAuth();
 
-        // Cleanup function to abort fetch if the component unmounts during the request
         return () => {
             abortController.abort();
         };
-    }, []); // Empty dependency array ensures this runs only once on mount
+    }, []);
 
-    // Display loading indicator while checking auth status
     if (loading) {
+        console.log("Render: Loading...");
         return <div>Authenticating...</div>;
     }
 
-    // Render the nested routes if authenticated, otherwise redirect to home/login
-    return isAuthenticated ? <Outlet/> : <Navigate to="/" replace/>;
+    if (isAuthenticated === true) {
+        console.log("Render: Authenticated, rendering Outlet.");
+        return <Outlet/>;
+    } else {
+        console.log("Render: Not authenticated, navigating to /.");
+        return <Navigate to="/" replace/>;
+    }
 };
 
 export default ProtectedRoute; 
