@@ -1,5 +1,7 @@
 package com.jobhunthub.jobhunthub.controller;
 
+import com.jobhunthub.jobhunthub.dto.EvaluateResponseRequest;
+import com.jobhunthub.jobhunthub.dto.QuestionDTO;
 import com.jobhunthub.jobhunthub.model.Question;
 import com.jobhunthub.jobhunthub.service.QuestionService;
 import com.jobhunthub.jobhunthub.model.User;
@@ -7,7 +9,6 @@ import com.jobhunthub.jobhunthub.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.jobhunthub.jobhunthub.dto.EvaluateResponseRequest;
 import com.jobhunthub.jobhunthub.utils.AuthenticationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,14 +116,14 @@ public class QuestionController {
 
     // Gets all questions of a specific type
     @GetMapping("/{type}/all")
-    public ResponseEntity<List<Question>> getAllQuestions(
+    public ResponseEntity<List<QuestionDTO>> getAllQuestions(
             @PathVariable String type,
             Authentication authentication) {
         logger.info("--- ENTERED getAllQuestions with type: {} ---", type);
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
-        List<Question> questions = service.getQuestionsByUser(currentUser,
+        List<QuestionDTO> questionDTOs = service.getQuestionsByUser(currentUser,
                 Question.QuestionType.valueOf(type.toUpperCase()));
-        return ResponseEntity.ok(questions);
+        return ResponseEntity.ok(questionDTOs);
     }
 
     // Deletes a question after security checks

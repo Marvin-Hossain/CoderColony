@@ -14,6 +14,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.time.ZoneId;
 import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.dto.QuestionDTO;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionService {
@@ -187,12 +189,14 @@ public class QuestionService {
     }
 
     // Gets all questions for a specific user and type
-    public List<Question> getQuestionsByUser(User user, QuestionType type) {
+    public List<QuestionDTO> getQuestionsByUser(User user, QuestionType type) {
         List<Question> questions = repository.findByUserAndType(user, type);
         if (questions.isEmpty()) {
             throw new ResourceNotFoundException("No questions found for user and type");
         }
-        return questions;
+        return questions.stream()
+                .map(QuestionDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
     // Security validation methods
