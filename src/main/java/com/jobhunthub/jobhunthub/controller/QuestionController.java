@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.jobhunthub.jobhunthub.dto.EvaluateResponseRequest;
 import com.jobhunthub.jobhunthub.utils.AuthenticationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,8 @@ import org.springframework.security.core.Authentication;
 @RestController
 @RequestMapping("/api/questions")
 public class QuestionController {
+
+    private static final Logger logger = LoggerFactory.getLogger(QuestionController.class);
 
     private final QuestionService service;
     private final UserService userService;
@@ -114,6 +118,7 @@ public class QuestionController {
     public ResponseEntity<List<Question>> getAllQuestions(
             @PathVariable String type,
             Authentication authentication) {
+        logger.info("--- ENTERED getAllQuestions with type: {} ---", type);
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
         List<Question> questions = service.getQuestionsByUser(currentUser,
                 Question.QuestionType.valueOf(type.toUpperCase()));
