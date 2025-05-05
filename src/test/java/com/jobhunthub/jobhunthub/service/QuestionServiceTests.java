@@ -1,5 +1,6 @@
 package com.jobhunthub.jobhunthub.service;
 
+import com.jobhunthub.jobhunthub.dto.QuestionDTO;
 import com.jobhunthub.jobhunthub.model.Question;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.model.Question.QuestionType;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class QuestionServiceTests {
 
@@ -72,8 +74,8 @@ public class QuestionServiceTests {
         Question randomQuestion = questionService.getRandomQuestion(user, QuestionType.TECHNICAL);
 
         // Assert
-        Assertions.assertThat(randomQuestion).isNotNull();
-        Assertions.assertThat(randomQuestion.getQuestion()).isEqualTo("What is 2x4?");
+        assertThat(randomQuestion).isNotNull();
+        assertThat(randomQuestion.getQuestion()).isEqualTo("What is 2x4?");
     }
 
     @Test
@@ -85,8 +87,8 @@ public class QuestionServiceTests {
         Question savedQuestion = questionService.addQuestion(question, user, QuestionType.TECHNICAL);
 
         // Assert
-        Assertions.assertThat(savedQuestion).isNotNull();
-        Assertions.assertThat(savedQuestion.getQuestion()).isEqualTo("What is 2x4?");
+        assertThat(savedQuestion).isNotNull();
+        assertThat(savedQuestion.getQuestion()).isEqualTo("What is 2x4?");
     }
 
     @Test
@@ -118,16 +120,27 @@ public class QuestionServiceTests {
     }
 
     @Test
-    public void QuestionService_getQuestionsByUser_returnsQuestions() {
+    public void QuestionService_getQuestionsByUser_returnsQuestionDTOs() {
         // Arrange
         when(questionRepository.findByUserAndType(user, QuestionType.TECHNICAL)).thenReturn(List.of(question));
 
         // Act
-        List<Question> questions = questionService.getQuestionsByUser(user, QuestionType.TECHNICAL);
+        List<QuestionDTO> resultDTOs = questionService.getQuestionsByUser(user, QuestionType.TECHNICAL);
 
         // Assert
-        Assertions.assertThat(questions).isNotEmpty();
-        Assertions.assertThat(questions).contains(question);
+        assertThat(resultDTOs).isNotNull();
+        assertThat(resultDTOs).hasSize(1);
+
+        QuestionDTO resultDTO = resultDTOs.get(0);
+
+        assertThat(resultDTO.getId()).isEqualTo(question.getId());
+        assertThat(resultDTO.getQuestion()).isEqualTo(question.getQuestion());
+        assertThat(resultDTO.getType()).isEqualTo(question.getType().name());
+        assertThat(resultDTO.getUserId()).isEqualTo(user.getId());
+        assertThat(resultDTO.getUpdatedAt()).isEqualTo(question.getUpdatedAt());
+        assertThat(resultDTO.getResponseText()).isEqualTo(question.getResponseText());
+        assertThat(resultDTO.getRating()).isEqualTo(question.getRating());
+        assertThat(resultDTO.getFeedback()).isEqualTo(question.getFeedback());
     }
 
     @Test
@@ -191,7 +204,7 @@ public class QuestionServiceTests {
         // Arrange
         when(questionRepository.findByQuestionAndUserAndType(
                 question.getQuestion(), user, QuestionType.TECHNICAL))
-                .thenReturn(question);  // Simulate finding a duplicate
+                .thenReturn(question);
 
         // Act & Assert
         Assertions.assertThatThrownBy(() ->
@@ -221,9 +234,9 @@ public class QuestionServiceTests {
         Question result = questionService.evaluateResponse(questionText, response, user, QuestionType.TECHNICAL);
 
         // Assert
-        Assertions.assertThat(result.getRating()).isEqualTo(8);
-        Assertions.assertThat(result.getFeedback()).isEqualTo("Great answer!");
-        Assertions.assertThat(result.getUpdatedAt()).isNotNull(); // Should be set because rating > 5
+        assertThat(result.getRating()).isEqualTo(8);
+        assertThat(result.getFeedback()).isEqualTo("Great answer!");
+        assertThat(result.getUpdatedAt()).isNotNull();
     }
 
     @Test
@@ -247,9 +260,9 @@ public class QuestionServiceTests {
         Question result = questionService.evaluateResponse(questionText, response, user, QuestionType.TECHNICAL);
 
         // Assert
-        Assertions.assertThat(result.getRating()).isEqualTo(4);
-        Assertions.assertThat(result.getFeedback()).isEqualTo("Incorrect answer");
-        Assertions.assertThat(result.getUpdatedAt()).isNull(); // Should be null because rating <= 5
+        assertThat(result.getRating()).isEqualTo(4);
+        assertThat(result.getFeedback()).isEqualTo("Incorrect answer");
+        assertThat(result.getUpdatedAt()).isNull();
     }
 
     @Test
@@ -266,6 +279,6 @@ public class QuestionServiceTests {
         // Assert
         verify(questionRepository).findByQuestionAndUserAndType(questionText, user, QuestionType.TECHNICAL);
         verify(questionRepository).save(question);
-        Assertions.assertThat(question.getUpdatedAt()).isNull();
+        assertThat(question.getUpdatedAt()).isNull();
     }
 }
