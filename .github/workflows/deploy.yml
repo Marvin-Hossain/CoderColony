@@ -125,6 +125,10 @@ jobs:
               "Value": "${{ secrets.OAUTH_CLIENT_SECRET }}"
             },
             {
+              "Name": "APP_URL",
+              "Value": "${{ secrets.APP_URL }}"
+            },
+            {
               "Name": "FRONTEND_URL",
               "Value": "${{ secrets.FRONTEND_URL }}"
             },
