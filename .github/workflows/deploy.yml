@@ -97,6 +97,10 @@ jobs:
           ],
           "Environment": [
             {
+              "Name": "SPRING_PROFILES_ACTIVE",
+              "Value": "prod"
+            },
+            {
               "Name": "SPRING_DATASOURCE_URL",
               "Value": "${{ secrets.JDBC_DATABASE_URL }}"
             },
