@@ -34,5 +34,6 @@ build/
 
 src/test/resources/application-test.properties
 src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
 *.p12
 *.jks

@@ -191,9 +191,6 @@ public class QuestionService {
     // Gets all questions for a specific user and type
     public List<QuestionDTO> getQuestionsByUser(User user, QuestionType type) {
         List<Question> questions = repository.findByUserAndType(user, type);
-        if (questions.isEmpty()) {
-            throw new ResourceNotFoundException("No questions found for user and type");
-        }
         return questions.stream()
                 .map(QuestionDTO::fromEntity)
                 .collect(Collectors.toList());

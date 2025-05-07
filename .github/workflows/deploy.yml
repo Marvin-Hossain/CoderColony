@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ main ]
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
@@ -96,6 +96,10 @@ jobs:
             }
           ],
           "Environment": [
+            {
+              "Name": "SPRING_PROFILES_ACTIVE",
+              "Value": "prod"
+            },
             {
               "Name": "SPRING_DATASOURCE_URL",
               "Value": "${{ secrets.JDBC_DATABASE_URL }}"

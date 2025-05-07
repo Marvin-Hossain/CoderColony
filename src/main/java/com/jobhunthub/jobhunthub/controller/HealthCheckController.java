@@ -13,4 +13,5 @@ public class HealthCheckController {
         // It's designed to be fast and require no authentication.
         return ResponseEntity.ok("OK");
     }
+
 }
