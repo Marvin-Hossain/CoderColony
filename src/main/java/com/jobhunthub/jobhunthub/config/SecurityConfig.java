@@ -11,6 +11,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import jakarta.annotation.PostConstruct; // For Spring Boot 3+ / Jakarta EE
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Autowired
     private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
@@ -25,8 +29,16 @@ public class SecurityConfig {
     @Value("${frontend.url}")
     private String frontendUrlValue;
 
+    @PostConstruct // This method runs after all dependencies are injected and the bean is initialized
+    public void initProperties() {
+        logger.info("--- SecurityConfig ---");
+        logger.info("Resolved frontend.url in SecurityConfig: [{}]", frontendUrlValue);
+        logger.info("--- End SecurityConfig ---");
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        logger.info("Configuring securityFilterChain with frontendUrlValue: [{}]", frontendUrlValue); // Log here too
         // Main security setup:
         // - Enables CORS
         // - Disables CSRF (needed for our REST API)
