@@ -10,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +21,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+
+    @Value("${frontend.url}")
+    private String frontendUrlValue;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,10 +53,10 @@ public class SecurityConfig {
                 })
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(customAuthenticationSuccessHandler)
-                        .failureUrl(System.getenv("FRONTEND_URL") + "/?error=true")
+                        .failureUrl(frontendUrlValue + "/?error=true")
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl(System.getenv("FRONTEND_URL") + "/")
+                        .logoutSuccessUrl(frontendUrlValue + "/")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
