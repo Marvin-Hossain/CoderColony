@@ -28,13 +28,24 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     private final AuthenticationSuccessHandler delegate = new SavedRequestAwareAuthenticationSuccessHandler();
 
     // Inject UserService and frontend URL from environment variable
-    public CustomAuthenticationSuccessHandler(UserService userService, @Value("${frontend.url}") String frontendUrl) {
-        this.userService = userService;
-        this.frontendUrl = frontendUrl;
-        // Set the default target URL for the delegate
-        ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setDefaultTargetUrl(frontendUrl + "/dashboard");
-         ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setAlwaysUseDefaultTargetUrl(true); // Force redirect to dashboard
+    public CustomAuthenticationSuccessHandler(UserService userService, @Value("${frontend.url}") String injectedFrontendUrl) {
+        logger.info("CustomAuthenticationSuccessHandler constructor: Injected frontendUrl is [{}]", injectedFrontendUrl); // LOG IT HERE
 
+        this.userService = userService;
+        this.frontendUrl = injectedFrontendUrl; // Assign to field
+
+        if (injectedFrontendUrl == null || injectedFrontendUrl.trim().isEmpty() || "null".equalsIgnoreCase(injectedFrontendUrl)) {
+            logger.error("FATAL: frontendUrl is null or invalid in CustomAuthenticationSuccessHandler constructor. Cannot set default target URL.");
+            // Option 1: Throw an exception to make the failure clear
+            throw new IllegalArgumentException("frontendUrl cannot be null or empty for CustomAuthenticationSuccessHandler. Check property frontend.url and its environment variable source.");
+            // Option 2: Set a very basic, valid fallback (less ideal as it hides the config problem)
+            // ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setDefaultTargetUrl("/");
+        } else {
+            String targetUrl = injectedFrontendUrl + "/dashboard";
+            logger.info("CustomAuthenticationSuccessHandler: Setting default target URL to [{}]", targetUrl);
+            ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setDefaultTargetUrl(targetUrl);
+        }
+        ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setAlwaysUseDefaultTargetUrl(true);
     }
 
     @Override
@@ -107,6 +118,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
             // Use the delegate handler to perform the redirect (handles saved requests correctly)
             logger.info("User provisioning complete, delegating redirect to SavedRequestAwareAuthenticationSuccessHandler (target: {})", frontendUrl + "/dashboard");
+            logger.debug("onAuthenticationSuccess: Using frontendUrl [{}] for potential redirects (though delegate handles actual redirect).", this.frontendUrl);
             this.delegate.onAuthenticationSuccess(request, response, authentication);
 
         } catch (Exception e) {
