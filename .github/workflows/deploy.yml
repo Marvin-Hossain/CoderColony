@@ -62,9 +62,6 @@ jobs:
     if: success()
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -72,8 +69,20 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
         
-    - name: Generate Dockerrun.aws.json
+    - name: Generate Elastic Beanstalk config
       run: |
+        mkdir -p .elasticbeanstalk
+        echo '{
+          "global": {
+            "application_name": "JobHuntHub",
+            "default_region": "${{ secrets.AWS_REGION }}",
+            "profile": "eb-cli"
+          },
+          "deploy": {
+            "artifact": "Dockerrun.aws.json"
+          }
+        }' > .elasticbeanstalk/config.yml
+        
         echo '{
           "AWSEBDockerrunVersion": "1",
           "Image": {
@@ -85,35 +94,51 @@ jobs:
               "ContainerPort": "8080",
               "HostPort": "80"
             }
+          ],
+          "Environment": [
+            {
+              "Name": "SPRING_PROFILES_ACTIVE",
+              "Value": "prod"
+            },
+            {
+              "Name": "SPRING_DATASOURCE_URL",
+              "Value": "${{ secrets.JDBC_DATABASE_URL }}"
+            },
+            {
+              "Name": "SPRING_DATASOURCE_USERNAME",
+              "Value": "${{ secrets.JDBC_DATABASE_USERNAME }}"
+            },
+            {
+              "Name": "SPRING_DATASOURCE_PASSWORD",
+              "Value": "${{ secrets.JDBC_DATABASE_PASSWORD }}"
+            },
+            {
+              "Name": "OPENAI_API_KEY",
+              "Value": "${{ secrets.OPENAI_API_KEY }}"
+            },
+            {
+              "Name": "OAUTH_CLIENT_ID",
+              "Value": "${{ secrets.OAUTH_CLIENT_ID }}"
+            },
+            {
+              "Name": "OAUTH_CLIENT_SECRET",
+              "Value": "${{ secrets.OAUTH_CLIENT_SECRET }}"
+            },
+            {
+              "Name": "APP_URL",
+              "Value": "${{ secrets.APP_URL }}"
+            },
+            {
+              "Name": "FRONTEND_URL",
+              "Value": "${{ secrets.FRONTEND_URL }}"
+            },
+            {
+              "Name": "ALLOWED_ORIGIN",
+              "Value": "${{ secrets.ALLOWED_ORIGIN }}"
+            }
           ]
         }' > Dockerrun.aws.json
         
-    - name: Prepare .ebextensions configuration
-      run: |
-        mkdir -p .ebextensions
-        cp .github/ebextensions.config.template .ebextensions/01_env_vars.config
-
-        sed -i "s#__JDBC_DATABASE_URL__#${{ secrets.JDBC_DATABASE_URL }}#g" .ebextensions/01_env_vars.config
-        sed -i "s#__JDBC_DATABASE_USERNAME__#${{ secrets.JDBC_DATABASE_USERNAME }}#g" .ebextensions/01_env_vars.config
-        sed -i "s#__JDBC_DATABASE_PASSWORD__#${{ secrets.JDBC_DATABASE_PASSWORD }}#g" .ebextensions/01_env_vars.config
-        sed -i "s#__OPENAI_API_KEY__#${{ secrets.OPENAI_API_KEY }}#g" .ebextensions/01_env_vars.config
-        sed -i "s#__OAUTH_CLIENT_ID__#${{ secrets.OAUTH_CLIENT_ID }}#g" .ebextensions/01_env_vars.config
-        sed -i "s#__OAUTH_CLIENT_SECRET__#${{ secrets.OAUTH_CLIENT_SECRET }}#g" .ebextensions/01_env_vars.config
-        sed -i "s#__FRONTEND_URL__#${{ secrets.FRONTEND_URL }}#g" .ebextensions/01_env_vars.config
-        sed -i "s#__ALLOWED_ORIGIN__#${{ secrets.ALLOWED_ORIGIN }}#g" .ebextensions/01_env_vars.config
-      env:
-        JDBC_DATABASE_URL: ${{ secrets.JDBC_DATABASE_URL }}
-        JDBC_DATABASE_USERNAME: ${{ secrets.JDBC_DATABASE_USERNAME }}
-        JDBC_DATABASE_PASSWORD: ${{ secrets.JDBC_DATABASE_PASSWORD }}
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
-        OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
-        FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-        ALLOWED_ORIGIN: ${{ secrets.ALLOWED_ORIGIN }}
-
-    - name: Create deployment package
-      run: zip -r deploy.zip Dockerrun.aws.json .ebextensions
-
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v21
       with:
@@ -122,6 +147,6 @@ jobs:
         application_name: JobHuntHub
         environment_name: ${{ secrets.EB_ENVIRONMENT_NAME }}
         region: ${{ secrets.AWS_REGION }}
+        deployment_package: Dockerrun.aws.json
         version_label: ${{ github.sha }}
-        deployment_package: deploy.zip
         
