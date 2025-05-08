@@ -27,12 +27,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     // Custom exceptions
     public static class ResourceNotFoundException extends RuntimeException {
-        // Generic "not found" message
         public ResourceNotFoundException(String message) {
             super(message);
         }
 
-        // Formatted message like "User not found with id: '123'"
         public ResourceNotFoundException(String resourceName, String fieldName, Object fieldValue) {
             super(String.format("%s not found with %s: '%s'", resourceName, fieldName, fieldValue));
         }

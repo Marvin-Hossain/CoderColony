@@ -1,27 +1,25 @@
 package com.jobhunthub.jobhunthub.dto;
 
-import com.jobhunthub.jobhunthub.model.Question; // Assuming Question lives here
-import lombok.Data; // Use Lombok for boilerplate reduction
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
 import java.time.LocalDate;
-// Add other necessary imports
+
+import com.jobhunthub.jobhunthub.model.Question;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data // Generates getters, setters, toString, equals, hashCode
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuestionDTO {
     private Long id;
-    private String type; // Using String representation of the enum
+    private String type;
     private String question;
     private LocalDate updatedAt;
     private String responseText;
     private Integer rating;
     private String feedback;
-    // Decide if the frontend needs the user's ID or username for this list view
     private Long userId;
-    // private String username; // Optional: uncomment if needed
 
     // Static factory method to convert from Entity to DTO
     public static QuestionDTO fromEntity(Question question) {
@@ -40,7 +38,6 @@ public class QuestionDTO {
         // Safely access user data *before* potential session close
         if (question.getUser() != null) {
             dto.setUserId(question.getUser().getId());
-            // dto.setUsername(question.getUser().getUsername()); // Uncomment if needed
         }
         return dto;
     }

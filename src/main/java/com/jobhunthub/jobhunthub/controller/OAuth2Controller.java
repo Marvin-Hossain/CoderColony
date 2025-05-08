@@ -12,7 +12,9 @@ import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.service.UserService;
 import com.jobhunthub.jobhunthub.utils.AuthenticationUtils;
 
-
+/**
+ * Controller for OAuth2 related actions, primarily to fetch authenticated user details.
+ */
 @RestController
 public class OAuth2Controller {
     private static final Logger logger = LoggerFactory.getLogger(OAuth2Controller.class);
@@ -23,6 +25,14 @@ public class OAuth2Controller {
         this.userService = userService;
     }
 
+    /**
+     * Retrieves the details of the currently authenticated user.
+     * If the user is authenticated, it returns their ID, username, email, and avatar URL.
+     * Otherwise, it indicates that the user is not authenticated.
+     *
+     * @param authentication The {@link Authentication} object from Spring Security.
+     * @return A map containing user details and authentication status.
+     */
     @GetMapping("/api/auth/user")
     public Map<String, Object> getUser(Authentication authentication) {
         logger.info("Entering /api/auth/user endpoint check");
@@ -32,10 +42,10 @@ public class OAuth2Controller {
         }
 
         try {
-            // Delegate the core logic to AuthenticationUtils
+            // AuthenticationUtils handles the logic of extracting user details
+            // from the Authentication object and fetching from the database.
             User user = AuthenticationUtils.getCurrentUser(authentication, userService);
 
-            // If getCurrentUser succeeds, the user is valid and found
             logger.info("/api/auth/user: Successfully authenticated user: {}", user.getUsername());
             return Map.of(
                     "authenticated", true,
@@ -44,10 +54,9 @@ public class OAuth2Controller {
                     "email", user.getEmail() != null ? user.getEmail() : "",
                     "avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : ""
             );
-        } catch (Exception e) { // Catch exceptions from getCurrentUser
-            // Exceptions from AuthenticationUtils likely mean authentication failure, missing ID, or user not found in DB
+        } catch (Exception e) {
+            // This typically occurs if OAuth2 ID is missing or user is not found in the database.
             logger.warn("/api/auth/user: Failed to get current user: {}", e.getMessage());
-            // Optionally log the stack trace at DEBUG level if needed: logger.debug("Stack trace:", e);
             return Map.of("authenticated", false);
         }
     }
