@@ -1,10 +1,8 @@
-package com.jobhunthub.jobhunthub.config; // Or your preferred package
+package com.jobhunthub.jobhunthub.config;
 
-import com.jobhunthub.jobhunthub.model.User;
-import com.jobhunthub.jobhunthub.service.UserService;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,8 +13,12 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.Optional;
+import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.service.UserService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component // Make it a Spring bean
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
