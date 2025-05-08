@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Objects;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -160,7 +162,7 @@ public class OpenAIServiceTests {
             HttpHeaders headers = requestEntity.getHeaders();
 
             // Verify headers
-            assertThat(headers.getContentType().toString()).isEqualTo("application/json");
+            assertThat(Objects.requireNonNull(headers.getContentType()).toString()).isEqualTo("application/json");
             assertThat(headers.getFirst(HttpHeaders.AUTHORIZATION))
                     .isEqualTo("Bearer test-api-key");
 

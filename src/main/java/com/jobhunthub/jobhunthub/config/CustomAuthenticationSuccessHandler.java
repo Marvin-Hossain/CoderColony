@@ -54,9 +54,18 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         logger.info("Entering CustomAuthenticationSuccessHandler");
 
+        // Explicitly handle null authentication, though unlikely after successful auth
+        if (authentication == null) {
+            logger.error("Received null Authentication object in onAuthenticationSuccess, which should not happen.");
+            // Redirect to prevent passing null to the delegate and indicate an internal issue
+            response.sendRedirect(frontendUrl + "/?error=internal_auth_error");
+            return;
+        }
+
         if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
             logger.warn("Authentication is not OAuth2AuthenticationToken, type: {}", authentication.getClass().getName());
-             // Fallback to default handler if not OAuth2 (though unlikely in this flow)
+             // Fallback to default handler if not OAuth2
+             // We know 'authentication' is not null here due to the check above
             this.delegate.onAuthenticationSuccess(request, response, authentication);
             return;
         }
