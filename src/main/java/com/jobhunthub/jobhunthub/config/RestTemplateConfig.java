@@ -1,4 +1,3 @@
-// RestTemplateConfig.java
 package com.jobhunthub.jobhunthub.config;
 
 import org.springframework.context.annotation.Bean;

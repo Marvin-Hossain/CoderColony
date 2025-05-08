@@ -1,10 +1,8 @@
-package com.jobhunthub.jobhunthub.config; // Or your preferred package
+package com.jobhunthub.jobhunthub.config;
 
-import com.jobhunthub.jobhunthub.model.User;
-import com.jobhunthub.jobhunthub.service.UserService;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,35 +13,66 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.Optional;
+import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.service.UserService;
 
-@Component // Make it a Spring bean
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+/**
+ * Handles actions to be taken upon successful user authentication via OAuth2.
+ * This includes finding or creating a user in the local database,
+ * updating their details if necessary, and then redirecting them to the frontend dashboard.
+ * It uses a {@link SavedRequestAwareAuthenticationSuccessHandler} delegate to manage
+ * redirection, properly handling any requests saved prior to authentication.
+ */
+@Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
     private final UserService userService;
     private final String frontendUrl;
-    // Use SavedRequestAwareAuthenticationSuccessHandler to handle pre-login saved requests if needed
+    // Handles pre-login saved requests and manages the actual redirection.
     private final AuthenticationSuccessHandler delegate = new SavedRequestAwareAuthenticationSuccessHandler();
 
-    // Inject UserService and frontend URL from environment variable
-    public CustomAuthenticationSuccessHandler(UserService userService, @Value("${frontend.url}") String frontendUrl) {
-        this.userService = userService;
-        this.frontendUrl = frontendUrl;
-        // Set the default target URL for the delegate
-        ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setDefaultTargetUrl(frontendUrl + "/dashboard");
-         ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setAlwaysUseDefaultTargetUrl(true); // Force redirect to dashboard
+    /**
+     * Constructs the success handler.
+     * @param userService The service for user-related operations.
+     * @param injectedFrontendUrl The base URL of the frontend application, injected from properties.
+     * @throws IllegalArgumentException if injectedFrontendUrl is null or empty.
+     */
+    public CustomAuthenticationSuccessHandler(UserService userService, @Value("${frontend.url}") String injectedFrontendUrl) {
+        logger.info("CustomAuthenticationSuccessHandler constructor: Injected frontendUrl is [{}]", injectedFrontendUrl);
 
+        this.userService = userService;
+        this.frontendUrl = injectedFrontendUrl;
+
+        if (injectedFrontendUrl == null || injectedFrontendUrl.trim().isEmpty() || "null".equalsIgnoreCase(injectedFrontendUrl)) {
+            logger.error("FATAL: frontendUrl is null or invalid in CustomAuthenticationSuccessHandler constructor. Cannot set default target URL.");
+            // Throw an exception to make the configuration failure clear.
+            throw new IllegalArgumentException("frontendUrl cannot be null or empty for CustomAuthenticationSuccessHandler. Check property frontend.url and its environment variable source.");
+        } else {
+            String targetUrl = injectedFrontendUrl + "/dashboard";
+            logger.info("CustomAuthenticationSuccessHandler: Setting default target URL to [{}]", targetUrl);
+            ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setDefaultTargetUrl(targetUrl);
+        }
+        ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setAlwaysUseDefaultTargetUrl(true);
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        logger.info("Entering CustomAuthenticationSuccessHandler");
+        logger.info("Entering CustomAuthenticationSuccessHandler.onAuthenticationSuccess");
+
+        if (authentication == null) {
+            logger.error("Received null Authentication object in onAuthenticationSuccess.");
+            response.sendRedirect(frontendUrl + "/?error=internal_auth_error");
+            return;
+        }
 
         if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
-            logger.warn("Authentication is not OAuth2AuthenticationToken, type: {}", authentication.getClass().getName());
-             // Fallback to default handler if not OAuth2 (though unlikely in this flow)
+            logger.warn("Authentication is not OAuth2AuthenticationToken, type: {}. Delegating to default handler.", authentication.getClass().getName());
+            // Fallback to default handler for non-OAuth2 authentications.
             this.delegate.onAuthenticationSuccess(request, response, authentication);
             return;
         }
@@ -52,7 +81,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         Object idAttribute = oAuth2User.getAttribute("id");
         if (idAttribute == null) {
             logger.error("GitHub ID attribute is null in onAuthenticationSuccess");
-            // Redirect to a generic login error page on the frontend
             response.sendRedirect(frontendUrl + "/?error=missing_id");
             return;
         }
@@ -64,14 +92,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         logger.info("Processing successful authentication for GitHub user: {}, ID: {}", login, githubId);
 
         try {
-            // Find or create user (same logic as your controller had)
-            Optional<User> existingUser = userService.findByGithubId(githubId);
+            Optional<User> existingUserOpt = userService.findByGithubId(githubId);
             User user;
 
-            if (existingUser.isPresent()) {
-                user = existingUser.get();
+            if (existingUserOpt.isPresent()) {
+                user = existingUserOpt.get();
                 logger.debug("Found existing user: {}", user.getUsername());
-                // Update user info if needed
+                // Update user information if it has changed.
                 boolean needsUpdate = false;
                 if (login != null && (user.getUsername() == null || !user.getUsername().equals(login))) {
                     user.setUsername(login);
@@ -94,7 +121,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                      logger.debug("No updates needed for existing user: {}", user.getUsername());
                 }
             } else {
-                // Create new user
                 user = new User();
                 user.setGithubId(githubId);
                 user.setUsername(login);
@@ -105,13 +131,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                  logger.info("Successfully saved new user: {}", user.getUsername());
             }
 
-            // Use the delegate handler to perform the redirect (handles saved requests correctly)
+            // Delegate redirection to handle saved requests correctly.
             logger.info("User provisioning complete, delegating redirect to SavedRequestAwareAuthenticationSuccessHandler (target: {})", frontendUrl + "/dashboard");
+            logger.debug("onAuthenticationSuccess: Using frontendUrl [{}] for potential redirects.", this.frontendUrl);
             this.delegate.onAuthenticationSuccess(request, response, authentication);
 
         } catch (Exception e) {
             logger.error("Error during user provisioning for githubId {}: {}", githubId, e.getMessage(), e);
-            // Redirect to a generic error page on the frontend in case of failure
             response.sendRedirect(frontendUrl + "/?error=provisioning_failed");
         }
     }

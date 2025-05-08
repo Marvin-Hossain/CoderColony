@@ -1,6 +1,10 @@
 package com.jobhunthub.jobhunthub.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,45 +14,55 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Arrays;
-import java.util.List;
-
+/**
+ * Configures web security for the application, including CORS, CSRF,
+ * request authorization, OAuth2 login, and logout behaviors.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final String frontendUrlValue;
+    private final String allowedOriginValue;
 
-    @Value("${frontend.url}")
-    private String frontendUrlValue;
+    public SecurityConfig(CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
+                          @Value("${frontend.url}") String frontendUrlValue,
+                          @Value("${allowed.origin}") String allowedOriginValue) {
+        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
+        this.frontendUrlValue = frontendUrlValue;
+        this.allowedOriginValue = allowedOriginValue;
+    }
 
+    /**
+     * Defines the security filter chain for HTTP requests.
+     * Configures:
+     * - CORS (Cross-Origin Resource Sharing)
+     * - CSRF (Cross-Site Request Forgery) protection (disabled for REST API compatibility)
+     * - Authorization rules for public and protected endpoints
+     * - OAuth2 login process, including success and failure handlers
+     * - Logout process
+     *
+     * @param http The {@link HttpSecurity} to configure.
+     * @return The configured {@link SecurityFilterChain}.
+     * @throws Exception if an error occurs during configuration.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Main security setup:
-        // - Enables CORS
-        // - Disables CSRF (needed for our REST API)
-        // - Public endpoints: auth routes
-        // - Everything else requires authentication
-        // - OAuth2 login redirects to dashboard
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable) // CSRF disabled for stateless REST API
                 .authorizeHttpRequests(auth -> {
-                    // Public endpoints
+                    // Define public endpoints
                     auth.requestMatchers("/", "/error", "/api/public/**", "/health").permitAll();
                     auth.requestMatchers("/oauth2/authorization/**").permitAll();
                     auth.requestMatchers("/login/oauth2/code/**").permitAll();
                     auth.requestMatchers("/logout").permitAll();
                     auth.requestMatchers("/api/auth/logout").permitAll();
+                    auth.requestMatchers("/api/auth/user").permitAll();
 
-                    // --- Allow the auth check endpoint ---
-                    auth.requestMatchers("/api/auth/user").permitAll(); 
-                    // --- End Change ---
-
-                    // Protected endpoints
+                    // All other requests require authentication
                     auth.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2 -> oauth2
@@ -64,14 +78,18 @@ public class SecurityConfig {
                 .build();
     }
 
+    /**
+     * Configures CORS (Cross-Origin Resource Sharing).
+     * Allows requests from the specified frontend URL and defines permitted methods,
+     * headers, and credentials.
+     *
+     * @return The {@link CorsConfigurationSource} with defined CORS rules.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Use environment variable for allowed origins
-        String allowedOrigin = System.getenv("ALLOWED_ORIGIN");
-        List<String> origins = Arrays.asList(
-            allowedOrigin != null ? allowedOrigin : "http://localhost:3000"
-        );
+        // Frontend URL allowed to make requests
+        List<String> origins = Collections.singletonList(allowedOriginValue);
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
@@ -79,7 +97,7 @@ public class SecurityConfig {
         configuration.setExposedHeaders(List.of("Location"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", configuration); // Apply CORS to all paths
         return source;
     }
 }

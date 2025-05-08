@@ -84,7 +84,7 @@ public class JobControllerIntegrationTests {
                     "status": "APPLIED",
                     "createdAt": "2023-04-08",
                     "user": {
-                        "id": """ + testUser.getId() + """
+                        "id":""" + testUser.getId() + """
                     }
                 }
                 """;
