@@ -111,6 +111,9 @@ jobs:
         FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
         ALLOWED_ORIGIN: ${{ secrets.ALLOWED_ORIGIN }}
 
+    - name: Create deployment package
+      run: zip -r deploy.zip Dockerrun.aws.json .ebextensions
+
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v21
       with:
@@ -120,4 +123,5 @@ jobs:
         environment_name: ${{ secrets.EB_ENVIRONMENT_NAME }}
         region: ${{ secrets.AWS_REGION }}
         version_label: ${{ github.sha }}
+        deployment_package: deploy.zip
         
