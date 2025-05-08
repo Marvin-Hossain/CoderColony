@@ -1,0 +1,23 @@
+# This is a template file. Placeholders like __PLACEHOLDER__ will be replaced
+# by the deploy.yml workflow using GitHub Actions Secrets.
+
+option_settings:
+  aws:elasticbeanstalk:application:environment:
+    SPRING_PROFILES_ACTIVE: "prod"
+
+    # Database Credentials (sourced from GitHub Secrets)
+    SPRING_DATASOURCE_URL: "__JDBC_DATABASE_URL__"
+    SPRING_DATASOURCE_USERNAME: "__JDBC_DATABASE_USERNAME__"
+    SPRING_DATASOURCE_PASSWORD: "__JDBC_DATABASE_PASSWORD__"
+
+    # OpenAI API Key (sourced from GitHub Secrets)
+    OPENAI_API_KEY: "__OPENAI_API_KEY__"
+
+    # GitHub OAuth Credentials (sourced from GitHub Secrets)
+    OAUTH_CLIENT_ID: "__OAUTH_CLIENT_ID__"
+    OAUTH_CLIENT_SECRET: "__OAUTH_CLIENT_SECRET__"
+
+    # URLs (sourced from GitHub Secrets)
+    APP_URL: "__APP_URL__"
+    FRONTEND_URL: "__FRONTEND_URL__"
+    ALLOWED_ORIGIN: "__ALLOWED_ORIGIN__"
