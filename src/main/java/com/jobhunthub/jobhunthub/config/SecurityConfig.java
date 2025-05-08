@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,14 +23,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final String frontendUrlValue;
+    private final String allowedOriginValue;
 
-    @Value("${frontend.url}")
-    private String frontendUrlValue;
-
-    @Value("${allowed.origin}")
-    private String allowedOriginValue;
+    public SecurityConfig(CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
+                          @Value("${frontend.url}") String frontendUrlValue,
+                          @Value("${allowed.origin}") String allowedOriginValue) {
+        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
+        this.frontendUrlValue = frontendUrlValue;
+        this.allowedOriginValue = allowedOriginValue;
+    }
 
     /**
      * Defines the security filter chain for HTTP requests.
