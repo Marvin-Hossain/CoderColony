@@ -1,0 +1,42 @@
+/* Full-screen layout - using a specific class prefix to avoid conflicts */
+.full-screen-app .dashboard,
+.full-screen-app .job-apps,
+.full-screen-app .progress-page,
+.full-screen-app .settings-page,
+.full-screen-app .behavioral-questions,
+.full-screen-app .technical-questions {
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: #f9f9f9;
+}
+
+/* Make main content areas take up available space */
+.full-screen-app .dashboard-main,
+.full-screen-app .job-apps-main,
+.full-screen-app .progress-main,
+.full-screen-app .settings-main {
+  flex: 1;
+  min-height: calc(100vh - 100px);
+}
+
+/* Ensure headers span full width */
+.full-screen-app .dashboard-header,
+.full-screen-app .job-apps-header {
+  width: 100%;
+  padding: 10px 20px;
+}
+
+/* Make sections within pages more responsive */
+.full-screen-app .daily-goals, 
+.full-screen-app .weekly-goals,
+.full-screen-app .job-list,
+.full-screen-app .job-input {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+} 
