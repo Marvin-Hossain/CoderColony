@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -58,8 +59,6 @@ public class SecurityConfig {
                     auth.requestMatchers("/", "/error", "/api/public/**", "/health").permitAll();
                     auth.requestMatchers("/oauth2/authorization/**").permitAll();
                     auth.requestMatchers("/login/oauth2/code/**").permitAll();
-                    auth.requestMatchers("/logout").permitAll();
-                    auth.requestMatchers("/api/auth/logout").permitAll();
                     auth.requestMatchers("/api/auth/user").permitAll();
 
                     // All other requests require authentication
@@ -70,7 +69,8 @@ public class SecurityConfig {
                         .failureUrl(frontendUrlValue + "/?error=true")
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl(frontendUrlValue + "/")
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(org.springframework.http.HttpStatus.OK))
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()

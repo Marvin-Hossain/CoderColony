@@ -1,33 +1,30 @@
 package com.jobhunthub.jobhunthub.controller;
 
-import com.jobhunthub.jobhunthub.model.User;
-import com.jobhunthub.jobhunthub.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
-
 import org.springframework.transaction.annotation.Transactional;
+
+import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.service.UserService;
 
 /**
  * Integration tests for OAuth2Controller.
  * Tests GitHub OAuth2 authentication flow and user info endpoints:
  * - Login success and user creation
  * - User info retrieval
+ * - Handling of authenticated users not found in the database
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @Transactional
 public class OAuth2ControllerIntegrationTests {
@@ -67,7 +64,20 @@ public class OAuth2ControllerIntegrationTests {
         mockMvc
                 .perform(MockMvcRequestBuilders.get("/api/auth/user"))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrl("http://localhost/oauth2/authorization/github"));
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.authenticated").value(false));
+    }
+
+    @Test
+    public void OAuth2Controller_getUser_authenticatedButUserNotFoundInDb_returnUnauthenticated() throws Exception {
+        String unknownGithubId = "unknown-id-999";
+
+        mockMvc
+                .perform(MockMvcRequestBuilders.get("/api/auth/user")
+                        .with(oauth2Login()
+                                .attributes(attrs -> attrs.put("id", unknownGithubId))))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.authenticated").value(false));
     }
 }
