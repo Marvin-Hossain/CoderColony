@@ -8,9 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jobhunthub.jobhunthub.model.User;
@@ -37,7 +38,6 @@ public class OAuth2ControllerIntegrationTests {
 
     @BeforeEach
     public void setUp() {
-        // Create and save the test user
         User testUser = new User();
         testUser.setGithubId("123");
         testUser.setUsername("testuser");
@@ -48,24 +48,24 @@ public class OAuth2ControllerIntegrationTests {
     @Test
     public void OAuth2Controller_getUser_returnUserInfo() throws Exception {
         mockMvc
-                .perform(MockMvcRequestBuilders.get("/api/auth/user")
+                .perform(get("/api/auth/user")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.authenticated").value(true))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.username").value("testuser"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(""))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.avatarUrl").value("https://github.com/testuser.png"));
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andExpect(jsonPath("$.username").value("testuser"))
+                .andExpect(jsonPath("$.email").value(""))
+                .andExpect(jsonPath("$.avatarUrl").value("https://github.com/testuser.png"));
     }
 
     @Test
     public void OAuth2Controller_getUser_withoutAuth_returnUnauthenticated() throws Exception {
         mockMvc
-                .perform(MockMvcRequestBuilders.get("/api/auth/user"))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.authenticated").value(false));
+                .perform(get("/api/auth/user"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(false));
     }
 
     @Test
@@ -73,11 +73,11 @@ public class OAuth2ControllerIntegrationTests {
         String unknownGithubId = "unknown-id-999";
 
         mockMvc
-                .perform(MockMvcRequestBuilders.get("/api/auth/user")
+                .perform(get("/api/auth/user")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", unknownGithubId))))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.authenticated").value(false));
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(false));
     }
 }
