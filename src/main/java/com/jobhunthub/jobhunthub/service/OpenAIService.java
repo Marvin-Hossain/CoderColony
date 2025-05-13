@@ -1,17 +1,18 @@
 package com.jobhunthub.jobhunthub.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class OpenAIService {
@@ -28,38 +29,35 @@ public class OpenAIService {
     @Value("${openai.api.url}")
     private String apiUrl;
 
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
     private final ObjectMapper objectMapper;
 
-    public OpenAIService(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this.restTemplate = restTemplate;
+    public OpenAIService(RestClient restClient, ObjectMapper objectMapper) {
+        this.restClient = restClient;
         this.objectMapper = objectMapper;
     }
 
     // Main method to get AI response
     public String getResponse(String userInput, String aiPrompt) {
         try {
-            HttpHeaders headers = createHeaders();
             Map<String, Object> requestBody = createRequestBody(aiPrompt, userInput);
 
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
+            ResponseEntity<String> response = restClient.post()
+                    .uri(apiUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .headers(h -> h.setBearerAuth(apiKey))
+                    .body(requestBody)
+                    .retrieve()
+                    .toEntity(String.class);
 
             return processResponse(response.getBody());
         } catch (Exception e) {
-            logger.error("Error in OpenAI request: {}", e.getMessage());
+            logger.error("Error in OpenAI request using RestClient: {}", e.getMessage(), e);
             return createErrorResponse();
         }
     }
 
     // Helper methods for OpenAI API interaction
-    private HttpHeaders createHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
-        return headers;
-    }
-
     private Map<String, Object> createRequestBody(String aiPrompt, String userInput) {
         return Map.of(
                 "model", DEFAULT_MODEL,
@@ -73,13 +71,23 @@ public class OpenAIService {
     }
 
     private String processResponse(String responseBody) throws Exception {
+        if (responseBody == null || responseBody.isEmpty()) {
+            logger.warn("Received null or empty response body from OpenAI.");
+            return createErrorResponse();
+        }
         JsonNode jsonResponse = objectMapper.readTree(responseBody);
         String content = jsonResponse.path("choices").get(0).path("message").path("content").asText();
+
+        if (content == null || content.isEmpty()) {
+             logger.warn("Extracted null or empty content from OpenAI response choices.");
+             return createErrorResponse();
+        }
 
         try {
             objectMapper.readTree(content);
             return content;
         } catch (Exception e) {
+            logger.warn("OpenAI response content was not valid JSON. Formatting as feedback. Content: {}", content);
             return formatInvalidJsonResponse(content);
         }
     }
