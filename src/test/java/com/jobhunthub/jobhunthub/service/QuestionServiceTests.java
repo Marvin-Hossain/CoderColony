@@ -131,7 +131,7 @@ public class QuestionServiceTests {
         assertThat(resultDTOs).isNotNull();
         assertThat(resultDTOs).hasSize(1);
 
-        QuestionDTO resultDTO = resultDTOs.get(0);
+        QuestionDTO resultDTO = resultDTOs.getFirst();
 
         assertThat(resultDTO.getId()).isEqualTo(question.getId());
         assertThat(resultDTO.getQuestion()).isEqualTo(question.getQuestion());
