@@ -93,8 +93,6 @@ public class JobServiceTests {
                 jobEntity.getLocation()
         );
 
-        // Mock the behavior of the jobRepository
-        when(jobRepository.save(any(Job.class))).thenReturn(job);
         when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> {
             Job jobToSave = invocation.getArgument(0);
             jobToSave.setId(jobEntity.getId());
