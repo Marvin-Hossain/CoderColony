@@ -27,11 +27,11 @@ public class ProgressController {
         this.zoneId = zoneId;
     }
 
+    // STATS Endpoints
+
     // Get weekly stats for a category (currently only jobs)
     @GetMapping("/{category}")
-    public ResponseEntity<Map<String, Object>> getWeeklyProgress(
-            @PathVariable String category,
-            Authentication authentication) {
+    public ResponseEntity<Map<String, Object>> getWeeklyProgress(@PathVariable String category, Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
 
         if (category.equals("jobs")) {
@@ -44,9 +44,7 @@ public class ProgressController {
 
     // Get all-time stats for a category (currently only jobs)
     @GetMapping("/{category}/all-time")
-    public ResponseEntity<Map<String, Object>> getAllTimeStats(
-            @PathVariable String category,
-            Authentication authentication) {
+    public ResponseEntity<Map<String, Object>> getAllTimeStats(@PathVariable String category, Authentication authentication) {
         User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
 
         if (category.equals("jobs")) {

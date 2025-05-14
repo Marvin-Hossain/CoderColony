@@ -1,27 +1,28 @@
 package com.jobhunthub.jobhunthub.controller;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
-
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import com.jobhunthub.jobhunthub.model.Job;
+import com.jobhunthub.jobhunthub.dto.CreateJobRequestDTO;
 import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.repository.JobRepository;
 import com.jobhunthub.jobhunthub.service.JobService;
 import com.jobhunthub.jobhunthub.service.UserService;
 
@@ -46,6 +47,11 @@ public class ProgressControllerIntegrationTests {
     @Autowired
     private JobService jobService;
 
+    @Autowired
+    private JobRepository jobRepository;
+
+    private final static int WEEK_DAYS = 7;
+
     @BeforeEach
     public void setUp() {
         User testUser = new User();
@@ -55,70 +61,84 @@ public class ProgressControllerIntegrationTests {
         testUser.setAvatarUrl("https://github.com/testuser.png");
         testUser = userService.save(testUser);
 
-        Job testJob = new Job();
-        testJob.setTitle("Software Engineer");
-        testJob.setCompany("Tech Company");
-        testJob.setLocation("Remote");
-        testJob.setStatus(Job.Status.APPLIED);
-        testJob.setCreatedAt(LocalDate.now());
-        testJob.setUser(testUser);
-        jobService.createJob(testJob, testUser);
+        CreateJobRequestDTO todayJobDto = new CreateJobRequestDTO(
+                "Software Engineer Today",
+                "Tech Company Today",
+                "Remote"
+        );
+        jobService.createJob(todayJobDto, testUser);
 
-        Job oldJob = new Job();
-        oldJob.setTitle("Past Role");
-        oldJob.setCompany("Previous LLC");
-        oldJob.setLocation("Dallas, TX");
-        oldJob.setStatus(Job.Status.REJECTED);
-        oldJob.setCreatedAt(LocalDate.now().minusMonths(1));
-        oldJob.setUser(testUser);
-        jobService.createJob(oldJob, testUser);
+        com.jobhunthub.jobhunthub.model.Job yesterdayJobEntity = new com.jobhunthub.jobhunthub.model.Job();
+        yesterdayJobEntity.setTitle("Software Engineer Yesterday");
+        yesterdayJobEntity.setCompany("Tech Company Yesterday");
+        yesterdayJobEntity.setLocation("Office, ST");
+        yesterdayJobEntity.setStatus(com.jobhunthub.jobhunthub.model.Job.Status.INTERVIEWED);
+        yesterdayJobEntity.setCreatedAt(LocalDate.now(ZoneId.systemDefault()).minusDays(1));
+        yesterdayJobEntity.setUser(testUser);
+        jobRepository.save(yesterdayJobEntity);
+
+        com.jobhunthub.jobhunthub.model.Job oldJobEntity = new com.jobhunthub.jobhunthub.model.Job();
+        oldJobEntity.setTitle("Past Role");
+        oldJobEntity.setCompany("Previous LLC");
+        oldJobEntity.setLocation("Dallas, TX");
+        oldJobEntity.setStatus(com.jobhunthub.jobhunthub.model.Job.Status.REJECTED);
+        oldJobEntity.setCreatedAt(LocalDate.now(ZoneId.systemDefault()).minusMonths(1));
+        oldJobEntity.setUser(testUser);
+        jobRepository.save(oldJobEntity);
     }
 
-    // Weekly Progress
-
     @Test
-    public void ProgressController_getWeeklyProgress_returnStats() throws Exception {
+    public void ProgressController_getWeeklyProgress_returnsWeeklyJobStatsDTO() throws Exception {
         mockMvc
                 .perform(get("/api/progress/jobs")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").isNumber())
+                .andExpect(jsonPath("$.todayCount").isNumber())
+                .andExpect(jsonPath("$.applied").isNumber())
+                .andExpect(jsonPath("$.interviewed").isNumber())
+                .andExpect(jsonPath("$.rejected").isNumber())
+                .andExpect(jsonPath("$.chartData").isArray())
+                .andExpect(jsonPath("$.chartData", hasSize(WEEK_DAYS)));
     }
 
-    // All-time Stats
-
     @Test
-    public void ProgressController_getAllTimeStats_returnStats() throws Exception {
+    public void ProgressController_getAllTimeStats_returnsAllTimeJobStatsDTO() throws Exception {
         mockMvc
                 .perform(get("/api/progress/jobs/all-time")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total", is(3)))
+                .andExpect(jsonPath("$.average").exists())
+                .andExpect(jsonPath("$.bestDay").isNumber())
+                .andExpect(jsonPath("$.applied", is(1)))
+                .andExpect(jsonPath("$.interviewed", is(1)))
+                .andExpect(jsonPath("$.rejected", is(1)));
     }
 
-    // Error Handling
-
     @Test
-    public void ProgressController_getWeeklyProgress_withInvalidCategory_returnEmptyMap() throws Exception {
+    public void ProgressController_getWeeklyProgress_withInvalidCategory_returnEmptyJson() throws Exception {
         mockMvc
                 .perform(get("/api/progress/invalid-category")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
+                .andExpect(content().json("{}"));
     }
 
     @Test
-    public void ProgressController_getAllTimeStats_withInvalidCategory_returnEmptyMap() throws Exception {
+    public void ProgressController_getAllTimeStats_withInvalidCategory_returnEmptyJson() throws Exception {
         mockMvc
                 .perform(get("/api/progress/invalid-category/all-time")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
+                .andExpect(content().json("{}"));
     }
 }
