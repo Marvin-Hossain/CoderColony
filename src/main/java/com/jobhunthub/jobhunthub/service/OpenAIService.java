@@ -37,7 +37,6 @@ public class OpenAIService {
         this.objectMapper = objectMapper;
     }
 
-    // Main method to get AI response
     public String getResponse(String userInput, String aiPrompt) {
         try {
             Map<String, Object> requestBody = createRequestBody(aiPrompt, userInput);
@@ -99,7 +98,6 @@ public class OpenAIService {
         );
     }
 
-    // Fallback response if something goes wrong
     private String createErrorResponse() {
         return "{\"rating\": 5, \"feedback\": \"I apologize, but I'm having trouble processing your request right now.\"}";
     }

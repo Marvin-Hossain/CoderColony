@@ -10,7 +10,6 @@ import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.service.UserService;
 
 public final class AuthenticationUtils {
-    // Utility class - no instances needed
     private AuthenticationUtils() {
     }
 
