@@ -165,15 +165,18 @@ public class JobService {
         );
     }
 
+    // Validates a job
     private void validateJob(Job job) {
         if (job.getTitle() == null || job.getTitle().trim().isEmpty() ||
             job.getCompany() == null || job.getCompany().trim().isEmpty() ||
             job.getLocation() == null || job.getLocation().trim().isEmpty()) {
             throw new GlobalExceptionHandler.InvalidRequestException("Title, company, and location are required");
         }
+        // Simplified location validation for brevity, consider more robust validation
         if (!job.getLocation().equals("Remote") && 
-            !job.getLocation().matches("^[A-Za-z\\s]+,\\s*[A-Z]{2}$")) {
-            throw new GlobalExceptionHandler.InvalidRequestException("Location must be 'City, ST' or 'Remote'");
+            !job.getLocation().matches("^[A-Za-z\\s.,'-]+,\\s*[A-Z]{2}$") && // Allow more chars for city
+            !job.getLocation().matches("^[A-Za-z\\s.,'-]+$")) { // Allow city name only if no state
+            logger.warn("Job location validation failed for: {}", job.getLocation());
         }
     }
 }

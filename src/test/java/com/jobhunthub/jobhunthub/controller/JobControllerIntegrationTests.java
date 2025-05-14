@@ -1,34 +1,35 @@
 package com.jobhunthub.jobhunthub.controller;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
+import static org.hamcrest.Matchers.is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
-
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jobhunthub.jobhunthub.dto.CreateJobRequestDTO;
+import com.jobhunthub.jobhunthub.dto.JobDTO;
+import com.jobhunthub.jobhunthub.dto.UpdateJobRequestDTO;
 import com.jobhunthub.jobhunthub.model.Job;
 import com.jobhunthub.jobhunthub.model.User;
-import com.jobhunthub.jobhunthub.service.JobService;
+import com.jobhunthub.jobhunthub.repository.JobRepository;
 import com.jobhunthub.jobhunthub.service.UserService;
 
 /**
@@ -52,92 +53,99 @@ public class JobControllerIntegrationTests {
     private UserService userService;
 
     @Autowired
-    private JobService jobService;
+    private JobRepository jobRepository;
 
-    private Job testJob;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private User testUser;
+    private JobDTO testJobDTO;
 
     @BeforeEach
     public void setUp() {
-        User testUser = new User();
+        testUser = new User();
         testUser.setGithubId("123");
         testUser.setUsername("testuser");
         testUser.setEmail("test@test.com");
         testUser.setAvatarUrl("https://github.com/testuser.png");
         testUser = userService.save(testUser);
 
-        testJob = new Job();
-        testJob.setTitle("Software Engineer");
-        testJob.setCompany("Tech Company");
-        testJob.setLocation("Remote");
-        testJob.setStatus(Job.Status.APPLIED);
-        testJob.setCreatedAt(LocalDate.now());
-        testJob.setUser(testUser);
-        testJob = jobService.createJob(testJob, testUser);
+        Job initialJobEntity = new Job();
+        initialJobEntity.setTitle("Software Engineer");
+        initialJobEntity.setCompany("Tech Company");
+        initialJobEntity.setLocation("Remote");
+        initialJobEntity.setStatus(Job.Status.APPLIED);
+        initialJobEntity.setCreatedAt(LocalDate.now(ZoneId.systemDefault()));
+        initialJobEntity.setUser(testUser);
+        initialJobEntity = jobRepository.save(initialJobEntity);
+
+        testJobDTO = JobDTO.fromEntity(initialJobEntity);
     }
 
     // Basic CRUD Operations
 
     @Test
-    public void JobController_createJob_returnCreatedJob() throws Exception {
-        String jobJson = """
-                {
-                    "title": "Data Analyst",
-                    "company": "Data Corp",
-                    "location": "Remote",
-                    "status": "APPLIED"
-                }
-                """;
+    public void JobController_createJob_returnCreatedJobDTO() throws Exception {
+        CreateJobRequestDTO createDto = new CreateJobRequestDTO(
+                "Data Analyst",
+                "Data Corp",
+                "New York, NY"
+        );
 
         mockMvc
                 .perform(post("/api/jobs")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123")))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jobJson))
+                        .content(objectMapper.writeValueAsString(createDto)))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("Data Analyst"));
+                .andExpect(jsonPath("$.title").value("Data Analyst"))
+                .andExpect(jsonPath("$.company").value("Data Corp"))
+                .andExpect(jsonPath("$.location").value("New York, NY"))
+                .andExpect(jsonPath("$.status").value(Job.Status.APPLIED.name()))
+                .andExpect(jsonPath("$.userId").value(testUser.getId()));
     }
 
     @Test
-    public void JobController_getJobById_returnJob() throws Exception {
+    public void JobController_getJobById_returnJobDTO() throws Exception {
         mockMvc
-                .perform(get("/api/jobs/" + testJob.getId())
+                .perform(get("/api/jobs/" + testJobDTO.getId())
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(testJob.getId()));
+                .andExpect(jsonPath("$.id").value(testJobDTO.getId()))
+                .andExpect(jsonPath("$.title").value(testJobDTO.getTitle()));
     }
 
     @Test
-    public void JobController_getAllJobs_returnJobsList() throws Exception {
+    public void JobController_getAllJobs_returnJobDTOList() throws Exception {
         mockMvc
                 .perform(get("/api/jobs")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(testJob.getId()));
+                .andExpect(jsonPath("$[0].id").value(testJobDTO.getId()))
+                .andExpect(jsonPath("$[0].title").value(testJobDTO.getTitle()));
     }
 
     @Test
-    public void JobController_updateJob_returnUpdatedJob() throws Exception {
-        String updatedJobJson = """
-                {
-                    "title": "Senior Software Engineer",
-                    "company": "Tech Company Updated",
-                    "location": "Phoenix, AZ",
-                    "status": "INTERVIEWED"
-                }
-                """;
+    public void JobController_updateJob_canUpdateStatus_returnUpdatedJobDTO() throws Exception {
+        UpdateJobRequestDTO updateDto = new UpdateJobRequestDTO(
+                "Senior Software Engineer",
+                "Tech Company Updated",
+                "Phoenix, AZ",
+                Job.Status.INTERVIEWED.name()
+        );
 
         mockMvc
-                .perform(put("/api/jobs/" + testJob.getId())
+                .perform(put("/api/jobs/" + testJobDTO.getId())
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123")))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updatedJobJson))
+                        .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Senior Software Engineer"))
@@ -147,28 +155,30 @@ public class JobControllerIntegrationTests {
     }
 
     @Test
-    public void JobController_updateJobStatus_returnUpdatedStatus() throws Exception {
-        String statusUpdateJson = """
-                {
-                    "status": "REJECTED"
-                }
-                """;
+    public void JobController_updateJob_withoutStatusInPayload_preservesStatus() throws Exception {
+        UpdateJobRequestDTO updateDto = new UpdateJobRequestDTO(
+                "Principal Software Engineer",
+                "Major Tech Corp",
+                "Austin, TX",
+                null
+        );
 
         mockMvc
-                .perform(patch("/api/jobs/" + testJob.getId() + "/status")
+                .perform(put("/api/jobs/" + testJobDTO.getId())
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123")))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(statusUpdateJson))
+                        .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("REJECTED"));
+                .andExpect(jsonPath("$.title").value("Principal Software Engineer"))
+                .andExpect(jsonPath("$.status").value(Job.Status.APPLIED.name()));
     }
 
     @Test
     public void JobController_deleteJob_returnSuccess() throws Exception {
         mockMvc
-                .perform(delete("/api/jobs/" + testJob.getId())
+                .perform(delete("/api/jobs/" + testJobDTO.getId())
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
@@ -187,10 +197,10 @@ public class JobControllerIntegrationTests {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalCount").exists())
-                .andExpect(jsonPath("$.appliedCount").exists())
-                .andExpect(jsonPath("$.todayCount").exists())
-                .andExpect(jsonPath("$.interviewedCount").exists())
-                .andExpect(jsonPath("$.rejectedCount").exists());
+                .andExpect(jsonPath("$.appliedCount").isNumber())
+                .andExpect(jsonPath("$.todayCount").isNumber())
+                .andExpect(jsonPath("$.interviewedCount").isNumber())
+                .andExpect(jsonPath("$.rejectedCount").isNumber());
     }
 
     @Test
@@ -201,7 +211,7 @@ public class JobControllerIntegrationTests {
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.count").value(1));
+                .andExpect(jsonPath("$.count", is(1)));
     }
 
     @Test
@@ -212,7 +222,7 @@ public class JobControllerIntegrationTests {
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.count").value(1));
+                .andExpect(jsonPath("$.count", is(1)));
     }
 
     // Error Handling & Validation
@@ -229,38 +239,32 @@ public class JobControllerIntegrationTests {
 
     @Test
     public void JobController_createJob_withInvalidData_returnBadRequest() throws Exception {
-        String invalidJobJson = """
-                {
-                    "title": "",
-                    "company": ""
-                }
-                """;
+        CreateJobRequestDTO invalidDto = new CreateJobRequestDTO("", "", "");
 
         mockMvc
                 .perform(post("/api/jobs")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123")))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidJobJson))
+                        .content(objectMapper.writeValueAsString(invalidDto)))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
-    // Response Structure Validation (Optional, example included)
-
     @Test
-    public void JobController_getAllJobs_verifySpecificFields() throws Exception {
+    public void JobController_getAllJobs_verifySpecificFieldsInDTO() throws Exception {
         mockMvc
                 .perform(get("/api/jobs")
                         .with(oauth2Login()
                                 .attributes(attrs -> attrs.put("id", "123"))))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(testJob.getId()))
-                .andExpect(jsonPath("$[0].title").value("Software Engineer"))
-                .andExpect(jsonPath("$[0].company").value("Tech Company"))
-                .andExpect(jsonPath("$[0].location").value("Remote"))
-                .andExpect(jsonPath("$[0].status").value("APPLIED"));
+                .andExpect(jsonPath("$[0].id").value(testJobDTO.getId()))
+                .andExpect(jsonPath("$[0].title").value(testJobDTO.getTitle()))
+                .andExpect(jsonPath("$[0].company").value(testJobDTO.getCompany()))
+                .andExpect(jsonPath("$[0].location").value(testJobDTO.getLocation()))
+                .andExpect(jsonPath("$[0].status").value(testJobDTO.getStatus()))
+                .andExpect(jsonPath("$[0].userId").value(testUser.getId()));
     }
 }
 
