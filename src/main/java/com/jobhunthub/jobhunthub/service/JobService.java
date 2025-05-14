@@ -1,21 +1,29 @@
 package com.jobhunthub.jobhunthub.service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.jobhunthub.jobhunthub.dto.CreateJobRequestDTO;
+import com.jobhunthub.jobhunthub.dto.JobDTO;
+import com.jobhunthub.jobhunthub.dto.UpdateJobRequestDTO;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler;
 import com.jobhunthub.jobhunthub.model.Job;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.repository.JobRepository;
-import org.springframework.stereotype.Service;
-import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.stream.Collectors;
 
 @Service
 public class JobService {
 
+    private static final Logger logger = LoggerFactory.getLogger(JobService.class);
     private final JobRepository jobRepository;
     private final ZoneId zoneId;
 
@@ -25,66 +33,79 @@ public class JobService {
     }
 
     // Basic CRUD operations - all include user security checks
-    public Job createJob(Job job, User user) {
-        // Validate required fields
+    // Creates a new job
+    @Transactional
+    public JobDTO createJob(CreateJobRequestDTO dto, User user) {
+        Job job = new Job();
+        job.setTitle(dto.getTitle());
+        job.setCompany(dto.getCompany());
+        job.setLocation(dto.getLocation());
+
         validateJob(job);
 
-        // Force status to APPLIED for new jobs
         job.setStatus(Job.Status.APPLIED);
-        
-        // Set correct user and date
         job.setUser(user);
         job.setCreatedAt(LocalDate.now(zoneId));
 
-        return jobRepository.save(job);
+        Job savedJob = jobRepository.save(job);
+        return JobDTO.fromEntity(savedJob);
     }
 
-    public List<Job> getJobsByUser(User user) {
-        return jobRepository.findByUser(user);
+    // Gets all jobs for a user
+    public List<JobDTO> getJobsByUser(User user) {
+        return jobRepository.findByUser(user)
+                .stream()
+                .map(JobDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    public Job getJobById(Long id, User user) {
+    // Gets a job by id
+    public JobDTO getJobById(Long id, User user) {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id));
-        // 404 if job doesn't belong to user (security through obscurity)
+        if (!job.getUser().getId().equals(user.getId())) {
+            throw new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id); // Security through obscurity
+        }
+        return JobDTO.fromEntity(job);
+    }
+
+    // Updates a job
+    @Transactional
+    public JobDTO updateJob(Long id, UpdateJobRequestDTO dto, User user) {
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id));
+        
         if (!job.getUser().getId().equals(user.getId())) {
             throw new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id);
         }
-        return job;
-    }
 
-    // Update job (with security check)
-    public Job updateJob(Long id, Job jobDetails, User user) {
-        Job job = getJobById(id, user);  // This already checks user ownership
+        job.setTitle(dto.getTitle());
+        job.setCompany(dto.getCompany());
+        job.setLocation(dto.getLocation());
+        
+        validateJob(job);
 
-        // Validate required fields
-        validateJob(jobDetails);
-
-        // Validate status enum
-        if (jobDetails.getStatus() != null && 
-            !java.util.Arrays.asList(Job.Status.values()).contains(jobDetails.getStatus())) {
-            throw new GlobalExceptionHandler.InvalidRequestException("Invalid status value");
+        if (dto.getStatus() != null && !dto.getStatus().trim().isEmpty()) {
+            try {
+                Job.Status newStatus = Job.Status.valueOf(dto.getStatus().toUpperCase());
+                job.setStatus(newStatus);
+            } catch (IllegalArgumentException e) {
+                throw new GlobalExceptionHandler.InvalidRequestException("Invalid status value: " + dto.getStatus());
+            }
         }
 
-        // Update fields but preserve user and creation date
-        job.setTitle(jobDetails.getTitle());
-        job.setCompany(jobDetails.getCompany());
-        job.setLocation(jobDetails.getLocation());
-        job.setStatus(jobDetails.getStatus());
-
-        return jobRepository.save(job);
+        Job updatedJob = jobRepository.save(job);
+        return JobDTO.fromEntity(updatedJob);
     }
 
-    // Update job status (with security check)
-    public Job updateJobStatus(Long id, Job.Status status, User user) {
-        Job job = getJobById(id, user);
-        job.setStatus(status);
-        return jobRepository.save(job);
-    }
-
-    // Delete job (with security check)
+    // Deletes a job
+    @Transactional
     public void deleteJob(Long id, User user) {
-        Job job = getJobById(id, user);
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id));
+        if (!job.getUser().getId().equals(user.getId())) {
+            throw new GlobalExceptionHandler.ResourceNotFoundException("Job", "id", id); 
+        }
         jobRepository.delete(job);
     }
 
