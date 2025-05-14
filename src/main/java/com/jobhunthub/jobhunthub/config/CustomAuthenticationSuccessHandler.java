@@ -33,7 +33,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     private static final Logger logger = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
     private final UserService userService;
     private final String frontendUrl;
-    // Handles pre-login saved requests and manages the actual redirection.
     private final AuthenticationSuccessHandler delegate = new SavedRequestAwareAuthenticationSuccessHandler();
 
     /**
@@ -50,7 +49,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (injectedFrontendUrl == null || injectedFrontendUrl.trim().isEmpty() || "null".equalsIgnoreCase(injectedFrontendUrl)) {
             logger.error("FATAL: frontendUrl is null or invalid in CustomAuthenticationSuccessHandler constructor. Cannot set default target URL.");
-            // Throw an exception to make the configuration failure clear.
             throw new IllegalArgumentException("frontendUrl cannot be null or empty for CustomAuthenticationSuccessHandler. Check property frontend.url and its environment variable source.");
         } else {
             String targetUrl = injectedFrontendUrl + "/dashboard";
@@ -72,7 +70,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
             logger.warn("Authentication is not OAuth2AuthenticationToken, type: {}. Delegating to default handler.", authentication.getClass().getName());
-            // Fallback to default handler for non-OAuth2 authentications.
             this.delegate.onAuthenticationSuccess(request, response, authentication);
             return;
         }
@@ -98,7 +95,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             if (existingUserOpt.isPresent()) {
                 user = existingUserOpt.get();
                 logger.debug("Found existing user: {}", user.getUsername());
-                // Update user information if it has changed.
                 boolean needsUpdate = false;
                 if (login != null && (user.getUsername() == null || !user.getUsername().equals(login))) {
                     user.setUsername(login);
@@ -131,7 +127,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                  logger.info("Successfully saved new user: {}", user.getUsername());
             }
 
-            // Delegate redirection to handle saved requests correctly.
             logger.info("User provisioning complete, delegating redirect to SavedRequestAwareAuthenticationSuccessHandler (target: {})", frontendUrl + "/dashboard");
             logger.debug("onAuthenticationSuccess: Using frontendUrl [{}] for potential redirects.", this.frontendUrl);
             this.delegate.onAuthenticationSuccess(request, response, authentication);
