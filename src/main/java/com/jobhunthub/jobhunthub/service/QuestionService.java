@@ -1,21 +1,25 @@
 package com.jobhunthub.jobhunthub.service;
 
-import com.jobhunthub.jobhunthub.model.Question;
-import com.jobhunthub.jobhunthub.repository.QuestionRepository;
-import com.jobhunthub.jobhunthub.model.Question.QuestionType;
-import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.*;
-import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDate;
-import java.util.List;
-import java.time.ZoneId;
-import com.jobhunthub.jobhunthub.model.User;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobhunthub.jobhunthub.dto.QuestionDTO;
-import java.util.stream.Collectors;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.AuthenticationException;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.InvalidRequestException;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.ResourceNotFoundException;
+import com.jobhunthub.jobhunthub.model.Question;
+import com.jobhunthub.jobhunthub.model.Question.QuestionType;
+import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.repository.QuestionRepository;
 
 @Service
 public class QuestionService {
@@ -26,7 +30,6 @@ public class QuestionService {
     private final ObjectMapper objectMapper;
     private final ZoneId zoneId;
 
-    // Constructor injection
     public QuestionService(QuestionRepository repository, OpenAIService openAIService, ZoneId zoneId) {
         this.repository = repository;
         this.openAIService = openAIService;
@@ -206,6 +209,7 @@ public class QuestionService {
         }
     }
 
+    // Validate new question
     private void validateNewQuestion(Question question) {
         if (question == null || question.getQuestion() == null || 
             question.getQuestion().trim().isEmpty()) {
@@ -222,6 +226,7 @@ public class QuestionService {
         question.setUpdatedAt(rating > 6 ? LocalDate.now(zoneId) : null);
     }
 
+    // Creates a no more questions response
     private Question createNoMoreQuestionsResponse() {
         Question noMoreQuestions = new Question();
         noMoreQuestions.setQuestion("No more questions for today! Please reset or come back tomorrow!");
