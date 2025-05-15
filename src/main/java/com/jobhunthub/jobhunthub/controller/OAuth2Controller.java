@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jobhunthub.jobhunthub.dto.AuthenticatedUserDTO;
-import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.service.UserService;
-import com.jobhunthub.jobhunthub.utils.AuthenticationUtils;
 
 /**
  * Controller for OAuth2 related actions, primarily to fetch authenticated user details.
@@ -35,30 +33,14 @@ public class OAuth2Controller {
      */
     @GetMapping("/api/auth/user")
     public ResponseEntity<AuthenticatedUserDTO> getUser(Authentication authentication) {
-        logger.info("Entering /api/auth/user endpoint check");
-        if (authentication == null || !authentication.isAuthenticated()) {
-            logger.warn("/api/auth/user: Authentication is null or not authenticated.");
-            return ResponseEntity.ok(new AuthenticatedUserDTO(false));
+        AuthenticatedUserDTO userDTO = userService.getAuthenticatedUserDetails(authentication);
+        
+        if (userDTO.authenticated()) {
+            logger.info("Retrieved user: {}", userDTO.username());
+        } else {
+            logger.warn("Authentication failed: user not authenticated");
         }
-
-        try {
-            // AuthenticationUtils handles the logic of extracting user details
-            // from the Authentication object and fetching from the database.
-            User user = AuthenticationUtils.getCurrentUser(authentication, userService);
-
-            logger.info("/api/auth/user: Successfully authenticated user: {}", user.getUsername());
-            AuthenticatedUserDTO userDTO = new AuthenticatedUserDTO(
-                    true,
-                    user.getId(),
-                    user.getUsername(),
-                    user.getEmail() != null ? user.getEmail() : "",
-                    user.getAvatarUrl() != null ? user.getAvatarUrl() : ""
-            );
-            return ResponseEntity.ok(userDTO);
-        } catch (Exception e) {
-            // This typically occurs if OAuth2 ID is missing or user is not found in the database.
-            logger.warn("/api/auth/user: Failed to get current user: {}", e.getMessage());
-            return ResponseEntity.ok(new AuthenticatedUserDTO(false));
-        }
+        
+        return ResponseEntity.ok(userDTO);
     }
 }

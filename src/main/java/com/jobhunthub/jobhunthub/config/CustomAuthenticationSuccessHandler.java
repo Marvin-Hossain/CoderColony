@@ -1,7 +1,6 @@
 package com.jobhunthub.jobhunthub.config;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.AuthenticationException;
 import com.jobhunthub.jobhunthub.service.UserService;
 
 import jakarta.servlet.ServletException;
@@ -42,97 +41,36 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
      * @throws IllegalArgumentException if injectedFrontendUrl is null or empty.
      */
     public CustomAuthenticationSuccessHandler(UserService userService, @Value("${frontend.url}") String injectedFrontendUrl) {
-        logger.info("CustomAuthenticationSuccessHandler constructor: Injected frontendUrl is [{}]", injectedFrontendUrl);
-
         this.userService = userService;
         this.frontendUrl = injectedFrontendUrl;
 
         if (injectedFrontendUrl == null || injectedFrontendUrl.trim().isEmpty() || "null".equalsIgnoreCase(injectedFrontendUrl)) {
-            logger.error("FATAL: frontendUrl is null or invalid in CustomAuthenticationSuccessHandler constructor. Cannot set default target URL.");
-            throw new IllegalArgumentException("frontendUrl cannot be null or empty for CustomAuthenticationSuccessHandler. Check property frontend.url and its environment variable source.");
-        } else {
-            String targetUrl = injectedFrontendUrl + "/dashboard";
-            logger.info("CustomAuthenticationSuccessHandler: Setting default target URL to [{}]", targetUrl);
-            ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setDefaultTargetUrl(targetUrl);
+            logger.error("Frontend URL is invalid");
+            throw new IllegalArgumentException("frontend.url cannot be null or empty");
         }
+        
+        String targetUrl = injectedFrontendUrl + "/dashboard";
+        ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setDefaultTargetUrl(targetUrl);
         ((SavedRequestAwareAuthenticationSuccessHandler) this.delegate).setAlwaysUseDefaultTargetUrl(true);
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        logger.info("Entering CustomAuthenticationSuccessHandler.onAuthenticationSuccess");
-
-        if (authentication == null) {
-            logger.error("Received null Authentication object in onAuthenticationSuccess.");
-            response.sendRedirect(frontendUrl + "/?error=internal_auth_error");
-            return;
-        }
-
-        if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
-            logger.warn("Authentication is not OAuth2AuthenticationToken, type: {}. Delegating to default handler.", authentication.getClass().getName());
-            this.delegate.onAuthenticationSuccess(request, response, authentication);
-            return;
-        }
-
-        OAuth2User oAuth2User = oauthToken.getPrincipal();
-        Object idAttribute = oAuth2User.getAttribute("id");
-        if (idAttribute == null) {
-            logger.error("GitHub ID attribute is null in onAuthenticationSuccess");
-            response.sendRedirect(frontendUrl + "/?error=missing_id");
-            return;
-        }
-        String githubId = idAttribute.toString();
-        String login = oAuth2User.getAttribute("login");
-        String email = oAuth2User.getAttribute("email");
-        String avatarUrl = oAuth2User.getAttribute("avatar_url");
-
-        logger.info("Processing successful authentication for GitHub user: {}, ID: {}", login, githubId);
-
         try {
-            Optional<User> existingUserOpt = userService.findByGithubId(githubId);
-            User user;
+            OAuth2AuthenticationToken oauthToken = userService.validateAuthentication(authentication);
+            OAuth2User oAuth2User = oauthToken.getPrincipal();
+            String registrationId = oauthToken.getAuthorizedClientRegistrationId();
+            String userIdentifier = userService.getUserIdentifierForLogging(oAuth2User, registrationId);
+            
+            logger.info("Processing {} user: {}", registrationId, userIdentifier);
 
-            if (existingUserOpt.isPresent()) {
-                user = existingUserOpt.get();
-                logger.debug("Found existing user: {}", user.getUsername());
-                boolean needsUpdate = false;
-                if (login != null && (user.getUsername() == null || !user.getUsername().equals(login))) {
-                    user.setUsername(login);
-                    needsUpdate = true;
-                }
-                if (email != null && (user.getEmail() == null || !user.getEmail().equals(email))) {
-                    user.setEmail(email);
-                    needsUpdate = true;
-                }
-                if (avatarUrl != null && (user.getAvatarUrl() == null || !user.getAvatarUrl().equals(avatarUrl))) {
-                    user.setAvatarUrl(avatarUrl);
-                    needsUpdate = true;
-                }
-
-                if (needsUpdate) {
-                     logger.info("Attempting to update existing user: {}", user.getUsername());
-                    userService.save(user);
-                     logger.info("Successfully updated user: {}", user.getUsername());
-                } else {
-                     logger.debug("No updates needed for existing user: {}", user.getUsername());
-                }
-            } else {
-                user = new User();
-                user.setGithubId(githubId);
-                user.setUsername(login);
-                user.setEmail(email);
-                user.setAvatarUrl(avatarUrl);
-                 logger.info("Attempting to save new user: {}", user.getUsername());
-                userService.save(user);
-                 logger.info("Successfully saved new user: {}", user.getUsername());
-            }
-
-            logger.info("User provisioning complete, delegating redirect to SavedRequestAwareAuthenticationSuccessHandler (target: {})", frontendUrl + "/dashboard");
-            logger.debug("onAuthenticationSuccess: Using frontendUrl [{}] for potential redirects.", this.frontendUrl);
+            userService.provisionOrUpdateUserFromOAuth2(oAuth2User, registrationId);
             this.delegate.onAuthenticationSuccess(request, response, authentication);
-
+        } catch (AuthenticationException e) {
+            logger.error("Authentication failed: {}", e.getMessage());
+            response.sendRedirect(frontendUrl + "/?error=internal_auth_error");
         } catch (Exception e) {
-            logger.error("Error during user provisioning for githubId {}: {}", githubId, e.getMessage(), e);
+            logger.error("User provisioning failed: {}", e.getMessage());
             response.sendRedirect(frontendUrl + "/?error=provisioning_failed");
         }
     }
