@@ -22,7 +22,6 @@ import com.jobhunthub.jobhunthub.model.Job;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.service.JobService;
 import com.jobhunthub.jobhunthub.service.UserService;
-import com.jobhunthub.jobhunthub.utils.AuthenticationUtils;
 
 @RestController
 @RequestMapping("/api/jobs")
@@ -42,7 +41,7 @@ public class JobController {
     // Create a job
     @PostMapping
     public ResponseEntity<JobDTO> createJob(@RequestBody CreateJobRequestDTO createJobRequestDTO, Authentication authentication) {
-        User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
+        User currentUser = userService.getAuthenticatedUserEntity(authentication);
         JobDTO createdJobDTO = jobService.createJob(createJobRequestDTO, currentUser);
         return new ResponseEntity<>(createdJobDTO, HttpStatus.CREATED);
     }
@@ -50,7 +49,7 @@ public class JobController {
     // Get all jobs
     @GetMapping
     public ResponseEntity<List<JobDTO>> getAllJobs(Authentication authentication) {
-        User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
+        User currentUser = userService.getAuthenticatedUserEntity(authentication);
         List<JobDTO> jobDTOs = jobService.getJobsByUser(currentUser);
         return ResponseEntity.ok(jobDTOs);
     }
@@ -58,7 +57,7 @@ public class JobController {
     // Get job by id
     @GetMapping("/{id}")
     public ResponseEntity<JobDTO> getJobById(@PathVariable Long id, Authentication authentication) {
-        User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
+        User currentUser = userService.getAuthenticatedUserEntity(authentication);
         JobDTO jobDTO = jobService.getJobById(id, currentUser);
         return ResponseEntity.ok(jobDTO);
     }
@@ -66,7 +65,7 @@ public class JobController {
     // Update a job
     @PutMapping("/{id}")
     public ResponseEntity<JobDTO> updateJob(@PathVariable Long id, @RequestBody UpdateJobRequestDTO updateJobRequestDTO, Authentication authentication) {
-        User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
+        User currentUser = userService.getAuthenticatedUserEntity(authentication);
         JobDTO updatedJobDTO = jobService.updateJob(id, updateJobRequestDTO, currentUser);
         return ResponseEntity.ok(updatedJobDTO);
     }
@@ -74,7 +73,7 @@ public class JobController {
     // Delete a job
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteJob(@PathVariable Long id, Authentication authentication) {
-        User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
+        User currentUser = userService.getAuthenticatedUserEntity(authentication);
         jobService.deleteJob(id, currentUser);
         return ResponseEntity.ok("Job deleted successfully!");
     }
@@ -84,21 +83,21 @@ public class JobController {
     // Get total job count
     @GetMapping("/count")
     public Map<String, Long> getJobCount(Authentication authentication) {
-        User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
+        User currentUser = userService.getAuthenticatedUserEntity(authentication);
         return Map.of("count", jobService.getJobCountByUser(currentUser));
     }
 
     // Get today's job count
     @GetMapping("/today-count")
     public Map<String, Long> getTodayCount(Authentication authentication) {
-        User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
+        User currentUser = userService.getAuthenticatedUserEntity(authentication);
         return Map.of("count", jobService.getTodayCount(currentUser));
     }
 
     // Get dashboard stats with status breakdown
     @GetMapping("/dashboard-stats")
     public Map<String, Object> getDashboardStats(Authentication authentication) {
-        User currentUser = AuthenticationUtils.getCurrentUser(authentication, userService);
+        User currentUser = userService.getAuthenticatedUserEntity(authentication);
         return Map.of("totalCount", jobService.getJobCountByUser(currentUser), "appliedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.APPLIED), "todayCount", jobService.getTodayCount(currentUser), "interviewedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.INTERVIEWED), "rejectedCount", jobService.getJobCountByUserAndStatus(currentUser, Job.Status.REJECTED));
     }
 }
