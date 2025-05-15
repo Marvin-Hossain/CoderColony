@@ -1,11 +1,12 @@
 package com.jobhunthub.jobhunthub.repository;
 
-import com.jobhunthub.jobhunthub.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.jobhunthub.jobhunthub.model.User;
+
 public interface UserRepository extends JpaRepository<User, Long> {
-    // Find a user by their Provider ID
-    Optional<User> findByProviderId(String providerId);
+    // Updated method to find a user by their provider and provider-specific ID
+    Optional<User> findByProviderAndProviderId(String provider, String providerId);
 }

@@ -22,6 +22,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String provider;
+
     @Column(unique = true)
     private String providerId;
 
@@ -38,6 +40,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
     public String getUsername() {
