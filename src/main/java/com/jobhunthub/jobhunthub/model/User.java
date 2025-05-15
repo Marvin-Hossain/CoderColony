@@ -1,9 +1,14 @@
 package com.jobhunthub.jobhunthub.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 
 @Entity
@@ -18,7 +23,7 @@ public class User {
     private Long id;
 
     @Column(unique = true)
-    private String githubId;
+    private String providerId;
 
     private String username;
 
@@ -51,12 +56,12 @@ public class User {
         this.email = email;
     }
 
-    public String getGithubId() {
-        return githubId;
+    public String getProviderId() {
+        return providerId;
     }
 
-    public void setGithubId(String githubId) {
-        this.githubId = githubId;
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
     public String getAvatarUrl() {
