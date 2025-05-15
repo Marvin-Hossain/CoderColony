@@ -10,11 +10,22 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.service.UserService;
+
 
 /**
  * Configures web security for the application, including CORS, CSRF,
@@ -27,13 +38,43 @@ public class SecurityConfig {
     private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final String frontendUrlValue;
     private final String allowedOriginValue;
+    private final UserService userService;
 
     public SecurityConfig(CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
+                          UserService userService,
                           @Value("${frontend.url}") String frontendUrlValue,
                           @Value("${allowed.origin}") String allowedOriginValue) {
         this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
+        this.userService = userService;
         this.frontendUrlValue = frontendUrlValue;
         this.allowedOriginValue = allowedOriginValue;
+    }
+
+    /**
+     * Custom OAuth2UserService bean that delegates to DefaultOAuth2UserService
+     * and provisions or updates the local User entity.
+     */
+    @Bean
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService() {
+        DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+        return userRequest -> {
+            OAuth2User oauth2User = delegate.loadUser(userRequest);
+            String provider = userRequest.getClientRegistration().getRegistrationId();
+            User domainUser = userService.provisionOrUpdateUserFromOAuth2(oauth2User, provider);
+            return new UserPrincipal(oauth2User, domainUser);
+        };
+    }
+
+    // 2) OIDC ID Token + user‑info provisioning (e.g. Google)
+    @Bean
+    public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
+        OidcUserService delegate = new OidcUserService();
+        return userRequest -> {
+            OidcUser oidcUser = delegate.loadUser(userRequest);
+            String provider = userRequest.getClientRegistration().getRegistrationId();
+            User domainUser = userService.provisionOrUpdateUserFromOAuth2(oidcUser, provider);
+            return new UserPrincipal(oidcUser, domainUser);
+        };
     }
 
     /**
@@ -65,6 +106,10 @@ public class SecurityConfig {
                     auth.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oauth2UserService())
+                                .oidcUserService(oidcUserService())
+                        )
                         .successHandler(customAuthenticationSuccessHandler)
                         .failureUrl(frontendUrlValue + "/?error=true")
                 )
