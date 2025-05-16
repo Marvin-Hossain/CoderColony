@@ -2,29 +2,39 @@ package com.jobhunthub.jobhunthub.controller;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
+
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jobhunthub.jobhunthub.config.UserPrincipal;
 import com.jobhunthub.jobhunthub.dto.CreateJobRequestDTO;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.repository.JobRepository;
+import com.jobhunthub.jobhunthub.repository.UserRepository;
 import com.jobhunthub.jobhunthub.service.JobService;
-import com.jobhunthub.jobhunthub.service.UserService;
 
 /**
  * Integration tests for ProgressController.
@@ -42,7 +52,7 @@ public class ProgressControllerIntegrationTests {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
 
     @Autowired
     private JobService jobService;
@@ -50,16 +60,32 @@ public class ProgressControllerIntegrationTests {
     @Autowired
     private JobRepository jobRepository;
 
+    private UserPrincipal testPrincipal;
     private final static int WEEK_DAYS = 7;
 
     @BeforeEach
     public void setUp() {
         User testUser = new User();
-        testUser.setGithubId("123");
+        testUser.setProvider("github");
+        testUser.setProviderId("123");
         testUser.setUsername("testuser");
         testUser.setEmail("test@test.com");
         testUser.setAvatarUrl("https://github.com/testuser.png");
-        testUser = userService.save(testUser);
+        testUser = userRepository.save(testUser);
+
+        // build a stubbed OAuth2User that matches what your UserService would see
+        var delegate = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),    // or whatever roles you use
+                Map.of("id", testUser.getProviderId(),                 // principal.getName() -> providerId
+                        "name", testUser.getUsername(),                 // unused by loadByProviderId()
+                        "email", testUser.getEmail(),
+                        "avatar_url", testUser.getAvatarUrl()
+                ),
+                "id"  // the key in the map to use as getName()
+        );
+
+        // wrap it in your UserPrincipal
+        this.testPrincipal = new UserPrincipal(delegate, testUser);
 
         CreateJobRequestDTO todayJobDto = new CreateJobRequestDTO(
                 "Software Engineer Today",
@@ -91,8 +117,7 @@ public class ProgressControllerIntegrationTests {
     public void ProgressController_getWeeklyProgress_returnsWeeklyJobStatsDTO() throws Exception {
         mockMvc
                 .perform(get("/api/progress/jobs")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.total").isNumber())
@@ -108,8 +133,7 @@ public class ProgressControllerIntegrationTests {
     public void ProgressController_getAllTimeStats_returnsAllTimeJobStatsDTO() throws Exception {
         mockMvc
                 .perform(get("/api/progress/jobs/all-time")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.total", is(3)))
@@ -124,8 +148,7 @@ public class ProgressControllerIntegrationTests {
     public void ProgressController_getWeeklyProgress_withInvalidCategory_returnEmptyJson() throws Exception {
         mockMvc
                 .perform(get("/api/progress/invalid-category")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json("{}"));
@@ -135,8 +158,7 @@ public class ProgressControllerIntegrationTests {
     public void ProgressController_getAllTimeStats_withInvalidCategory_returnEmptyJson() throws Exception {
         mockMvc
                 .perform(get("/api/progress/invalid-category/all-time")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json("{}"));

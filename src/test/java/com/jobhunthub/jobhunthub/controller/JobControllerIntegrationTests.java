@@ -2,17 +2,25 @@ package com.jobhunthub.jobhunthub.controller;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
+
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,16 +29,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jobhunthub.jobhunthub.config.UserPrincipal;
 import com.jobhunthub.jobhunthub.dto.CreateJobRequestDTO;
 import com.jobhunthub.jobhunthub.dto.JobDTO;
 import com.jobhunthub.jobhunthub.dto.UpdateJobRequestDTO;
 import com.jobhunthub.jobhunthub.model.Job;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.repository.JobRepository;
-import com.jobhunthub.jobhunthub.service.UserService;
+import com.jobhunthub.jobhunthub.repository.UserRepository;
 
 /**
  * Integration tests for JobController.
@@ -50,25 +60,41 @@ public class JobControllerIntegrationTests {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserService userService;
+    private JobRepository jobRepository;
 
     @Autowired
-    private JobRepository jobRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     private User testUser;
     private JobDTO testJobDTO;
+    private UserPrincipal testPrincipal;
 
     @BeforeEach
     public void setUp() {
         testUser = new User();
-        testUser.setGithubId("123");
+        testUser.setProvider("github");
+        testUser.setProviderId("123");
         testUser.setUsername("testuser");
         testUser.setEmail("test@test.com");
         testUser.setAvatarUrl("https://github.com/testuser.png");
-        testUser = userService.save(testUser);
+        testUser = userRepository.save(testUser);
+
+        // build a stubbed OAuth2User that matches what your UserService would see
+        var delegate = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),    // or whatever roles you use
+                Map.of("id", testUser.getProviderId(),                 // principal.getName() -> providerId
+                        "name", testUser.getUsername(),                 // unused by loadByProviderId()
+                        "email", testUser.getEmail(),
+                        "avatar_url", testUser.getAvatarUrl()
+                ),
+                "id"  // the key in the map to use as getName()
+        );
+
+        // wrap it in your UserPrincipal
+        this.testPrincipal = new UserPrincipal(delegate, testUser);
 
         Job initialJobEntity = new Job();
         initialJobEntity.setTitle("Software Engineer");
@@ -94,8 +120,7 @@ public class JobControllerIntegrationTests {
 
         mockMvc
                 .perform(post("/api/jobs")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123")))
+                        .with(oauth2Login().oauth2User(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andDo(print())
@@ -111,8 +136,7 @@ public class JobControllerIntegrationTests {
     public void JobController_getJobById_returnJobDTO() throws Exception {
         mockMvc
                 .perform(get("/api/jobs/" + testJobDTO.getId())
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testJobDTO.getId()))
@@ -123,8 +147,7 @@ public class JobControllerIntegrationTests {
     public void JobController_getAllJobs_returnJobDTOList() throws Exception {
         mockMvc
                 .perform(get("/api/jobs")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testJobDTO.getId()))
@@ -142,8 +165,7 @@ public class JobControllerIntegrationTests {
 
         mockMvc
                 .perform(put("/api/jobs/" + testJobDTO.getId())
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123")))
+                        .with(oauth2Login().oauth2User(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(print())
@@ -165,8 +187,7 @@ public class JobControllerIntegrationTests {
 
         mockMvc
                 .perform(put("/api/jobs/" + testJobDTO.getId())
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123")))
+                        .with(oauth2Login().oauth2User(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateDto)))
                 .andDo(print())
@@ -179,8 +200,7 @@ public class JobControllerIntegrationTests {
     public void JobController_deleteJob_returnSuccess() throws Exception {
         mockMvc
                 .perform(delete("/api/jobs/" + testJobDTO.getId())
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().string("Job deleted successfully!"));
@@ -192,8 +212,7 @@ public class JobControllerIntegrationTests {
     public void JobController_getDashboardStats_returnStats() throws Exception {
         mockMvc
                 .perform(get("/api/jobs/dashboard-stats")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalCount").exists())
@@ -207,8 +226,7 @@ public class JobControllerIntegrationTests {
     public void JobController_getJobCount_returnCount() throws Exception {
         mockMvc
                 .perform(get("/api/jobs/count")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count", is(1)));
@@ -218,8 +236,7 @@ public class JobControllerIntegrationTests {
     public void JobController_getTodayCount_returnTodayCount() throws Exception {
         mockMvc
                 .perform(get("/api/jobs/today-count")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count", is(1)));
@@ -231,8 +248,7 @@ public class JobControllerIntegrationTests {
     public void JobController_getJobById_withInvalidId_returnNotFound() throws Exception {
         mockMvc
                 .perform(get("/api/jobs/99999")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -243,8 +259,7 @@ public class JobControllerIntegrationTests {
 
         mockMvc
                 .perform(post("/api/jobs")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123")))
+                        .with(oauth2Login().oauth2User(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
                 .andDo(print())
@@ -255,8 +270,7 @@ public class JobControllerIntegrationTests {
     public void JobController_getAllJobs_verifySpecificFieldsInDTO() throws Exception {
         mockMvc
                 .perform(get("/api/jobs")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testJobDTO.getId()))

@@ -1,6 +1,8 @@
 package com.jobhunthub.jobhunthub.controller;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 
@@ -23,10 +27,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jobhunthub.jobhunthub.config.UserPrincipal;
 import com.jobhunthub.jobhunthub.model.Question;
 import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.repository.UserRepository;
 import com.jobhunthub.jobhunthub.service.QuestionService;
-import com.jobhunthub.jobhunthub.service.UserService;
 
 /**
  * Integration tests for QuestionController.
@@ -47,21 +52,37 @@ public class QuestionControllerIntegrationTests {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private QuestionService questionService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private Question testQuestion;
+    private UserPrincipal testPrincipal;
 
     @BeforeEach
     public void setUp() {
         User testUser = new User();
-        testUser.setGithubId("123");
+        testUser.setProvider("github");
+        testUser.setProviderId("123");
         testUser.setUsername("testuser");
         testUser.setEmail("test@test.com");
         testUser.setAvatarUrl("https://github.com/testuser.png");
-        testUser = userService.save(testUser);
+        testUser = userRepository.save(testUser);
+
+        // build a stubbed OAuth2User that matches what your UserService would see
+        var delegate = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),    // or whatever roles you use
+                Map.of("id", testUser.getProviderId(),                 // principal.getName() -> providerId
+                        "name", testUser.getUsername(),                 // unused by loadByProviderId()
+                        "email", testUser.getEmail(),
+                        "avatar_url", testUser.getAvatarUrl()
+                ),
+                "id"  // the key in the map to use as getName()
+        );
+
+        // wrap it in your UserPrincipal
+        this.testPrincipal = new UserPrincipal(delegate, testUser);
 
         testQuestion = new Question();
         testQuestion.setType(Question.QuestionType.BEHAVIORAL);
@@ -85,8 +106,7 @@ public class QuestionControllerIntegrationTests {
 
         mockMvc
                 .perform(post("/api/questions/behavioral/add")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123")))
+                        .with(oauth2Login().oauth2User(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(questionJson))
                 .andDo(print())
@@ -98,8 +118,7 @@ public class QuestionControllerIntegrationTests {
     public void QuestionController_getAllQuestions_returnQuestionsList() throws Exception {
         mockMvc
                 .perform(get("/api/questions/behavioral/all")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(testQuestion.getId()));
@@ -109,8 +128,7 @@ public class QuestionControllerIntegrationTests {
     public void QuestionController_getRandomQuestion_returnQuestion() throws Exception {
         mockMvc
                 .perform(get("/api/questions/behavioral/question")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.question").exists());
@@ -120,8 +138,7 @@ public class QuestionControllerIntegrationTests {
     public void QuestionController_deleteQuestion_returnNoContent() throws Exception {
         mockMvc
                 .perform(delete("/api/questions/behavioral/" + testQuestion.getId())
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
@@ -140,8 +157,7 @@ public class QuestionControllerIntegrationTests {
 
         mockMvc
                 .perform(post("/api/questions/behavioral/evaluate")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123")))
+                        .with(oauth2Login().oauth2User(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(evaluateJson))
                 .andDo(print())
@@ -155,8 +171,7 @@ public class QuestionControllerIntegrationTests {
     public void QuestionController_getTodayCount_returnCount() throws Exception {
         mockMvc
                 .perform(get("/api/questions/behavioral/count")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").exists());
@@ -168,8 +183,7 @@ public class QuestionControllerIntegrationTests {
     public void QuestionController_resetQuestions_returnSuccess() throws Exception {
         mockMvc
                 .perform(post("/api/questions/behavioral/reset")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
@@ -185,8 +199,7 @@ public class QuestionControllerIntegrationTests {
 
         mockMvc
                 .perform(post("/api/questions/behavioral/reset-date")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123")))
+                        .with(oauth2Login().oauth2User(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(resetJson))
                 .andDo(print())
@@ -206,8 +219,7 @@ public class QuestionControllerIntegrationTests {
 
         mockMvc
                 .perform(post("/api/questions/behavioral/evaluate")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123")))
+                        .with(oauth2Login().oauth2User(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidJson))
                 .andDo(print())

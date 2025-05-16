@@ -1,10 +1,15 @@
 package com.jobhunthub.jobhunthub.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 
@@ -18,8 +23,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jobhunthub.jobhunthub.config.UserPrincipal;
 import com.jobhunthub.jobhunthub.model.User;
-import com.jobhunthub.jobhunthub.service.UserService;
+import com.jobhunthub.jobhunthub.repository.UserRepository;
 
 /**
  * Integration tests for OAuth2Controller.
@@ -38,48 +44,51 @@ public class OAuth2ControllerIntegrationTests {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
+    private UserPrincipal testPrincipal;
 
     @BeforeEach
     public void setUp() {
         User testUser = new User();
-        testUser.setGithubId("123");
+        testUser.setProvider("github");
+        testUser.setProviderId("123");
         testUser.setUsername("testuser");
+        testUser.setEmail("test@test.com");
         testUser.setAvatarUrl("https://github.com/testuser.png");
-        userService.save(testUser);
+        testUser = userRepository.save(testUser);
+
+        // build a stubbed OAuth2User that matches what your UserService would see
+        var delegate = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),    // or whatever roles you use
+                Map.of("id", testUser.getProviderId(),                 // principal.getName() -> providerId
+                        "name", testUser.getUsername(),                 // unused by loadByProviderId()
+                        "email", testUser.getEmail(),
+                        "avatar_url", testUser.getAvatarUrl()
+                ),
+                "id"  // the key in the map to use as getName()
+        );
+
+        // wrap it in your UserPrincipal
+        this.testPrincipal = new UserPrincipal(delegate, testUser);
     }
 
     @Test
-    public void OAuth2Controller_getUser_returnUserInfo() throws Exception {
+    public void OAuth2Controller_currentUser_returnUserInfo() throws Exception {
         mockMvc
                 .perform(get("/api/auth/user")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", "123"))))
+                        .with(oauth2Login().oauth2User(testPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated").value(true))
                 .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.email").value(""))
+                .andExpect(jsonPath("$.email").value("test@test.com"))
                 .andExpect(jsonPath("$.avatarUrl").value("https://github.com/testuser.png"));
     }
 
     @Test
-    public void OAuth2Controller_getUser_withoutAuth_returnUnauthenticated() throws Exception {
+    public void OAuth2Controller_currentUser_withoutAuth_returnUnauthenticated() throws Exception {
         mockMvc
                 .perform(get("/api/auth/user"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.authenticated").value(false));
-    }
-
-    @Test
-    public void OAuth2Controller_getUser_authenticatedButUserNotFoundInDb_returnUnauthenticated() throws Exception {
-        String unknownGithubId = "unknown-id-999";
-
-        mockMvc
-                .perform(get("/api/auth/user")
-                        .with(oauth2Login()
-                                .attributes(attrs -> attrs.put("id", unknownGithubId))))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated").value(false));
