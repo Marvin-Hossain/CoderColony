@@ -60,7 +60,7 @@ public class SecurityConfig {
         return userRequest -> {
             OAuth2User oauth2User = delegate.loadUser(userRequest);
             String provider = userRequest.getClientRegistration().getRegistrationId();
-            User domainUser = userService.provisionOrUpdateUserFromOAuth2(oauth2User, provider);
+            User domainUser = userService.authenticateUser(oauth2User, provider);
             return new UserPrincipal(oauth2User, domainUser);
         };
     }
@@ -72,7 +72,7 @@ public class SecurityConfig {
         return userRequest -> {
             OidcUser oidcUser = delegate.loadUser(userRequest);
             String provider = userRequest.getClientRegistration().getRegistrationId();
-            User domainUser = userService.provisionOrUpdateUserFromOAuth2(oidcUser, provider);
+            User domainUser = userService.authenticateUser(oidcUser, provider);
             return new UserPrincipal(oidcUser, domainUser);
         };
     }

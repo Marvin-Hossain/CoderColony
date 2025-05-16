@@ -24,42 +24,42 @@ public class UserService {
      * Provision a new user or update an existing one based on OAuth2/OIDC attributes.
      */
     @Transactional
-    public User provisionOrUpdateUserFromOAuth2(OAuth2User oauth2User, String provider) {
+    public User authenticateUser(OAuth2User oauth2User, String provider) {
         var attrs = OAuth2UserAttributes.from(oauth2User, provider);
         return userRepository.findByProviderAndProviderId(provider, attrs.providerId())
-                .map(user -> updateUserIfNeeded(user, attrs))
+                .map(user -> updateUser(user, attrs))
                 .orElseGet(() -> createNewUser(provider, attrs));
     }
 
-    // Update user if needed
-    private User updateUserIfNeeded(User user, OAuth2UserAttributes attrs) {
+    // Private helper method to update user if needed
+    private User updateUser(User user, OAuth2UserAttributes attrs) {
         if (user.getId() == null || hasChanges(user, attrs)) {
-            updateUser(user, attrs);
+            updateUserHelper(user, attrs);
             return userRepository.save(user);
         }
         return user;
     }
 
-    // Check if user has changes
+    // Private helper method to check if user has changes
     private boolean hasChanges(User user, OAuth2UserAttributes attrs) {
         return !attrs.username().equals(user.getUsername()) ||
                (attrs.email() != null && !attrs.email().equals(user.getEmail())) ||
                (attrs.avatarUrl() != null && !attrs.avatarUrl().equals(user.getAvatarUrl()));
     }
 
-    // Update user attributes 
-    private void updateUser(User user, OAuth2UserAttributes attrs) {
+    // Private helper method to update user attributes
+    private void updateUserHelper(User user, OAuth2UserAttributes attrs) {
         user.setUsername(attrs.username());
         if (attrs.email() != null) user.setEmail(attrs.email());
         if (attrs.avatarUrl() != null) user.setAvatarUrl(attrs.avatarUrl());
     }
 
-    // Create new user
+    // Private helper method to create new user
     private User createNewUser(String provider, OAuth2UserAttributes attrs) {
         User newUser = new User();
         newUser.setProvider(provider);
         newUser.setProviderId(attrs.providerId());
-        updateUser(newUser, attrs);
+        updateUserHelper(newUser, attrs);
         return userRepository.save(newUser);
     }
 
@@ -71,6 +71,7 @@ public class UserService {
         String avatarUrl
     ) {
 
+        // Static method to extract attributes from OAuth2User
         static OAuth2UserAttributes from(OAuth2User user, String provider) {
             return switch (provider.toLowerCase()) {
                 case "github" -> extractAttributes(user, "id", "login", "email", "avatar_url");
@@ -79,7 +80,7 @@ public class UserService {
             };
         }
 
-        // Extract attributes from OAuth2User
+        // Private helper method to extract attributes from OAuth2User
         private static OAuth2UserAttributes extractAttributes(
                 OAuth2User user, 
                 String idKey, 
@@ -101,7 +102,7 @@ public class UserService {
             return new OAuth2UserAttributes(pid, uname, email, avatar);
         }
 
-        // Fallback username if name is not available
+        // Private helper method to fallback username if name is not available
         private static String fallbackUsername(String email, String pid) {
             return email != null && email.contains("@") ? email.split("@")[0] : pid;
         }
