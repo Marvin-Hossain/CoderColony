@@ -46,7 +46,8 @@ public class JobServiceTests {
         MockitoAnnotations.openMocks(this);
         user = User.builder()
                 .id(1L)
-                .githubId("123")
+                .provider("github")
+                .providerId("123")
                 .username("testuser")
                 .email("test@test.com")
                 .build();

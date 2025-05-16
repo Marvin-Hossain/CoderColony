@@ -1,27 +1,31 @@
 package com.jobhunthub.jobhunthub.service;
 
-import com.jobhunthub.jobhunthub.dto.QuestionDTO;
-import com.jobhunthub.jobhunthub.model.Question;
-import com.jobhunthub.jobhunthub.model.User;
-import com.jobhunthub.jobhunthub.model.Question.QuestionType;
-import com.jobhunthub.jobhunthub.repository.QuestionRepository;
-import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.InvalidRequestException;
-import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.ResourceNotFoundException;
-import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.AuthenticationException;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
+import org.assertj.core.api.Assertions;
 import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+
+import com.jobhunthub.jobhunthub.dto.QuestionDTO;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.AuthenticationException;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.InvalidRequestException;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.ResourceNotFoundException;
+import com.jobhunthub.jobhunthub.model.Question;
+import com.jobhunthub.jobhunthub.model.Question.QuestionType;
+import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.repository.QuestionRepository;
 
 public class QuestionServiceTests {
 
@@ -46,7 +50,8 @@ public class QuestionServiceTests {
 
         user = User.builder()
                 .id(1L)
-                .githubId("123")
+                .provider("github")
+                .providerId("123")
                 .username("testuser")
                 .email("test@test.com")
                 .avatarUrl("https://github.com/testuser.png")
