@@ -1,27 +1,18 @@
 package com.jobhunthub.jobhunthub.dto;
 
-// DTO for evaluating user responses to interview questions
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class EvaluateResponseRequest {
     private String question;
     private String response;
 
-    public String getQuestion() {
-        return question;
-    }
-
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
-    public String getResponse() {
-        return response;
-    }
-
-    public void setResponse(String response) {
-        this.response = response;
-    }
-
-    // Basic validation - checks if both fields are non-empty
     public boolean isValid() {
         return question != null && !question.trim().isEmpty()
                 && response != null && !response.trim().isEmpty();

@@ -13,7 +13,7 @@ A full-stack application to help job seekers track applications and practice int
 
 ## Tech Stack
 ### Backend
-- Java 17
+- Java 23
 - Spring Boot 3
 - Spring Security with OAuth2
 - H2 (for local development), PostgreSQL (for production)
@@ -33,10 +33,10 @@ This project prioritizes code quality and reliability through testing:
 *   **Ongoing Work:** Currently expanding test coverage with frontend integration tests and exploring end-to-end (E2E) testing strategies (e.g., using Cypress or Playwright) to validate key user flows across the application.
 
 ## Prerequisites
-- Java 17 or higher (e.g., Temurin JDK)
+- Java 23 (Temurin JDK 23 recommended)
 - Maven (usually bundled with IDEs or installable)
 - Git
-- Node.js and npm (for frontend development)
+- Node.js 22.x or higher and npm (for frontend development)
 
 ## Getting Started (Local Development)
 This project is configured for an easy local backend setup, allowing you to focus on frontend development. The backend uses an H2 in-memory database by default for local runs, so no external database installation is required.
