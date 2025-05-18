@@ -1,16 +1,47 @@
+/* Reset box-sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Reset body and html */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Roboto", sans-serif;
+}
+
+/* Root app container */
+.full-screen-app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: "Roboto", sans-serif;
+}
+
+/* Content area */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 !important;
+  margin-top: 60px !important;
+  height: calc(100vh - 60px) !important;
+}
+
 /* Full-screen layout - using a specific class prefix to avoid conflicts */
 .full-screen-app .dashboard,
 .full-screen-app .job-apps,
 .full-screen-app .progress-page,
 .full-screen-app .settings-page,
 .full-screen-app .behavioral-questions,
-.full-screen-app .technical-questions {
-  max-width: 100%;
-  width: 100%;
+.full-screen-app .technical-questions,
+.full-screen-app .intro {
   height: 100%;
   margin: 0;
-  border-radius: 0;
-  box-shadow: none;
+  padding: 20px;
+  overflow-y: auto;
   background-color: #f9f9f9;
 }
 
@@ -19,15 +50,20 @@
 .full-screen-app .job-apps-main,
 .full-screen-app .progress-main,
 .full-screen-app .settings-main {
-  flex: 1;
-  min-height: calc(100vh - 100px);
+  height: calc(100% - 60px);
+  overflow-y: auto;
+  padding: 20px;
 }
 
-/* Ensure headers span full width */
+/* Ensure headers span full width and stay at top */
 .full-screen-app .dashboard-header,
 .full-screen-app .job-apps-header {
+  position: sticky;
+  top: 0;
   width: 100%;
   padding: 10px 20px;
+  background-color: #f9f9f9;
+  z-index: 1;
 }
 
 /* Make sections within pages more responsive */
@@ -38,5 +74,57 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  box-sizing: border-box;
+  padding: 10px;
+}
+
+/* Ensure toolbar stays fixed at top */
+.toolbar {
+  flex-shrink: 0;
+}
+
+/* Global heading styles for consistency */
+h1, h2, h3, h4, h5, h6 {
+  color: #2f4f4f;
+  font-family: "Roboto", sans-serif;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+h4 {
+  font-size: 18px;
+}
+
+/* Ensure proper spacing for pages with back buttons */
+/* Removing this style as it conflicts with our PageHeader.css */
+/* .page-header {
+  position: sticky;
+  top: 0;
+  background-color: #f9f9f9;
+  z-index: 1;
+  padding: 10px 20px;
+  margin: -20px -20px 20px -20px;
+} */
+
+.login-content {
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
 } 

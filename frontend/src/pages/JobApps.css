@@ -202,12 +202,6 @@
     margin-left: auto;
 }
 
-.back-button {
-    position: absolute;
-    left: 0;
-    top: 0;
-}
-
 .status-badge {
     padding: 4px 8px;
     border-radius: 12px;

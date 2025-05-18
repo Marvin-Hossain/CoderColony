@@ -1,0 +1,101 @@
+.toolbar {
+  background-color: #78c0a8;
+  color: white;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toolbar-brand {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.toolbar-brand a {
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.toolbar-brand a:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.toolbar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 30px;
+}
+
+.toolbar-links li {
+  display: inline-block;
+}
+
+.toolbar-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.toolbar-links a:hover {
+  background-color: #56a68a;
+  color: white;
+}
+
+.toolbar-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.toolbar-user .user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  object-fit: cover;
+}
+
+.toolbar-user .username {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  margin-right: 5px;
+}
+
+/* Override the default button styles from Button component */
+.toolbar-user .logout-button {
+  background-color: transparent;
+  border: 2px solid white;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: none;
+}
+
+.toolbar-user .logout-button:hover {
+  background-color: white;
+  color: #78c0a8;
+  transform: none;
+} 

@@ -234,7 +234,6 @@ const JobApps = () => {
             <PageHeader
                 title="Job Applications"
                 subtitle="Track your job applications"
-                onBack={() => navigate('/dashboard')}
             />
 
             {error && <div className="error-message">{error}</div>}

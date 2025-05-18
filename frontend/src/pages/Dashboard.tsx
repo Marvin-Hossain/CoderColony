@@ -1,18 +1,8 @@
 import {useState, useEffect} from "react";
 import "./Dashboard.css";
 import Button from "../components/Button";
-import LogoutButton from "../components/LogoutButton";
 import {useNavigate} from 'react-router-dom';
 import {API_CONFIG} from '@/services/config';
-
-
-interface UserData {
-    authenticated: boolean;
-    username: string;
-    id?: string;
-    email?: string;
-    avatarUrl?: string;
-}
 
 interface JobStats {
     todayCount: number;
@@ -20,10 +10,9 @@ interface JobStats {
 
 /**
  * The main dashboard component displayed after successful login.
- * Shows user information, daily goals, and provides navigation to other sections.
+ * Shows daily goals and provides navigation to other sections.
  */
 const Dashboard = () => {
-    const [user, setUser] = useState<UserData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [jobCount, setJobCount] = useState<number>(0);
     const [behavioralCount, setBehavioralCount] = useState<number>(0);
@@ -33,19 +22,14 @@ const Dashboard = () => {
     const technicalGoal = 10;
     const navigate = useNavigate();
 
-    /** Effect to fetch necessary user data and goal statistics when the component mounts. */
     useEffect(() => {
         const abortController = new AbortController();
         const signal = abortController.signal;
 
-        /** Fetches user details and various counts concurrently. */
         const fetchDashboardData = async (): Promise<void> => {
             setLoading(true);
             try {
-                const [userResponse, jobStatsRes, technicalCountRes, behavioralCountRes] = await Promise.all([
-                    fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER, {
-                        credentials: 'include', signal
-                    }),
+                const [jobStatsRes, technicalCountRes, behavioralCountRes] = await Promise.all([
                     fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.JOBS_STATS, {
                         credentials: 'include', signal
                     }),
@@ -58,14 +42,6 @@ const Dashboard = () => {
                 ]);
 
                 if (signal.aborted) return;
-
-                if (userResponse.ok) {
-                    const userData: UserData = await userResponse.json();
-                    if (!signal.aborted) setUser(userData);
-                } else {
-                    console.error('Failed to fetch user data for dashboard');
-                    if (!signal.aborted) setUser(null);
-                }
 
                 if (jobStatsRes.ok && technicalCountRes.ok && behavioralCountRes.ok) {
                     const jobData: JobStats = await jobStatsRes.json();
@@ -80,7 +56,6 @@ const Dashboard = () => {
                 } else {
                     console.error('Failed to fetch one or more stats');
                 }
-
             } catch (error) {
                 if (error instanceof Error) {
                     if (error.name !== 'AbortError' && !signal.aborted) {
@@ -106,87 +81,102 @@ const Dashboard = () => {
     }, []);
 
     if (loading) {
-        return <div>Loading Dashboard Data...</div>;
+        return (
+            <div className="dashboard">
+                <div className="loading-overlay">
+                    <div className="loading-spinner"></div>
+                    <p>Loading your dashboard...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="dashboard">
             <header className="dashboard-header">
-                <Button
-                    text="Progress"
-                    onClick={() => navigate('/progress')}
-                    className="progress-button"
-                />
                 <h1>Welcome to Your Dashboard</h1>
-                <Button
-                    text="Settings"
-                    onClick={() => navigate('/settings')}
-                    className="settings-button"
-                />
-                <div className="user-section">
-                    <p>{user?.avatarUrl && (
-                        <>
-                            <img
-                                src={user.avatarUrl}
-                                alt={`${user.username}'s avatar`}
-                                className="avatar"
-                            />
-                            &nbsp;
-                        </>
-                    )}
-                        Welcome, {user?.username || 'User'}&nbsp;|&nbsp;
-                        <LogoutButton/>
-                    </p>
-                </div>
+                <p>Track your daily progress and stay on top of your job search journey</p>
             </header>
 
             <main className="dashboard-main">
                 {/* Daily Goals Section */}
-                <section className="daily-goals">
+                <section className="dashboard-section">
                     <h2>Daily Goals</h2>
-                    <div className="goal">
-                        <p>Apply to {jobGoal} Jobs</p>
-                        <progress value={jobCount} max={jobGoal}></progress>
-                        <span>{jobCount}/{jobGoal}</span>
-                        <Button text="Go!" onClick={() => navigate('/job-apps')} className="go-button"/>
-                    </div>
-                    <div className="goal">
-                        <p>Practice Behavioral Qs</p>
-                        <progress value={behavioralCount} max={behavioralGoal}></progress>
-                        <span>{behavioralCount}/{behavioralGoal}</span>
-                        <Button text="Go!" onClick={() => navigate('/behavioral-questions')} className="go-button"/>
-                    </div>
-                    <div className="goal">
-                        <p>Practice Technical Qs</p>
-                        <progress value={technicalCount} max={technicalGoal}></progress>
-                        <span>{technicalCount}/{technicalGoal}</span>
-                        <Button text="Go!" onClick={() => navigate('/technical-questions')} className="go-button"/>
-                    </div>
-                    <div className="goal">
-                        <p>Practice LeetCode Qs<br></br>(Coming Soon!)</p>
-                        <progress value={0} max="0"></progress>
-                        <span>0/0</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/leetcode")} className="go-button"
-                                disabled/>
+                    <div className="goals-container">
+                        <div className="goal">
+                            <p>Apply to {jobGoal} Jobs</p>
+                            <div className="goal-progress">
+                                <progress value={jobCount} max={jobGoal}></progress>
+                                <div className="goal-info">
+                                    <span className="goal-count">{jobCount}/{jobGoal} completed</span>
+                                </div>
+                            </div>
+                            <Button text="Go!" onClick={() => navigate('/job-apps')} className="go-button"/>
+                        </div>
+                        
+                        <div className="goal">
+                            <p>Practice Behavioral Questions</p>
+                            <div className="goal-progress">
+                                <progress value={behavioralCount} max={behavioralGoal}></progress>
+                                <div className="goal-info">
+                                    <span className="goal-count">{behavioralCount}/{behavioralGoal} completed</span>
+                                </div>
+                            </div>
+                            <Button text="Go!" onClick={() => navigate('/practice')} className="go-button"/>
+                        </div>
+                        
+                        <div className="goal">
+                            <p>Practice Technical Questions</p>
+                            <div className="goal-progress">
+                                <progress value={technicalCount} max={technicalGoal}></progress>
+                                <div className="goal-info">
+                                    <span className="goal-count">{technicalCount}/{technicalGoal} completed</span>
+                                </div>
+                            </div>
+                            <Button text="Go!" onClick={() => navigate('/practice')} className="go-button"/>
+                        </div>
+                        
+                        <div className="goal coming-soon">
+                            <p>Practice LeetCode Questions</p>
+                            <div className="goal-progress">
+                                <div className="coming-soon-label">Coming&nbsp;Soon</div>
+                                <progress value={0} max={10}></progress>
+                                <div className="goal-info">
+                                    <span className="goal-count">0/10 completed</span>
+                                </div>
+                            </div>
+                            <Button text="Go!" className="go-button" disabled/>
+                        </div>
                     </div>
                 </section>
 
                 {/* Weekly Goals Section */}
-                <section className="weekly-goals">
+                <section className="dashboard-section">
                     <h2>Weekly Goals</h2>
-                    <div className="goal">
-                        <p>Contact Connections<br></br>(Coming soon!)</p>
-                        <progress value={0} max="0"></progress>
-                        <span>0/0</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/connections")} className="go-button"
-                                disabled/>
-                    </div>
-                    <div className="goal">
-                        <p>Learn New Concepts<br></br>(Coming soon!)</p>
-                        <progress value={0} max="0"></progress>
-                        <span>0/0</span>
-                        <Button text="Go!" onClick={() => (window.location.href = "/new-concepts")}
-                                className="go-button" disabled/>
+                    <div className="goals-container">
+                        <div className="goal coming-soon">
+                            <p>Network with Professionals</p>
+                            <div className="goal-progress">
+                                <div className="coming-soon-label">Coming&nbsp;Soon</div>
+                                <progress value={0} max={10}></progress>
+                                <div className="goal-info">
+                                    <span className="goal-count">0/10 completed</span>
+                                </div>
+                            </div>
+                            <Button text="Go!" className="go-button" disabled/>
+                        </div>
+                        
+                        <div className="goal coming-soon">
+                            <p>Learn New Tech Concepts</p>
+                            <div className="goal-progress">
+                                <div className="coming-soon-label">Coming&nbsp;Soon</div>
+                                <progress value={0} max={10}></progress>
+                                <div className="goal-info">
+                                    <span className="goal-count">0/10 completed</span>
+                                </div>
+                            </div>
+                            <Button text="Go!" className="go-button" disabled/>
+                        </div>
                     </div>
                 </section>
             </main>
