@@ -23,6 +23,7 @@ const CategoryTabs = ({
                 key={category.id}
                 className={`category-tab ${selectedCategory === category.id ? 'active' : ''}`}
                 onClick={() => onCategoryChange(category.id)}
+                data-category={category.id}
             >
                 {category.label}
             </button>
