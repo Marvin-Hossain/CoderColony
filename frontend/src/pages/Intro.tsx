@@ -7,6 +7,10 @@ const Intro = () => {
         window.location.href = API_CONFIG.BASE_AUTH_URL + API_CONFIG.ENDPOINTS.AUTH.GITHUB;
     };
 
+    const handleGoogleLogin = (): void => {
+        window.location.href = API_CONFIG.BASE_AUTH_URL + API_CONFIG.ENDPOINTS.AUTH.GOOGLE;
+    };
+
     return (
         <div className="intro">
             <div className="intro-container">
@@ -19,9 +23,6 @@ const Intro = () => {
                         one place. Let us help you land your dream job faster.
                     </p>
                     <div className="feature-buttons">
-                        <button className="feature-button">Track Applications</button>
-                        <button className="feature-button">Set Goals</button>
-                        <button className="feature-button">Practice Interviews</button>
                     </div>
                 </div>
                 
@@ -35,10 +36,15 @@ const Intro = () => {
                         onClick={handleGithubLogin}
                         text="Login with GitHub"
                     />
+                    <Button
+                        className="google-login-btn"
+                        onClick={handleGoogleLogin}
+                        text="Login with Google"
+                    />
                     
                     <div className="security-info">
                         <p className="info-text">One click sign-in to access all of your job search data</p>
-                        <p className="info-text">Secure authentication via GitHub</p>
+                        <p className="info-text">Secure authentication via GitHub and Google</p>
                     </div>
                 </div>
             </div>
