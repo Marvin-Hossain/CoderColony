@@ -1,58 +1,208 @@
 .progress-page {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     font-family: "Roboto", sans-serif;
     color: #333;
-    background: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
+.progress-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.progress-header h1 {
+    font-size: 2rem;
+    color: #2f4f4f;
+    margin-bottom: 10px;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 15px;
+}
+
+.progress-header h1:after {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 3px;
+    background-color: #78c0a8;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.progress-header p {
+    font-size: 1rem;
+    color: #567d57;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.progress-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+}
 
 .chart-container {
     background: white;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+    flex: 1;
+    min-height: 400px;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    position: relative;
+}
+
+.chart-container:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
-    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .stats-section {
     background: white;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stats-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 .stats h3 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #333;
-    font-size: 1rem;
+    color: #2f4f4f;
+    font-size: 1.2rem;
+    position: relative;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0f2eb;
+}
+
+.stats h3:after {
+    content: "";
+    position: absolute;
+    width: 30px;
+    height: 3px;
+    background-color: #78c0a8;
+    bottom: -1px;
+    left: 0;
 }
 
 .stats h4 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #333;
+    color: #2f4f4f;
+    font-size: 1.1rem;
 }
 
 .stat-item {
     display: flex;
     justify-content: space-between;
     margin: 10px 0;
-    padding: 5px 0;
-    border-bottom: 1px solid #eee;
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.stat-item:hover {
+    background-color: #f9f9f9;
+    border-radius: 6px;
 }
 
 .stat-item:last-child {
     border-bottom: none;
+}
+
+.stat-item span:first-child {
+    color: #567d57;
+    font-weight: 500;
+}
+
+.stat-item span:last-child {
+    font-weight: 600;
+    color: #2f4f4f;
+}
+
+.loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #e9ecef;
+    border-radius: 50%;
+    border-top-color: #78c0a8;
+    animation: spin 1s linear infinite;
+    margin-right: 15px;
+}
+
+.loading-text {
+    color: #567d57;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: center;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .progress-page {
+        height: auto;
+        min-height: calc(100vh - 100px);
+        overflow: visible;
+    }
+    
+    .progress-content {
+        overflow: visible;
+    }
+    
+    .stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        height: 300px !important;
+    }
 }

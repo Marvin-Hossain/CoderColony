@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useMemo} from "react";
 import "./JobApps.css";
 import Button from "../components/Button";
-import {useNavigate} from 'react-router-dom';
 import {API_CONFIG} from '@/services/config';
 import PageHeader from "../components/PageHeader";
 import {formatDate} from '@/services/dateUtils';
@@ -41,8 +40,6 @@ const JobApps = () => {
     const [error, setError] = useState<string | null>(null);
     const [editingJobId, setEditingJobId] = useState<number | null>(null);
     const [formData, setFormData] = useState<FormData>(INITIAL_FORM_STATE);
-    const navigate = useNavigate();
-
     /** Fetches all job applications from the backend. Accepts AbortSignal for cancellation. */
     const fetchJobs = async (signal: AbortSignal): Promise<void> => {
         setLoading(true);
@@ -234,7 +231,6 @@ const JobApps = () => {
             <PageHeader
                 title="Job Applications"
                 subtitle="Track your job applications"
-                onBack={() => navigate('/dashboard')}
             />
 
             {error && <div className="error-message">{error}</div>}

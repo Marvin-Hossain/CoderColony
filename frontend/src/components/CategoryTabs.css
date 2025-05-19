@@ -1,22 +1,98 @@
 .category-tabs {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 15px;
+    margin-bottom: 25px;
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
 }
 
 .category-tab {
-    padding: 8px 16px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 5px;
+    border-radius: 20px;
     cursor: pointer;
     background-color: #f0f0f0;
-    color: #333;
+    color: #2f4f4f;
     transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.category-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: #78c0a8;
+    transition: width 0.3s ease;
+}
+
+.category-tab:hover {
+    background-color: #e9e9e9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .category-tab.active {
     background-color: #78c0a8;
     color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-tab.active::before {
+    width: 100%;
+}
+
+/* Styling for behavioral questions tab */
+.category-tab[data-category="behavioral"], 
+.category-tab[data-category="behavioral"].active {
+    background-color: #78c0a8;
+    color: white;
+}
+
+.category-tab[data-category="behavioral"]:hover {
+    background-color: #56a68a;
+}
+
+/* Styling for technical questions tab */
+.category-tab[data-category="technical"], 
+.category-tab[data-category="technical"].active {
+    background-color: #6c9bc3;
+    color: white;
+}
+
+.category-tab[data-category="technical"]:hover {
+    background-color: #5186b2;
+}
+
+/* When a tab is not active, show white text on lighter background */
+.category-tab[data-category="behavioral"]:not(.active) {
+    background-color: #e0f2eb;
+    color: #2f4f4f;
+}
+
+.category-tab[data-category="technical"]:not(.active) {
+    background-color: #e0ebf5;
+    color: #2f4f4f;
+}
+
+@media (max-width: 768px) {
+    .category-tabs {
+        gap: 10px;
+        flex-direction: row;
+    }
+    
+    .category-tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        font-size: 14px;
+    }
 } 

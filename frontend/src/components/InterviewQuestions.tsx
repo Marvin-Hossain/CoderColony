@@ -33,7 +33,7 @@ interface InterviewQuestionsProps {
 
 /**
  * Component for practicing interview questions. It fetches questions,
- * allows text or speech input, sends responses for AI evaluation,
+ * allows text input, sends responses for AI evaluation,
  * and displays feedback.
  */
 const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) => {
@@ -44,9 +44,13 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [showResetButton, setShowResetButton] = useState<boolean>(false);
+    
+    // Speech recognition states and refs
     const [isListening, setIsListening] = useState<boolean>(false);
     const recognitionRef = useRef<any>(null);
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    // Check if speech recognition is available in the browser
+    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;    
     const navigate = useNavigate();
 
     /** Fetches a new question from the backend API. */
@@ -204,7 +208,7 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
             setLoading(false);
         }
     };
-
+    
     /** Safely stops the speech recognition instance and updates state. */
     const stopRecognition = () => {
         if (recognitionRef.current) {
@@ -217,7 +221,7 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
         }
         setIsListening(false);
     };
-
+    
     /** Toggles the speech recognition microphone on or off. */
     const toggleListening = () => {
         if (isListening) {
@@ -275,8 +279,8 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
     useEffect(() => {
         void fetchNewQuestion();
     }, []);
-
-    /** Effect to clean up speech recognition on unmount. */
+    
+    /** Cleanup effect to ensure speech recognition is stopped when component unmounts */
     useEffect(() => {
         return () => {
             stopRecognition();
@@ -295,7 +299,6 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
             <PageHeader
                 title={title}
                 subtitle={subtitle || "Practice your responses and get AI feedback"}
-                onBack={() => navigate('/dashboard')}
                 rightButton={showResetButton ? (
                     <Button
                         text="Reset"

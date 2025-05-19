@@ -1,9 +1,7 @@
 import React, {useState, useEffect, useCallback, useMemo} from 'react';
-import {useNavigate} from 'react-router-dom';
 import "./Progress.css";
 import {Line} from "react-chartjs-2";
 import {API_CONFIG} from '@/services/config';
-import PageHeader from '../components/PageHeader';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -104,7 +102,6 @@ const Progress = () => {
     const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const navigate = useNavigate();
 
     /** Memoized callback to handle changing the selected category tab. */
     const handleCategoryChange = useCallback((categoryId: string): void => {
@@ -118,10 +115,17 @@ const Progress = () => {
             {
                 label: CATEGORIES.find(c => c.id === selectedCategory)?.label || '',
                 data: weeklyData?.chartData?.map(item => item.count) || [],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
-                tension: 0.1
+                backgroundColor: 'rgba(120, 192, 168, 0.2)',
+                borderColor: '#78c0a8',
+                borderWidth: 2,
+                tension: 0.3,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#78c0a8',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#78c0a8',
+                pointHoverBorderColor: '#ffffff'
             }
         ]
     }), [weeklyData, selectedCategory]);
@@ -132,24 +136,48 @@ const Progress = () => {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: {position: 'top' as const},
+            legend: {
+                position: 'top' as const
+            },
             title: {
                 display: true,
                 text: `Weekly ${selectedCategoryData?.label || ''} Progress`,
+                color: '#2f4f4f'
             },
+            tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                titleColor: '#2f4f4f',
+                bodyColor: '#567d57',
+                borderColor: '#78c0a8',
+                borderWidth: 1
+            }
         },
         scales: {
             x: {
                 ticks: {
                     maxRotation: 45,
-                    minRotation: 45
+                    minRotation: 45,
+                    color: '#567d57'
+                },
+                grid: {
+                    display: false
                 }
             },
             y: {
                 beginAtZero: true,
-                ticks: {stepSize: 1},
-                suggestedMax: (selectedCategoryData?.goal || 0) + 2
+                ticks: {
+                    stepSize: 1,
+                    color: '#567d57'
+                },
+                suggestedMax: (selectedCategoryData?.goal || 0) + 2,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
             }
+        },
+        interaction: {
+            mode: 'index' as const,
+            intersect: false
         }
     }), [selectedCategory, selectedCategoryData]);
 
@@ -217,26 +245,30 @@ const Progress = () => {
 
     return (
         <div className="progress-page">
-            <PageHeader
-                title="Progress Tracker"
-                subtitle="Track your daily and weekly progress"
-                onBack={() => navigate('/dashboard')}
-            />
+            <header className="progress-header">
+                <h1>Progress Tracker</h1>
+                <p>Track your daily and weekly progress to stay motivated</p>
+            </header>
 
-            <CategoryTabs
-                categories={CATEGORIES}
-                selectedCategory={selectedCategory}
-                onCategoryChange={handleCategoryChange}
-            />
+            <div className="progress-content">
+                <CategoryTabs
+                    categories={CATEGORIES}
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={handleCategoryChange}
+                />
 
-            {renderStats()}
+                {renderStats()}
 
-            <div className="chart-container" style={{height: '400px', width: '100%'}}>
-                {isLoading ? (
-                    <div className="loading">Loading chart data...</div>
-                ) : (
-                    <Line data={chartData} options={chartOptions}/>
-                )}
+                <div className="chart-container">
+                    {isLoading ? (
+                        <div className="loading">
+                            <div className="loading-spinner"></div>
+                            <div className="loading-text">Loading chart data...</div>
+                        </div>
+                    ) : (
+                        <Line data={chartData} options={chartOptions}/>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -252,30 +284,30 @@ const StatsSection = React.memo(({title, stats}: StatsSectionProps) => (
         </div>
         <div className="stat-item">
             <span>Daily Average:</span>
-            <span>{stats.average}</span>
+            <span>{typeof stats.average === 'number' ? stats.average.toFixed(1) : 'N/A'}</span>
         </div>
         <div className="stat-item">
             <span>Best Day:</span>
-            <span>{stats.bestDay}</span>
+            <span>{stats.bestDay || 'N/A'}</span>
         </div>
     </div>
 ));
 
-/** Memoized component to display job application status breakdown statistics. */
+/** Memoized component to display job status breakdown statistics. */
 const StatusBreakdown = React.memo(({stats}: StatusBreakdownProps) => (
     <div className="stats-section">
-        <h3>Status Breakdown</h3>
+        <h3>Application Status</h3>
         <div className="stat-item">
             <span>Applied:</span>
-            <span>{stats.applied ?? 'N/A'}</span>
+            <span>{stats.applied || 0}</span>
         </div>
         <div className="stat-item">
             <span>Interviewed:</span>
-            <span>{stats.interviewed ?? 'N/A'}</span>
+            <span>{stats.interviewed || 0}</span>
         </div>
         <div className="stat-item">
             <span>Rejected:</span>
-            <span>{stats.rejected ?? 'N/A'}</span>
+            <span>{stats.rejected || 0}</span>
         </div>
     </div>
 ));
