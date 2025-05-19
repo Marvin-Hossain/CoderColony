@@ -93,6 +93,7 @@ const Toolbar: React.FC = () => {
         </div>
         <ul className="toolbar-links">
           <li><Link to="/progress">Progress</Link></li>
+          <li><Link to="/job-apps">Applications</Link></li>
           <li><Link to="/practice">Practice</Link></li>
           <li><Link to="/settings">Settings</Link></li>
           <li><Link to="/about-us">About Us</Link></li>
