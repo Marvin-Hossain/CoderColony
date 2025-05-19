@@ -1,5 +1,4 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {useNavigate} from 'react-router-dom';
 import Button from '../components/Button';
 import './Settings.css';
 import {API_CONFIG} from '@/services/config';
@@ -114,7 +113,6 @@ const Settings = () => {
     const [success, setSuccess] = useState<string | null>(null);
     const [confirmation, setConfirmation] = useState<ConfirmationState | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const navigate = useNavigate();
 
     /** Fetches all questions for the currently active tab from the backend API. */
     const fetchQuestions = async (signal?: AbortSignal): Promise<void> => {

@@ -1,5 +1,4 @@
 import React, {useState, useEffect, useCallback, useMemo} from 'react';
-import {useNavigate} from 'react-router-dom';
 import "./Progress.css";
 import {Line} from "react-chartjs-2";
 import {API_CONFIG} from '@/services/config';
@@ -103,7 +102,6 @@ const Progress = () => {
     const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const navigate = useNavigate();
 
     /** Memoized callback to handle changing the selected category tab. */
     const handleCategoryChange = useCallback((categoryId: string): void => {
