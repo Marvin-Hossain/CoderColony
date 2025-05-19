@@ -117,12 +117,20 @@ jobs:
               "Value": "${{ secrets.OPENAI_API_KEY }}"
             },
             {
-              "Name": "OAUTH_CLIENT_ID",
-              "Value": "${{ secrets.OAUTH_CLIENT_ID }}"
+              "Name": "OAUTH_GITHUB_CLIENT_ID",
+              "Value": "${{ secrets.OAUTH_GITHUB_CLIENT_ID }}"
             },
             {
-              "Name": "OAUTH_CLIENT_SECRET",
-              "Value": "${{ secrets.OAUTH_CLIENT_SECRET }}"
+              "Name": "OAUTH_GITHUB_CLIENT_SECRET",
+              "Value": "${{ secrets.OAUTH_GITHUB_CLIENT_SECRET }}"
+            },
+            {
+              "Name": "OAUTH_GOOGLE_CLIENT_ID",
+              "Value": "${{ secrets.OAUTH_GOOGLE_CLIENT_ID }}"
+            },
+            {
+              "Name": "OAUTH_GOOGLE_CLIENT_SECRET",
+              "Value": "${{ secrets.OAUTH_GOOGLE_CLIENT_SECRET }}"
             },
             {
               "Name": "APP_URL",
