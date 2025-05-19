@@ -1,135 +1,328 @@
 .dashboard {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     font-family: "Roboto", sans-serif;
     color: #333;
-    background: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    height: calc(100vh - 100px); /* Account for header/toolbar */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .dashboard-header {
     text-align: center;
     margin-bottom: 20px;
-    position: relative;
 }
 
 .dashboard-header h1 {
     font-size: 2rem;
     color: #2f4f4f;
+    margin-bottom: 10px;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 15px;
+}
+
+.dashboard-header h1:after {
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 3px;
+    background-color: #78c0a8;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .dashboard-header p {
     font-size: 1rem;
     color: #567d57;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .dashboard-main {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    flex: 1;
+    overflow: hidden;
 }
 
-.daily-goals, .weekly-goals {
+.dashboard-section {
     background: white;
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    overflow-y: auto;
 }
 
-.daily-goals h2, .weekly-goals h2 {
+.dashboard-section:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-section h2 {
     font-size: 1.5rem;
     color: #2f4f4f;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0f2eb;
+    position: relative;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.dashboard-section h2::before {
+    content: "";
+    position: absolute;
+    width: 40px;
+    height: 3px;
+    background-color: #78c0a8;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+}
+
+.dashboard-section:hover h2::before {
+    width: 60px;
+}
+
+.goals-container {
+    overflow-y: auto;
+    flex: 1;
+    margin-right: -5px; /* Compensate for scrollbar */
+    padding-right: 5px; /* Add padding to maintain spacing */
 }
 
 .goal {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.goal:last-child {
+    margin-bottom: 0;
+}
+
+.goal:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
 }
 
 .goal p {
     flex: 2;
     margin: 0;
     color: #333;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.goal-progress {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
 }
 
 .goal progress {
-    flex: 3;
-    margin: 0 10px;
     width: 100%;
-    height: 10px;
-    border-radius: 5px;
+    height: 8px;
+    border-radius: 10px;
     background-color: #e6e6e6;
+    border: none;
+    overflow: hidden;
 }
 
 .goal progress::-webkit-progress-value {
     background-color: #78c0a8;
-    border-radius: 5px;
+    border-radius: 10px;
+    transition: width 0.3s ease;
 }
 
 .goal progress::-webkit-progress-bar {
     background-color: #e6e6e6;
-    border-radius: 5px;
+    border-radius: 10px;
 }
 
-.goal span {
-    flex: 1;
-    text-align: center;
+.goal-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.goal-count {
+    font-size: 0.85rem;
     color: #567d57;
+    font-weight: 500;
 }
 
 .go-button {
     background-color: #78c0a8;
     color: white;
-    padding: 5px 10px;
+    padding: 8px 16px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 0.9rem;
+    font-weight: 500;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
+    transition: all 0.2s ease;
+    min-width: 60px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 .go-button:hover {
     background-color: #56a68a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .go-button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-.progress-button {
-    position: absolute;
-    left: 0;
-    top: 0;
+.coming-soon {
+    position: relative;
+    opacity: 0.9;
 }
 
-.settings-button {
+.coming-soon-label {
     position: absolute;
+    top: -10px;
     right: 0;
-    top: 0;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #f9a826;
+    padding: 4px 10px;
+    border-radius: 12px 12px 0 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(249, 168, 38, 0.2);
+    transition: all 0.3s ease;
 }
 
-.logout-button {
-    cursor: pointer;
-    color: #005700;
-    text-decoration: underline;
-    padding: 2px 6px;
-    font-size: 0.9em;
+.coming-soon:hover .coming-soon-label {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    background: #f9a826;
 }
 
-.logout-button:hover {
-    color: #004400;
+.coming-soon .goal-progress {
+    opacity: 0.8;
 }
 
-.avatar {
-    width: 40px;
-    height: 40px;
+.coming-soon .go-button {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+/* Custom scrollbar */
+.dashboard-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dashboard-section::-webkit-scrollbar-track {
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+.dashboard-section::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 10px;
+}
+
+.dashboard-section::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+}
+
+.loading-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 200px);
+    gap: 20px;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #e9ecef;
     border-radius: 50%;
-    object-fit: cover;
+    border-top-color: #78c0a8;
+    animation: spin 1s linear infinite;
+}
+
+.loading-overlay p {
+    color: #567d57;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: 15px;
+        height: auto;
+        min-height: calc(100vh - 100px);
+        overflow: auto;
+    }
+    
+    .dashboard-main {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .dashboard-section {
+        padding: 15px;
+        max-height: none;
+        overflow: visible;
+    }
+    
+    .goals-container {
+        overflow: visible;
+    }
+    
+    .goal {
+        padding: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .goal-progress {
+        width: 100%;
+    }
+    
+    .go-button {
+        align-self: flex-end;
+    }
 }

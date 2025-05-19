@@ -1,23 +1,32 @@
 package com.jobhunthub.jobhunthub.service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
+
+import org.assertj.core.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+
+
+import com.jobhunthub.jobhunthub.dto.CreateJobRequestDTO;
+
+import com.jobhunthub.jobhunthub.dto.JobDTO;
+import com.jobhunthub.jobhunthub.dto.UpdateJobRequestDTO;
+
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler;
 import com.jobhunthub.jobhunthub.model.Job;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.repository.JobRepository;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static org.mockito.Mockito.*;
 
 public class JobServiceTests {
 
@@ -28,21 +37,22 @@ public class JobServiceTests {
     private JobService jobService;
 
     private User user;
-    private Job job;
-    private Job job2;
-    private Job job3;
+    private Job jobEntity;
+    private Job jobEntity2;
+    private Job jobEntity3;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         user = User.builder()
                 .id(1L)
-                .githubId("123")
+                .provider("github")
+                .providerId("123")
                 .username("testuser")
                 .email("test@test.com")
                 .build();
 
-        job = Job.builder()
+        jobEntity = Job.builder()
                 .id(1L)
                 .title("Software Engineer")
                 .company("Microsoft")
@@ -52,7 +62,8 @@ public class JobServiceTests {
                 .createdAt(LocalDate.parse("2025-03-21"))
                 .build();
 
-        job2 = Job.builder()
+        jobEntity2 = Job.builder()
+                .id(2L)
                 .title("Software Developer")
                 .company("Amazon")
                 .location("Sunnyvale, CA")
@@ -61,7 +72,8 @@ public class JobServiceTests {
                 .createdAt(LocalDate.parse("2025-03-21"))
                 .build();
 
-        job3 = Job.builder()
+        jobEntity3 = Job.builder()
+                .id(3L)
                 .title("Data Scientist")
                 .company("Google")
                 .location("Seattle, WA")
@@ -75,97 +87,162 @@ public class JobServiceTests {
     }
 
     @Test
-    public void JobService_createJob_returnsJob() {
+    public void JobService_createJob_returnsJobDTO() {
+        CreateJobRequestDTO createDto = new CreateJobRequestDTO(
+                jobEntity.getTitle(),
+                jobEntity.getCompany(),
+                jobEntity.getLocation()
+        );
 
-        // Mock the behavior of the jobRepository
-        when(jobRepository.save(any(Job.class))).thenReturn(job);
+        when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> {
+            Job jobToSave = invocation.getArgument(0);
+            jobToSave.setId(jobEntity.getId());
+            jobToSave.setCreatedAt(LocalDate.now(ZoneId.systemDefault()));
+            jobToSave.setUser(user);
+            jobToSave.setStatus(Job.Status.APPLIED);
+            return jobToSave;
+        });
 
-        // Act
-        Job createdJob = jobService.createJob(job, user);
+        JobDTO createdJobDTO = jobService.createJob(createDto, user);
 
-        // Assert
-        verify(jobRepository, times(1)).save(job);  // Verify that save was called once
-        Assertions.assertThat(createdJob.getTitle()).isEqualTo("Software Engineer");
-        Assertions.assertThat(createdJob.getCompany()).isEqualTo("Microsoft");
-        Assertions.assertThat(createdJob.getLocation()).isEqualTo("Remote");
-        Assertions.assertThat(createdJob.getStatus()).isEqualTo(Job.Status.APPLIED);
-        Assertions.assertThat(createdJob.getUser()).isEqualTo(user);
+        verify(jobRepository, times(1)).save(any(Job.class));
+        Assertions.assertThat(createdJobDTO).isNotNull();
+        Assertions.assertThat(createdJobDTO.getTitle()).isEqualTo(createDto.getTitle());
+        Assertions.assertThat(createdJobDTO.getCompany()).isEqualTo(createDto.getCompany());
+        Assertions.assertThat(createdJobDTO.getLocation()).isEqualTo(createDto.getLocation());
+        Assertions.assertThat(createdJobDTO.getStatus()).isEqualTo(Job.Status.APPLIED.name());
+        Assertions.assertThat(createdJobDTO.getUserId()).isEqualTo(user.getId());
+        Assertions.assertThat(createdJobDTO.getId()).isEqualTo(jobEntity.getId());
+        Assertions.assertThat(createdJobDTO.getCreatedAt()).isEqualTo(LocalDate.now(ZoneId.systemDefault()));
     }
 
     @Test
-    public void JobService_getJobById_returnsJob() {
-        // Arrange
-        when(jobRepository.findById(job.getId())).thenReturn(Optional.of(job));
+    public void JobService_getJobById_returnsJobDTO() {
+        when(jobRepository.findById(jobEntity.getId())).thenReturn(Optional.of(jobEntity));
 
-        // Act
-        Job users_job = jobService.getJobById(job.getId(), user);
+        JobDTO foundJobDTO = jobService.getJobById(jobEntity.getId(), user);
 
-        // Assert
-        verify(jobRepository, times(1)).findById(job.getId()); // Verify that findById was called with the correct ID
-        Assertions.assertThat(users_job).isNotNull(); // Ensure the job is not null
-        Assertions.assertThat(users_job.getUser()).isEqualTo(user); // Check that the job belongs to the correct user
+        verify(jobRepository, times(1)).findById(jobEntity.getId());
+        Assertions.assertThat(foundJobDTO).isNotNull();
+        Assertions.assertThat(foundJobDTO.getId()).isEqualTo(jobEntity.getId());
+        Assertions.assertThat(foundJobDTO.getTitle()).isEqualTo(jobEntity.getTitle());
+        Assertions.assertThat(foundJobDTO.getUserId()).isEqualTo(user.getId());
     }
 
     @Test
-    public void JobService_updateJob_returnsJob() {
-        // Arrange
-        when(jobRepository.save(any(Job.class))).thenReturn(job);
-        when(jobRepository.findById(job.getId())).thenReturn(Optional.of(job)); // Mock findById to return the job
+    public void JobService_getJobById_whenNotOwner_throwsException() {
+        User anotherUser = User.builder().id(2L).username("another").build();
+        Job jobBelongingToOriginalUser = Job.builder()
+            .id(1L)
+            .title("Test Job")
+            .company("Test Co")
+            .location("Test Location")
+            .user(user)
+            .status(Job.Status.APPLIED)
+            .createdAt(LocalDate.now())
+            .build();
 
-        job.setTitle("Software Engineer II"); // Change the title for the update
+        when(jobRepository.findById(jobBelongingToOriginalUser.getId())).thenReturn(Optional.of(jobBelongingToOriginalUser));
 
-        // Act
-        Job updatedJob = jobService.updateJob(job.getId(), job, user);
-
-        // Assert
-        verify(jobRepository, times(1)).save(job);
-        Assertions.assertThat(updatedJob.getTitle()).isEqualTo("Software Engineer II");
-        Assertions.assertThat(updatedJob.getCompany()).isEqualTo("Microsoft");
-        Assertions.assertThat(updatedJob.getLocation()).isEqualTo("Remote");
-        Assertions.assertThat(updatedJob.getStatus()).isEqualTo(Job.Status.APPLIED);
-        Assertions.assertThat(updatedJob.getUser()).isEqualTo(user);
+        assertThrows(GlobalExceptionHandler.ResourceNotFoundException.class, () -> jobService.getJobById(jobBelongingToOriginalUser.getId(), anotherUser));
+        verify(jobRepository, times(1)).findById(jobBelongingToOriginalUser.getId());
     }
 
     @Test
-    public void JobService_deleteJob_removesJob() {
-        // Arrange
-        when(jobRepository.findById(job.getId())).thenReturn(Optional.of(job));
+    public void JobService_updateJob_withStatusChange_returnsJobDTOWithNewStatus() {
+        UpdateJobRequestDTO updateDto = new UpdateJobRequestDTO(
+                "Software Engineer II",
+                jobEntity.getCompany(),
+                "New Location, ST",
+                Job.Status.INTERVIEWED.name()
+        );
+        when(jobRepository.findById(jobEntity.getId())).thenReturn(Optional.of(jobEntity));
+        when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
-        jobService.deleteJob(job.getId(), user);
+        JobDTO updatedJobDTO = jobService.updateJob(jobEntity.getId(), updateDto, user);
 
-        // Assert
-        verify(jobRepository, times(1)).delete(job); // Verify that delete was called
-        verify(jobRepository, times(1)).findById(job.getId()); // Verify that findById was called
-        when(jobRepository.findById(job.getId())).thenReturn(Optional.empty()); // Mock to return empty after deletion
-        Assertions.assertThat(jobRepository.findById(job.getId())).isEmpty(); // Ensure job is no longer retrievable
+        Assertions.assertThat(updatedJobDTO).isNotNull();
+        Assertions.assertThat(updatedJobDTO.getTitle()).isEqualTo("Software Engineer II");
+        Assertions.assertThat(updatedJobDTO.getStatus()).isEqualTo(Job.Status.INTERVIEWED.name());
     }
 
     @Test
-    public void JobService_getJobsByUser_returnsJobList() {
-        // Arrange
-        List<Job> jobList = Arrays.asList(job, job2, job3);
+    public void JobService_updateJob_withoutStatusChange_preservesExistingStatus() {
+        UpdateJobRequestDTO updateDto = new UpdateJobRequestDTO(
+                "Software Engineer III",
+                "New Company",
+                jobEntity.getLocation(),
+                null
+        );
+        Job existingJob = Job.builder()
+            .id(jobEntity.getId())
+            .title(jobEntity.getTitle())
+            .company(jobEntity.getCompany())
+            .location(jobEntity.getLocation())
+            .status(Job.Status.APPLIED)
+            .user(user)
+            .createdAt(jobEntity.getCreatedAt())
+            .build();
+
+        when(jobRepository.findById(jobEntity.getId())).thenReturn(Optional.of(existingJob));
+        when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        JobDTO updatedJobDTO = jobService.updateJob(jobEntity.getId(), updateDto, user);
+
+        Assertions.assertThat(updatedJobDTO).isNotNull();
+        Assertions.assertThat(updatedJobDTO.getTitle()).isEqualTo("Software Engineer III");
+        Assertions.assertThat(updatedJobDTO.getCompany()).isEqualTo("New Company");
+        Assertions.assertThat(updatedJobDTO.getStatus()).isEqualTo(Job.Status.APPLIED.name());
+    }
+    
+    @Test
+    public void JobService_updateJob_withEmptyStatusString_preservesExistingStatus() {
+        UpdateJobRequestDTO updateDto = new UpdateJobRequestDTO(
+                "Software Engineer IV",
+                jobEntity.getCompany(),
+                jobEntity.getLocation(),
+                "   "
+        );
+         Job existingJob = Job.builder()
+            .id(jobEntity.getId())
+            .title(jobEntity.getTitle())
+            .company(jobEntity.getCompany())
+            .location(jobEntity.getLocation())
+            .status(Job.Status.INTERVIEWED)
+            .user(user)
+            .createdAt(jobEntity.getCreatedAt())
+            .build();
+
+        when(jobRepository.findById(jobEntity.getId())).thenReturn(Optional.of(existingJob));
+        when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        JobDTO updatedJobDTO = jobService.updateJob(jobEntity.getId(), updateDto, user);
+        Assertions.assertThat(updatedJobDTO.getStatus()).isEqualTo(Job.Status.INTERVIEWED.name());
+    }
+
+    @Test
+    public void JobService_deleteJob_callsRepositoryDelete() {
+        when(jobRepository.findById(jobEntity.getId())).thenReturn(Optional.of(jobEntity));
+        doNothing().when(jobRepository).delete(any(Job.class));
+
+        jobService.deleteJob(jobEntity.getId(), user);
+
+        verify(jobRepository, times(1)).findById(jobEntity.getId());
+        verify(jobRepository, times(1)).delete(jobEntity);
+    }
+
+    @Test
+    public void JobService_getJobsByUser_returnsJobDTOList() {
+        List<Job> jobList = Arrays.asList(jobEntity, jobEntity2, jobEntity3);
         when(jobRepository.findByUser(user)).thenReturn(jobList);
 
-        // Act
-        List<Job> result = jobService.getJobsByUser(user);
+        List<JobDTO> resultDTOs = jobService.getJobsByUser(user);
 
-        // Assert
         verify(jobRepository, times(1)).findByUser(user);
-        Assertions.assertThat(result).hasSize(3);
-    }
-
-    @Test
-    public void JobService_updateJobStatus_returnsUpdatedJob() {
-        // Arrange
-        when(jobRepository.findById(job.getId())).thenReturn(Optional.of(job));
-        when(jobRepository.save(any(Job.class))).thenReturn(job);
-
-        // Act
-        Job updatedJob = jobService.updateJobStatus(job.getId(), Job.Status.INTERVIEWED, user);
-
-        // Assert
-        Assertions.assertThat(updatedJob.getStatus()).isEqualTo(Job.Status.INTERVIEWED);
+        Assertions.assertThat(resultDTOs).hasSize(3);
+        Assertions.assertThat(resultDTOs.get(0).getId()).isEqualTo(jobEntity.getId());
+        Assertions.assertThat(resultDTOs.get(1).getId()).isEqualTo(jobEntity2.getId());
+        Assertions.assertThat(resultDTOs.get(0).getTitle()).isEqualTo(jobEntity.getTitle());
     }
 
     @Test

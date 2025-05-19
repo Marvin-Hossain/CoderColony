@@ -1,0 +1,27 @@
+/* This file contains selectors to neutralize specific styling constraints in page components */
+
+/* Reset max-width constraints in page modules when changing screen size */
+.full-screen-app .dashboard,
+.full-screen-app .job-apps,
+.full-screen-app .progress-page,
+.full-screen-app .settings-page,
+.full-screen-app .interview-questions {
+  max-width: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure intro page also follows screen layout */
+.full-screen-app .intro-container {
+  max-width: none;
+  width: 100%;
+}
+
+/* Keep reasonable width for content to prevent excessive stretching */
+.full-screen-app .intro-content,
+.full-screen-app .auth-content,
+.full-screen-app .content-area {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+} 

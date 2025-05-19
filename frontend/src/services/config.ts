@@ -3,6 +3,8 @@ interface AuthEndpoints {
     TEST: string;
     LOGOUT: string;
     GITHUB: string;
+    GOOGLE: string;
+    LINKEDIN: string;
 }
 
 interface ApiEndpoints {
@@ -32,7 +34,9 @@ export const API_CONFIG: ApiConfig = {
             USER: '/auth/user',
             TEST: '/auth/test',
             LOGOUT: '/auth/logout',
-            GITHUB: '/oauth2/authorization/github'
+            GITHUB: '/oauth2/authorization/github',
+            GOOGLE: '/oauth2/authorization/google',
+            LINKEDIN: '/oauth2/authorization/linkedin'
         },
         JOBS_STATS: '/jobs/dashboard-stats'
     }

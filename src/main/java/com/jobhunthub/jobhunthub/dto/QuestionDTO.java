@@ -21,7 +21,6 @@ public class QuestionDTO {
     private String feedback;
     private Long userId;
 
-    // Static factory method to convert from Entity to DTO
     public static QuestionDTO fromEntity(Question question) {
         if (question == null) {
             return null;
@@ -35,7 +34,6 @@ public class QuestionDTO {
         dto.setRating(question.getRating());
         dto.setFeedback(question.getFeedback());
 
-        // Safely access user data *before* potential session close
         if (question.getUser() != null) {
             dto.setUserId(question.getUser().getId());
         }

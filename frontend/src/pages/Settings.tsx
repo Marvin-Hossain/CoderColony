@@ -1,10 +1,9 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {useNavigate} from 'react-router-dom';
 import Button from '../components/Button';
 import './Settings.css';
 import {API_CONFIG} from '@/services/config';
 import PageHeader from '../components/PageHeader';
-import CategoryTabs from '../components/CategoryTabs';
+import ToggleSwitch from '../components/ToggleSwitch';
 
 interface Question {
     id: number;
@@ -36,11 +35,6 @@ const API_BASE_URLS: Record<string, string> = {
     behavioral: API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.BEHAVIORAL,
     technical: API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.TECHNICAL
 };
-
-const SETTINGS_CATEGORIES = [
-    {id: 'behavioral', label: 'Behavioral Questions'},
-    {id: 'technical', label: 'Technical Questions'}
-];
 
 /**
  * Renders the UI panel for adding and listing questions for a specific category.
@@ -119,7 +113,6 @@ const Settings = () => {
     const [success, setSuccess] = useState<string | null>(null);
     const [confirmation, setConfirmation] = useState<ConfirmationState | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const navigate = useNavigate();
 
     /** Fetches all questions for the currently active tab from the backend API. */
     const fetchQuestions = async (signal?: AbortSignal): Promise<void> => {
@@ -269,32 +262,37 @@ const Settings = () => {
 
     return (
         <div className="settings">
-            <PageHeader
-                title="Settings"
-                onBack={() => navigate('/dashboard')}
-            />
+            <div className="settings-content">
+                <PageHeader
+                    title="Settings"
+                    subtitle="Customize your interview questions"
+                />
 
-            <CategoryTabs
-                categories={SETTINGS_CATEGORIES}
-                selectedCategory={activeTab}
-                onCategoryChange={handleTabChange}
-            />
+                <ToggleSwitch
+                    leftOption="Behavioral Questions"
+                    rightOption="Technical Questions"
+                    leftValue="behavioral"
+                    rightValue="technical"
+                    selectedValue={activeTab}
+                    onChange={handleTabChange}
+                    id="settings-question-toggle"
+                />
 
-            {/* Render the panel containing the form and list for the active tab */}
-            <QuestionPanel
-                type={activeTab}
-                error={error}
-                success={success}
-                confirmation={confirmation}
-                question={question}
-                setQuestion={setQuestion}
-                handleSubmit={handleSubmit}
-                questions={questions}
-                handleDelete={handleDelete}
-                confirmDelete={confirmDelete}
-                cancelDelete={cancelDelete}
-                isLoading={isLoading}
-            />
+                <QuestionPanel
+                    type={activeTab}
+                    error={error}
+                    success={success}
+                    confirmation={confirmation}
+                    question={question}
+                    setQuestion={setQuestion}
+                    handleSubmit={handleSubmit}
+                    questions={questions}
+                    handleDelete={handleDelete}
+                    confirmDelete={confirmDelete}
+                    cancelDelete={cancelDelete}
+                    isLoading={isLoading}
+                />
+            </div>
         </div>
     );
 };
