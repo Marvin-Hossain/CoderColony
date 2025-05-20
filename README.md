@@ -47,7 +47,7 @@ cd JobHuntHub
 ```
 
 ### 2. Backend Configuration (One-Time IDE Setup for Secrets)
-The backend requires a few secrets for local development, primarily for GitHub OAuth login to function. These are **not** stored in the repository and must be configured as environment variables within your IDE's run configuration.
+The backend requires a few secrets for local development, primarily for GitHub OAuth OR Google OIDC login to function (whichever you would prefer to sign in with). These are **not** stored in the repository and must be configured as environment variables within your IDE's run configuration.
 
 *   **Obtain Credentials:**
     *   The necessary GitHub OAuth credentials (`GITHUB_LOCAL_CLIENT_ID` and `GITHUB_LOCAL_CLIENT_SECRET`) or Google OIDC credentials (`GOOGLE_LOCAL_CLIENT_ID` and `GOOGLE_LOCAL_CLIENT_SECRET`) will be securely provided to you by the project maintainer (Marvin). These are for a shared development-only GitHub / Google OAuth application.
@@ -58,7 +58,7 @@ The backend requires a few secrets for local development, primarily for GitHub O
     4.  Add the following environment variables:
         *   `GITHUB_LOCAL_CLIENT_ID`: Set this to the GitHub Client ID provided to you.
         *   `GITHUB_LOCAL_CLIENT_SECRET`: Set this to the GitHub Client Secret provided to you.
-        *    (Optional) `GOOGLE_LOCAL_CLIENT_ID`: Set this to the Google Client ID provided to you.  (Use these credentials if you wish to sign in with Google instead of GitHub)
+        *    (Optional) `GOOGLE_LOCAL_CLIENT_ID`: Set this to the Google Client ID provided to you.
         *   (Optional) `GOOGLE_LOCAL_CLIENT_SECRET`: Set this to the Google Client Secret provided to you.
         *   (Optional) `OPENAI_LOCAL_API_KEY`: If you wish to test the AI interview question evaluation feature, set this to your personal OpenAI API key. If not set, AI features will be disabled or provide a mocked response.
     5.  Save the Run/Debug Configuration.
