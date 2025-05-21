@@ -22,17 +22,17 @@
   position: relative;
   cursor: pointer;
   min-height: 250px;
-  border: 1px solid rgba(120, 192, 168, 0.2);
+  border: 1px solid rgba(77, 107, 254, 0.2);
 }
 
 .practice-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border-color: #78c0a8;
+  border-color: #4d6bfe;
 }
 
 .practice-card-icon {
-  background-color: #78c0a8;
+  background-color: #4d6bfe;
   color: white;
   padding: 16px;
   text-align: center;
@@ -48,14 +48,14 @@
 
 .practice-card-content h3 {
   margin: 0 0 12px 0;
-  color: #2f4f4f;
+  color: #2a3a84;
   font-size: 20px;
   font-weight: 600;
 }
 
 .practice-card-content p {
   margin: 0 0 16px 0;
-  color: #666;
+  color: #4a5491;
   line-height: 1.5;
   font-size: 14px;
   flex-grow: 1;
@@ -69,8 +69,8 @@
 }
 
 .practice-card-tag {
-  background: rgba(120, 192, 168, 0.15);
-  color: #567d57;
+  background: rgba(77, 107, 254, 0.15);
+  color: #3b54d0;
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 16px;
@@ -85,7 +85,7 @@
 .practice-card.coming-soon:hover {
   transform: none;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-color: rgba(120, 192, 168, 0.2);
+  border-color: rgba(77, 107, 254, 0.2);
 }
 
 .practice-card-coming-soon-badge {

@@ -12,8 +12,10 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
-import CategoryTabs from '../components/CategoryTabs';
+// import CategoryTabs from '../components/CategoryTabs';
 import {formatChartDate} from '@/services/dateUtils';
+import Card from '../components/Card';
+import CardItem from '../components/CardItem';
 
 ChartJS.register(
     CategoryScale,
@@ -109,26 +111,39 @@ const Progress = () => {
     }, []);
 
     /** Memoized calculation for chart data structure required by react-chartjs-2. */
-    const chartData = useMemo(() => ({
-        labels: weeklyData?.chartData?.map(item => formatChartDate(item.date)) || [],
-        datasets: [
-            {
-                label: CATEGORIES.find(c => c.id === selectedCategory)?.label || '',
-                data: weeklyData?.chartData?.map(item => item.count) || [],
-                backgroundColor: 'rgba(120, 192, 168, 0.2)',
-                borderColor: '#78c0a8',
-                borderWidth: 2,
-                tension: 0.3,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#78c0a8',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                pointHoverBackgroundColor: '#78c0a8',
-                pointHoverBorderColor: '#ffffff'
-            }
-        ]
-    }), [weeklyData, selectedCategory]);
+    const chartData = useMemo(() => {
+        // Create canvas for gradient
+        const ctx = document.createElement('canvas').getContext('2d');
+        let gradient = null;
+        if (ctx) {
+            gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(77, 107, 254, 0.6)');
+            gradient.addColorStop(1, 'rgba(77, 107, 254, 0.05)');
+        }
+        
+        return {
+            labels: weeklyData?.chartData?.map(item => formatChartDate(item.date)) || [],
+            datasets: [
+                {
+                    label: CATEGORIES.find(c => c.id === selectedCategory)?.label || '',
+                    data: weeklyData?.chartData?.map(item => item.count) || [],
+                    fill: true,
+                    backgroundColor: gradient || 'rgba(77, 107, 254, 0.2)',
+                    borderColor: '#4d6bfe',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4d6bfe',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#4d6bfe',
+                    pointHoverBorderColor: '#ffffff',
+                    cubicInterpolationMode: 'monotone' as const
+                }
+            ]
+        };
+    }, [weeklyData, selectedCategory]);
 
     /** Memoized calculation for chart configuration options. */
     const selectedCategoryData = CATEGORIES.find(c => c.id === selectedCategory);
@@ -137,19 +152,51 @@ const Progress = () => {
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'top' as const
+                position: 'top' as const,
+                labels: {
+                    boxWidth: 15,
+                    usePointStyle: false,
+                    font: {
+                        size: 14,
+                        weight: 'bold' as const
+                    }
+                }
             },
             title: {
                 display: true,
                 text: `Weekly ${selectedCategoryData?.label || ''} Progress`,
-                color: '#2f4f4f'
+                color: '#2a3a84',
+                font: {
+                    size: 18,
+                    weight: 'bold' as const
+                },
+                padding: {
+                    top: 10,
+                    bottom: 20
+                }
             },
             tooltip: {
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                titleColor: '#2f4f4f',
-                bodyColor: '#567d57',
-                borderColor: '#78c0a8',
-                borderWidth: 1
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                titleColor: '#2a3a84',
+                bodyColor: '#4a5491',
+                borderColor: '#4d6bfe',
+                borderWidth: 1,
+                cornerRadius: 8,
+                padding: 12,
+                boxPadding: 8,
+                usePointStyle: true,
+                titleFont: {
+                    size: 14,
+                    weight: 'bold' as const
+                },
+                bodyFont: {
+                    size: 13
+                },
+                callbacks: {
+                    label: function(context: any) {
+                        return ` ${context.parsed.y} Applications`;
+                    }
+                }
             }
         },
         scales: {
@@ -157,27 +204,57 @@ const Progress = () => {
                 ticks: {
                     maxRotation: 45,
                     minRotation: 45,
-                    color: '#567d57'
+                    color: '#4a5491',
+                    font: {
+                        size: 12
+                    },
+                    padding: 8
                 },
                 grid: {
-                    display: false
+                    display: false,
+                    drawBorder: false
                 }
             },
             y: {
                 beginAtZero: true,
                 ticks: {
                     stepSize: 1,
-                    color: '#567d57'
+                    color: '#4a5491',
+                    font: {
+                        size: 12
+                    },
+                    padding: 8
                 },
                 suggestedMax: (selectedCategoryData?.goal || 0) + 2,
                 grid: {
-                    color: 'rgba(0, 0, 0, 0.05)'
+                    color: 'rgba(77, 107, 254, 0.06)',
+                    drawBorder: false
+                },
+                border: {
+                    dash: [4, 4]
                 }
             }
         },
         interaction: {
             mode: 'index' as const,
             intersect: false
+        },
+        elements: {
+            line: {
+                borderJoinStyle: 'round' as const
+            }
+        },
+        layout: {
+            padding: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10
+            }
+        },
+        animation: {
+            duration: 1500,
+            easing: 'easeOutQuart' as const
         }
     }), [selectedCategory, selectedCategoryData]);
 
@@ -251,15 +328,17 @@ const Progress = () => {
             </header>
 
             <div className="progress-content">
-                <CategoryTabs
+                {/*
+                    We don't need the category tabs for now, so we're commenting it out.
+                    <CategoryTabs
                     categories={CATEGORIES}
                     selectedCategory={selectedCategory}
                     onCategoryChange={handleCategoryChange}
-                />
+                /> */}
 
                 {renderStats()}
 
-                <div className="chart-container">
+                <Card className="chart-container" accent="top" size="lg">
                     {isLoading ? (
                         <div className="loading">
                             <div className="loading-spinner"></div>
@@ -268,7 +347,7 @@ const Progress = () => {
                     ) : (
                         <Line data={chartData} options={chartOptions}/>
                     )}
-                </div>
+                </Card>
             </div>
         </div>
     );
@@ -276,40 +355,44 @@ const Progress = () => {
 
 /** Memoized component to display general all-time statistics. */
 const StatsSection = React.memo(({title, stats}: StatsSectionProps) => (
-    <div className="stats-section">
-        <h3>{title}</h3>
-        <div className="stat-item">
-            <span>Total Completed:</span>
-            <span>{stats.total}</span>
-        </div>
-        <div className="stat-item">
-            <span>Daily Average:</span>
-            <span>{typeof stats.average === 'number' ? stats.average.toFixed(1) : 'N/A'}</span>
-        </div>
-        <div className="stat-item">
-            <span>Best Day:</span>
-            <span>{stats.bestDay || 'N/A'}</span>
-        </div>
-    </div>
+    <Card title={title} accent="left">
+        <CardItem 
+            label="Total Completed"
+            value={stats.total}
+            badge
+        />
+        <CardItem 
+            label="Daily Average"
+            value={typeof stats.average === 'number' ? stats.average.toFixed(1) : 'N/A'}
+            badge
+        />
+        <CardItem 
+            label="Best Day"
+            value={stats.bestDay || 'N/A'}
+            badge
+        />
+    </Card>
 ));
 
 /** Memoized component to display job status breakdown statistics. */
 const StatusBreakdown = React.memo(({stats}: StatusBreakdownProps) => (
-    <div className="stats-section">
-        <h3>Application Status</h3>
-        <div className="stat-item">
-            <span>Applied:</span>
-            <span>{stats.applied || 0}</span>
-        </div>
-        <div className="stat-item">
-            <span>Interviewed:</span>
-            <span>{stats.interviewed || 0}</span>
-        </div>
-        <div className="stat-item">
-            <span>Rejected:</span>
-            <span>{stats.rejected || 0}</span>
-        </div>
-    </div>
+    <Card title="Application Status" accent="left">
+        <CardItem 
+            label="Applied"
+            value={stats.applied || 0}
+            badge
+        />
+        <CardItem 
+            label="Interviewed"
+            value={stats.interviewed || 0}
+            badge
+        />
+        <CardItem 
+            label="Rejected"
+            value={stats.rejected || 0}
+            badge
+        />
+    </Card>
 ));
 
 export default Progress;

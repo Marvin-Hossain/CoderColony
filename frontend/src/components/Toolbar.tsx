@@ -22,6 +22,13 @@ const Toolbar: React.FC = () => {
     isLoading: true,
     error: null
   });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+    // Toggle body scroll when menu is open
+    document.body.style.overflow = mobileMenuOpen ? 'auto' : 'hidden';
+  };
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -65,10 +72,34 @@ const Toolbar: React.FC = () => {
 
     fetchUser();
 
+    // Close mobile menu when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (mobileMenuOpen && !target.closest('.mobile-menu') && !target.closest('.menu-toggle')) {
+        setMobileMenuOpen(false);
+        document.body.style.overflow = 'auto';
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+
+    // Handle escape key to close menu
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+        document.body.style.overflow = 'auto';
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+
     return () => {
       abortController.abort();
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = 'auto'; // Ensure scroll is restored on unmount
     };
-  }, []);
+  }, [mobileMenuOpen]);
 
   if (userState.isLoading) {
     return (
@@ -85,35 +116,77 @@ const Toolbar: React.FC = () => {
     );
   }
 
+  const renderNavLinks = () => (
+    <ul className="toolbar-links">
+      <li><Link to="/progress" onClick={() => setMobileMenuOpen(false)}>Progress</Link></li>
+      <li><Link to="/job-apps" onClick={() => setMobileMenuOpen(false)}>Applications</Link></li>
+      <li><Link to="/practice" onClick={() => setMobileMenuOpen(false)}>Practice</Link></li>
+      <li><Link to="/settings" onClick={() => setMobileMenuOpen(false)}>Settings</Link></li>
+      <li><Link to="/about-us" onClick={() => setMobileMenuOpen(false)}>About Us</Link></li>
+    </ul>
+  );
+
+  const renderUserSection = () => (
+    <div className="toolbar-user">
+      {userState.data && (
+        <>
+          {userState.data.avatarUrl && (
+            <img 
+              src={userState.data.avatarUrl} 
+              alt={`${userState.data.username}'s profile`} 
+              className="user-avatar"
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+            />
+          )}
+          <span className="username">{userState.data.username}</span>
+        </>
+      )}
+      <LogoutButton />
+    </div>
+  );
+
   return (
     <nav className="toolbar">
       <div className="toolbar-content">
         <div className="toolbar-brand">
           <Link to="/dashboard">JobHuntHub</Link>
         </div>
-        <ul className="toolbar-links">
-          <li><Link to="/progress">Progress</Link></li>
-          <li><Link to="/job-apps">Applications</Link></li>
-          <li><Link to="/practice">Practice</Link></li>
-          <li><Link to="/settings">Settings</Link></li>
-          <li><Link to="/about-us">About Us</Link></li>
-        </ul>
-        <div className="toolbar-user">
-          {userState.data && (
-            <>
-              {userState.data.avatarUrl && (
-                <img 
-                  src={userState.data.avatarUrl} 
-                  alt={`${userState.data.username}'s profile`} 
-                  className="user-avatar"
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                />
-              )}
-              <span className="username">{userState.data.username}</span>
-            </>
-          )}
-          <LogoutButton />
+        
+        {/* Desktop menu */}
+        <div className="desktop-menu">
+          <div className="menu-center">
+            {renderNavLinks()}
+          </div>
+          {renderUserSection()}
+        </div>
+        
+        {/* Mobile menu toggle button */}
+        <button 
+          className={`menu-toggle ${mobileMenuOpen ? 'open' : ''}`}
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+          aria-expanded={mobileMenuOpen}
+        >
+          <span className="hamburger-icon"></span>
+        </button>
+        
+        {/* Mobile menu overlay */}
+        <div 
+          className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        ></div>
+        
+        {/* Mobile sidebar */}
+        <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
+          <div className="mobile-menu-content">
+            <div className="mobile-menu-links">
+              {renderNavLinks()}
+            </div>
+            <div className="mobile-menu-user">
+              {renderUserSection()}
+            </div>
+          </div>
         </div>
       </div>
     </nav>

@@ -1,5 +1,5 @@
 .custom-button:not([class*=" "]) {
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -7,10 +7,10 @@
     font-size: 1.2rem;
     transition: background-color 0.3s, transform 0.2s;
     border-radius: 50px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(77, 107, 254, 0.2);
 }
 
 .custom-button:not([class*=" "]):hover {
-    background-color: #56a68a;
+    background-color: #3b54d0;
     transform: scale(1.05);
 }

@@ -16,12 +16,12 @@
 }
 
 .dashboard-header h1 {
-    font-size: 2rem;
-    color: #2f4f4f;
-    margin-bottom: 10px;
+    font-size: 1.7rem;
+    color: #2a3a84;
+    margin-bottom: 5px;
     position: relative;
     display: inline-block;
-    padding-bottom: 15px;
+    padding-bottom: 10px;
 }
 
 .dashboard-header h1:after {
@@ -29,15 +29,15 @@
     position: absolute;
     width: 60px;
     height: 3px;
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .dashboard-header p {
-    font-size: 1rem;
-    color: #567d57;
+    font-size: 0.9rem;
+    color: #4a5491;
     max-width: 600px;
     margin: 0 auto;
 }
@@ -45,36 +45,52 @@
 .dashboard-main {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 15px;
     flex: 1;
     overflow: hidden;
 }
 
 .dashboard-section {
     background: white;
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
+    box-shadow: 0 5px 15px rgba(77, 107, 254, 0.08);
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     max-height: 100%;
     overflow-y: auto;
+    border: 1px solid rgba(77, 107, 254, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #4d6bfe, #6e8cff);
+    border-radius: 4px 0 0 4px;
 }
 
 .dashboard-section:hover {
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 15px 35px rgba(77, 107, 254, 0.18);
+    transform: translateY(-5px);
 }
 
 .dashboard-section h2 {
-    font-size: 1.5rem;
-    color: #2f4f4f;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e0f2eb;
+    font-size: 1.1rem;
+    color: #2a3a84;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e8eeff;
     position: relative;
     flex-shrink: 0;
-    text-align: center;
+    text-align: left;
+    font-weight: 600;
 }
 
 .dashboard-section h2::before {
@@ -82,10 +98,9 @@
     position: absolute;
     width: 40px;
     height: 3px;
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     bottom: -1px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     transition: width 0.3s ease;
 }
 
@@ -106,9 +121,12 @@
     gap: 15px;
     margin-bottom: 15px;
     padding: 15px;
-    background-color: #f9f9f9;
+    background-color: white;
     border-radius: 8px;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(77, 107, 254, 0.08);
+    box-shadow: 0 3px 10px rgba(77, 107, 254, 0.06);
+    border-left: 3px solid #4d6bfe;
 }
 
 .goal:last-child {
@@ -116,14 +134,16 @@
 }
 
 .goal:hover {
-    background-color: #f0f0f0;
-    transform: translateY(-2px);
+    background-color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(77, 107, 254, 0.12);
+    transform: translateX(5px);
 }
 
 .goal p {
     flex: 2;
     margin: 0;
-    color: #333;
+    color: #2a3a84;
     font-weight: 500;
     font-size: 0.95rem;
 }
@@ -146,7 +166,7 @@
 }
 
 .goal progress::-webkit-progress-value {
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     border-radius: 10px;
     transition: width 0.3s ease;
 }
@@ -164,12 +184,16 @@
 
 .goal-count {
     font-size: 0.85rem;
-    color: #567d57;
+    color: #4a5491;
     font-weight: 500;
+    background: rgba(77, 107, 254, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
 }
 
 .go-button {
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     color: white;
     padding: 8px 16px;
     border: none;
@@ -177,7 +201,7 @@
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(77, 107, 254, 0.2);
     transition: all 0.2s ease;
     min-width: 60px;
     text-align: center;
@@ -185,9 +209,9 @@
 }
 
 .go-button:hover {
-    background-color: #56a68a;
+    background-color: #3b54d0;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px rgba(77, 107, 254, 0.3);
 }
 
 .go-button:disabled {
@@ -219,6 +243,7 @@
     backdrop-filter: blur(4px);
     border: 1px solid rgba(249, 168, 38, 0.2);
     transition: all 0.3s ease;
+    z-index: 1;
 }
 
 .coming-soon:hover .coming-soon-label {
@@ -272,12 +297,12 @@
     height: 50px;
     border: 3px solid #e9ecef;
     border-radius: 50%;
-    border-top-color: #78c0a8;
+    border-top-color: #4d6bfe;
     animation: spin 1s linear infinite;
 }
 
 .loading-overlay p {
-    color: #567d57;
+    color: #4a5491;
     font-size: 1.1rem;
     font-weight: 500;
 }
@@ -290,9 +315,9 @@
 
 @media (max-width: 768px) {
     .dashboard {
-        padding: 15px;
+        padding: 10px;
         height: auto;
-        min-height: calc(100vh - 100px);
+        min-height: calc(100vh - 80px);
         overflow: auto;
     }
     

@@ -1,86 +1,115 @@
 .category-tabs {
+    margin-bottom: 20px;
     display: flex;
-    gap: 15px;
-    margin-bottom: 25px;
+    flex-direction: column;
+    width: 100%;
+}
+
+.tabs-container {
+    display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
+    gap: 5px;
 }
 
-.category-tab {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
+.tab-item {
+    padding: 8px 16px;
     background-color: #f0f0f0;
-    color: #2f4f4f;
-    transition: all 0.3s ease;
+    color: #2a3a84;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
     font-weight: 500;
-    font-size: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    position: relative;
-    overflow: hidden;
+    text-align: center;
 }
 
-.category-tab::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 3px;
-    background-color: #78c0a8;
-    transition: width 0.3s ease;
+.tab-item:hover {
+    background-color: #e8eeff;
 }
 
-.category-tab:hover {
-    background-color: #e9e9e9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.category-tab.active {
-    background-color: #78c0a8;
+.tab-item.active {
+    background-color: #4d6bfe;
     color: white;
-    font-weight: 600;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.category-tab.active::before {
-    width: 100%;
+.tab-content-item {
+    display: none;
+    margin-top: 15px;
+    background-color: #e9e9e9;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.tab-content-item.active {
+    display: block;
+    background-color: #4d6bfe;
+    color: white;
+}
+
+.tab-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #4d6bfe;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.tab-button:hover {
+    background-color: #3b54d0;
+}
+
+.job-tab {
+    background-color: #4d6bfe;
+}
+
+.job-tab:hover {
+    background-color: #3b54d0;
+}
+
+.react-tabs__tab--active {
+    background-color: #e0efff;
+    color: #2a3a84;
+}
+
+.vue-tabs__tab--active {
+    background-color: #e8eeff;
+    color: #2a3a84;
 }
 
 /* Styling for behavioral questions tab */
 .category-tab[data-category="behavioral"], 
 .category-tab[data-category="behavioral"].active {
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     color: white;
 }
 
 .category-tab[data-category="behavioral"]:hover {
-    background-color: #56a68a;
+    background-color: #3b54d0;
 }
 
 /* Styling for technical questions tab */
 .category-tab[data-category="technical"], 
 .category-tab[data-category="technical"].active {
-    background-color: #6c9bc3;
+    background-color: #4d6bfe;
     color: white;
 }
 
 .category-tab[data-category="technical"]:hover {
-    background-color: #5186b2;
+    background-color: #3b54d0;
 }
 
 /* When a tab is not active, show white text on lighter background */
 .category-tab[data-category="behavioral"]:not(.active) {
-    background-color: #e0f2eb;
-    color: #2f4f4f;
+    background-color: #e8eeff;
+    color: #2a3a84;
 }
 
 .category-tab[data-category="technical"]:not(.active) {
-    background-color: #e0ebf5;
-    color: #2f4f4f;
+    background-color: #e8eeff;
+    color: #2a3a84;
 }
 
 @media (max-width: 768px) {

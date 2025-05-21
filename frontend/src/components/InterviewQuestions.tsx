@@ -4,6 +4,7 @@ import Button from './Button';
 import './InterviewQuestions.css';
 import {API_CONFIG} from '@/services/config';
 import PageHeader from './PageHeader';
+import MicIcon from './icons/MicIcon';
 
 /**
  * Global type declaration for browser SpeechRecognition APIs,
@@ -294,26 +295,42 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
     /** Helper flag to disable the microphone button if API is unsupported or during loading/finished state. */
     const micDisabled = !SpeechRecognition || noInteraction;
 
+    const navigateToSettings = () => {
+        navigate(`/settings?type=${type}`);
+    };
+
+    const headerButtons = (
+        <div className="header-buttons">
+            {showResetButton ? (
+                <Button
+                    text="Reset"
+                    onClick={resetQuestions}
+                    className="reset-button"
+                    disabled={loading}
+                />
+            ) : (
+                <Button
+                    text="Skip"
+                    onClick={handleSkip}
+                    className="skip-button"
+                    disabled={loading}
+                />
+            )}
+            <Button
+                text="Settings"
+                onClick={navigateToSettings}
+                className="settings-button"
+                disabled={loading}
+            />
+        </div>
+    );
+
     return (
         <div className={`${type}-questions`}>
             <PageHeader
                 title={title}
                 subtitle={subtitle || "Practice your responses and get AI feedback"}
-                rightButton={showResetButton ? (
-                    <Button
-                        text="Reset"
-                        onClick={resetQuestions}
-                        className="reset-button"
-                        disabled={loading}
-                    />
-                ) : (
-                    <Button
-                        text="Skip"
-                        onClick={handleSkip}
-                        className="skip-button"
-                        disabled={loading}
-                    />
-                )}
+                rightButton={headerButtons}
             />
 
             {error && <div className="error-message">{error}</div>}
@@ -344,11 +361,12 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
                                         className="submit-button"
                                     />
                                     <Button
-                                        text="🎤"
                                         onClick={toggleListening}
                                         disabled={micDisabled}
                                         className={`mic-button ${isListening ? 'active' : ''} ${!SpeechRecognition ? 'disabled-feature' : ''}`}
-                                    />
+                                    >
+                                        <MicIcon isActive={isListening} />
+                                    </Button>
                                 </div>
                             </div>
                         ) : (

@@ -5,8 +5,44 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 100%;
+    padding-bottom: 15px;
+}
+
+.page-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(to right, #3b54d0, #4d6bfe);
+    border-radius: 2px;
+}
+
+.page-header h1 {
+    font-size: 2.2rem;
+    color: #2a3a84;
+    margin-bottom: 5px;
+}
+
+.page-header .actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.page-header .primary-action {
+    background-color: #4d6bfe;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.page-header p {
+    font-size: 1.1rem;
+    color: #4a5491;
 }
 
 .page-header-titles {
@@ -14,22 +50,12 @@
     width: 100%;
 }
 
-.page-header h1 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #2f4f4f;
-    margin: 0;
-    position: relative;
-    padding-bottom: 10px;
-    display: inline-block;
-}
-
 .page-header h1::after {
     content: "";
     position: absolute;
     width: 40px;
     height: 3px;
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
@@ -38,12 +64,6 @@
 
 .page-header:hover h1::after {
     width: 60px;
-}
-
-.page-header p {
-    font-size: 16px;
-    color: #567d57;
-    margin: 10px 0 0 0;
 }
 
 .page-header-right {
