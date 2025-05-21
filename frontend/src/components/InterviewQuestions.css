@@ -404,6 +404,15 @@
     box-shadow: 0 4px 8px rgba(77, 107, 254, 0.3);
 }
 
+.next-button:disabled {
+    background-color: #a0a0a0;
+    color: #666666;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.6;
+}
+
 @media (max-width: 768px) {
     .technical-questions,
     .behavioral-questions {
