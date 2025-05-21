@@ -4,6 +4,7 @@ import './Settings.css';
 import {API_CONFIG} from '@/services/config';
 import PageHeader from '../components/PageHeader';
 import ToggleSwitch from '../components/ToggleSwitch';
+import {useNavigate, useLocation} from 'react-router-dom';
 
 interface Question {
     id: number;
@@ -106,13 +107,22 @@ const QuestionPanel = ({
  * behavioral and technical interview questions via different tabs.
  */
 const Settings = () => {
-    const [activeTab, setActiveTab] = useState<'behavioral' | 'technical'>('behavioral');
+    const navigate = useNavigate();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const initialTab = (queryParams.get('type') as 'behavioral' | 'technical') || 'behavioral';
+    
+    const [activeTab, setActiveTab] = useState<'behavioral' | 'technical'>(initialTab);
     const [question, setQuestion] = useState<string>('');
     const [questions, setQuestions] = useState<Question[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [confirmation, setConfirmation] = useState<ConfirmationState | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const handleBack = () => {
+        navigate('/practice');
+    };
 
     /** Fetches all questions for the currently active tab from the backend API. */
     const fetchQuestions = async (signal?: AbortSignal): Promise<void> => {
@@ -266,6 +276,13 @@ const Settings = () => {
                 <PageHeader
                     title="Settings"
                     subtitle="Customize your interview questions"
+                    rightButton={
+                        <Button
+                            text="Back"
+                            onClick={handleBack}
+                            className="back-button"
+                        />
+                    }
                 />
 
                 <ToggleSwitch

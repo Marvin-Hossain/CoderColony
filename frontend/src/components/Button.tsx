@@ -1,11 +1,13 @@
+import React from 'react';
 import './Button.css';
 
 interface ButtonProps {
-    text: string;
+    text?: string;
     onClick?: () => void;
     className?: string;
     disabled?: boolean;
     type?: 'button' | 'submit' | 'reset';
+    children?: React.ReactNode;
 }
 
 const Button = ({
@@ -13,7 +15,8 @@ const Button = ({
                     text,
                     className = '',
                     disabled = false,
-                    type = 'button'
+                    type = 'button',
+                    children
                 }: ButtonProps) => {
     return (
         <button
@@ -22,7 +25,7 @@ const Button = ({
             disabled={disabled}
             type={type}
         >
-            {text}
+            {children || text}
         </button>
     );
 };

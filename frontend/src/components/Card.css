@@ -1,0 +1,154 @@
+/* Card.css - Common card component styles for all cards in the application */
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(77, 107, 254, 0.1);
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: 1px solid rgba(77, 107, 254, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(77, 107, 254, 0.16);
+}
+
+/* Card with left accent border */
+.card-accent-left::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(to bottom, #4d6bfe, #6e8cff);
+    border-radius: 6px 0 0 6px;
+}
+
+/* Card with top accent border */
+.card-accent-top::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(to right, #4d6bfe, #6e8cff);
+    border-radius: 6px 6px 0 0;
+}
+
+/* Card header styles */
+.card-header {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2a3a84;
+    font-size: 1.3rem;
+    position: relative;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e8eeff;
+    font-weight: 600;
+}
+
+.card-header:after {
+    content: "";
+    position: absolute;
+    width: 40px;
+    height: 4px;
+    background-color: #4d6bfe;
+    bottom: -1px;
+    left: 0;
+    border-radius: 2px;
+}
+
+/* Card item styles for list items within cards */
+.card-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 16px 0;
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(232, 238, 255, 0.5);
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.card-item:hover {
+    background-color: rgba(77, 107, 254, 0.05);
+    transform: translateX(5px);
+}
+
+.card-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Styles for card badges/pills */
+.card-badge {
+    font-weight: 600;
+    color: #2a3a84;
+    background: rgba(77, 107, 254, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    min-width: 40px;
+    text-align: center;
+    display: inline-block;
+}
+
+/* Card sizes */
+.card-sm {
+    padding: 15px;
+}
+
+.card-lg {
+    padding: 30px;
+}
+
+/* Card with subtle hover */
+.card-subtle:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(77, 107, 254, 0.12);
+}
+
+/* Interactive card with stronger hover effect */
+.card-interactive:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 18px 40px rgba(77, 107, 254, 0.2);
+}
+
+/* Card loading state */
+.card-loading {
+    position: relative;
+    min-height: 100px;
+}
+
+.card-loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+/* Media queries for responsive cards */
+@media (max-width: 768px) {
+    .card {
+        padding: 20px;
+    }
+    
+    .card-header {
+        font-size: 1.2rem;
+        padding-bottom: 12px;
+    }
+    
+    .card-item {
+        padding: 10px;
+    }
+} 
