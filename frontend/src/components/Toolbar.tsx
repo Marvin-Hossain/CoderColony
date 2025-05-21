@@ -121,7 +121,6 @@ const Toolbar: React.FC = () => {
       <li><Link to="/progress" onClick={() => setMobileMenuOpen(false)}>Progress</Link></li>
       <li><Link to="/job-apps" onClick={() => setMobileMenuOpen(false)}>Applications</Link></li>
       <li><Link to="/practice" onClick={() => setMobileMenuOpen(false)}>Practice</Link></li>
-      <li><Link to="/settings" onClick={() => setMobileMenuOpen(false)}>Settings</Link></li>
       <li><Link to="/about-us" onClick={() => setMobileMenuOpen(false)}>About Us</Link></li>
     </ul>
   );

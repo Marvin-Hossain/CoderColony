@@ -310,3 +310,23 @@ textarea:focus {
     max-width: 900px;
     margin: 0 auto 30px auto;
 }
+
+.back-button {
+    background-color: #4d6bfe;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(77, 107, 254, 0.2);
+    min-width: 60px;
+    text-align: center;
+}
+
+.back-button:hover {
+    background-color: #3b54d0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(77, 107, 254, 0.3);
+}
