@@ -1,15 +1,12 @@
 package com.jobhunthub.jobhunthub.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Builder
@@ -22,16 +19,14 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String provider;
+    @Column(unique = true)
+    private String githubId;
 
     @Column(unique = true)
-    private String providerId;
+    private String googleId;
 
-    private String username;
-
-    private String email;
-
-    private String avatarUrl;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Profile> profiles = new ArrayList<>();
 
     // Getters and Setters
     public Long getId() {
@@ -42,44 +37,38 @@ public class User {
         this.id = id;
     }
 
-    public String getProvider() {
-        return provider;
+    public String getGithubId() {
+        return githubId;
     }
 
-    public void setProvider(String provider) {
-        this.provider = provider;
+    public void setGithubId(String githubId) {
+        this.githubId = githubId;
     }
 
-    public String getUsername() {
-        return username;
+    public String getGoogleId() {
+        return googleId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
     }
 
-    public String getEmail() {
-        return email;
+    public List<Profile> getProfiles() {
+        return profiles;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setProfiles(List<Profile> profiles) {
+        this.profiles = profiles;
     }
 
-    public String getProviderId() {
-        return providerId;
+    public void addProfile(Profile profile) {
+        profiles.add(profile);
+        profile.setUser(this);
     }
 
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+    public void removeProfile(Profile profile) {
+        profiles.remove(profile);
+        profile.setUser(null);
     }
 }
 
