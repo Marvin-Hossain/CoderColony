@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import com.jobhunthub.jobhunthub.model.Profile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,20 +64,22 @@ public class QuestionControllerIntegrationTests {
     @BeforeEach
     public void setUp() {
         User testUser = new User();
-        testUser.setProvider("github");
-        testUser.setProviderId("123");
-        testUser.setUsername("testuser");
-        testUser.setEmail("test@test.com");
-        testUser.setAvatarUrl("https://github.com/testuser.png");
+        Profile p = new Profile();
+        p.setUser(testUser);
+        testUser.setGithubId("12345");
+        p.setUsername("testuser");
+        p.setPrimaryEmail("test@test.com");
+        p.setGithubEmail("test@test.com");
+        p.setAvatarUrl("https://github.com/testuser.png");
         testUser = userRepository.save(testUser);
 
         // build a stubbed OAuth2User that matches what your UserService would see
         var delegate = new DefaultOAuth2User(
                 List.of(new SimpleGrantedAuthority("OAUTH2_USER")),    // or whatever roles you use
-                Map.of("id", testUser.getProviderId(),                 // principal.getName() -> providerId
-                        "name", testUser.getUsername(),                 // unused by loadByProviderId()
-                        "email", testUser.getEmail(),
-                        "avatar_url", testUser.getAvatarUrl()
+                Map.of("id", testUser.getGithubId(),                 // principal.getName() -> providerId
+                        "name", p.getUsername(),                 // unused by loadByProviderId()
+                        "email", p.getPrimaryEmail(),
+                        "avatar_url", p.getAvatarUrl()
                 ),
                 "id"  // the key in the map to use as getName()
         );

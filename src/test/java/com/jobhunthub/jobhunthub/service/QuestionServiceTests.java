@@ -50,11 +50,7 @@ public class QuestionServiceTests {
 
         user = User.builder()
                 .id(1L)
-                .provider("github")
-                .providerId("123")
-                .username("testuser")
-                .email("test@test.com")
-                .avatarUrl("https://github.com/testuser.png")
+                .githubId("123")
                 .build();
 
         question = Question.builder()
@@ -154,7 +150,6 @@ public class QuestionServiceTests {
         Long questionId = 1L;
         User wrongUser = User.builder()
                 .id(2L)
-                .username("wronguser")
                 .build();
         when(questionRepository.findById(questionId)).thenReturn(Optional.of(question));
 
