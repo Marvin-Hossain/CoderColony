@@ -7,6 +7,7 @@ import LogoutButton from './LogoutButton';
 interface UserData {
   authenticated: boolean;
   username: string;
+  primaryEmail: string;
   avatarUrl: string;
 }
 
@@ -28,29 +29,30 @@ const Toolbar: React.FC = () => {
 
     const fetchUser = async () => {
       try {
-        const response = await fetch(
+        const authResponse = await fetch(
           API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
-          { 
-            credentials: 'include',
-            signal: abortController.signal 
-          }
+          { credentials: 'include', signal: abortController.signal }
         );
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch user data: ${response.status}`);
-        }
+        const authData = await authResponse.json();
 
-        const userData = await response.json();
-        // Only extract needed fields
-        setUserState({
-          data: {
-            authenticated: userData.authenticated,
-            username: userData.username,
-            avatarUrl: userData.avatarUrl
-          },
-          isLoading: false,
-          error: null
-        });
+        if (authData.authenticated) {
+          const profileResponse = await fetch(
+            API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROFILE.USER,
+            { credentials: 'include', signal: abortController.signal }
+          );
+          const profileData = await profileResponse.json();
+          
+          setUserState({
+            data: {
+              authenticated: authData.authenticated,
+              username: profileData.username,
+              primaryEmail: profileData.primaryEmail,
+              avatarUrl: profileData.avatarUrl
+            },
+            isLoading: false,
+            error: null
+          });
+        }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           return; // Ignore abort errors
@@ -102,15 +104,17 @@ const Toolbar: React.FC = () => {
           {userState.data && (
             <>
               {userState.data.avatarUrl && (
-                <img 
-                  src={userState.data.avatarUrl} 
-                  alt={`${userState.data.username}'s profile`} 
-                  className="user-avatar"
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                />
+                  <img 
+                    src={userState.data.avatarUrl} 
+                    alt={`${userState.data.primaryEmail}'s profile`} 
+                    className="user-avatar"
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
+                  />
               )}
-              <span className="username">{userState.data.username}</span>
+              {userState.data.primaryEmail && (
+                <span className="primary-email">{userState.data.primaryEmail}</span>
+              )}
             </>
           )}
           <LogoutButton />
