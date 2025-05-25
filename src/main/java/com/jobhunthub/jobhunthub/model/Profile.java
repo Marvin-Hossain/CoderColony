@@ -1,6 +1,5 @@
 package com.jobhunthub.jobhunthub.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,14 +25,12 @@ public class Profile {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
     private String primaryEmail;
 
     private String githubEmail;
 
     private String googleEmail;
 
-    @Column(nullable = false)
     private String username;
 
     private String avatarUrl;
@@ -93,4 +90,5 @@ public class Profile {
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
     }
+
 }
