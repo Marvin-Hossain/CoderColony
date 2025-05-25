@@ -7,12 +7,17 @@ interface AuthEndpoints {
     LINKEDIN: string;
 }
 
+interface ProfileEndpoints {
+    USER: string;
+}
+
 interface ApiEndpoints {
     JOBS: string;
     BEHAVIORAL: string;
     TECHNICAL: string;
     PROGRESS: string;
     AUTH: AuthEndpoints;
+    PROFILE: ProfileEndpoints;  
     JOBS_STATS: string;
 }
 
@@ -37,6 +42,9 @@ export const API_CONFIG: ApiConfig = {
             GITHUB: '/oauth2/authorization/github',
             GOOGLE: '/oauth2/authorization/google',
             LINKEDIN: '/oauth2/authorization/linkedin'
+        },
+        PROFILE: {
+            USER: '/profile/user',
         },
         JOBS_STATS: '/jobs/dashboard-stats'
     }
