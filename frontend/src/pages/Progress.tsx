@@ -12,7 +12,6 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
-// import CategoryTabs from '../components/CategoryTabs';
 import {formatChartDate} from '@/services/dateUtils';
 import Card from '../components/Card';
 import CardItem from '../components/CardItem';
@@ -104,12 +103,9 @@ const Progress = () => {
     const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-
-    /** Memoized callback to handle changing the selected category tab. */
-    const handleCategoryChange = useCallback((categoryId: string): void => {
+    useCallback((categoryId: string): void => {
         setSelectedCategory(categoryId);
     }, []);
-
     /** Memoized calculation for chart data structure required by react-chartjs-2. */
     const chartData = useMemo(() => {
         // Create canvas for gradient
