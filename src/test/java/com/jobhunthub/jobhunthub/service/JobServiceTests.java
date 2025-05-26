@@ -46,10 +46,7 @@ public class JobServiceTests {
         MockitoAnnotations.openMocks(this);
         user = User.builder()
                 .id(1L)
-                .provider("github")
-                .providerId("123")
-                .username("testuser")
-                .email("test@test.com")
+                .githubId("123")
                 .build();
 
         jobEntity = Job.builder()
@@ -131,7 +128,7 @@ public class JobServiceTests {
 
     @Test
     public void JobService_getJobById_whenNotOwner_throwsException() {
-        User anotherUser = User.builder().id(2L).username("another").build();
+        User anotherUser = User.builder().id(2L).build();
         Job jobBelongingToOriginalUser = Job.builder()
             .id(1L)
             .title("Test Job")

@@ -22,16 +22,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String provider;
+    @Column(unique = true)
+    private String githubId;
 
     @Column(unique = true)
-    private String providerId;
-
-    private String username;
-
-    private String email;
-
-    private String avatarUrl;
+    private String googleId;
 
     // Getters and Setters
     public Long getId() {
@@ -42,44 +37,20 @@ public class User {
         this.id = id;
     }
 
-    public String getProvider() {
-        return provider;
+    public String getGithubId() {
+        return githubId;
     }
 
-    public void setProvider(String provider) {
-        this.provider = provider;
+    public void setGithubId(String githubId) {
+        this.githubId = githubId;
     }
 
-    public String getUsername() {
-        return username;
+    public String getGoogleId() {
+        return googleId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
     }
 }
 

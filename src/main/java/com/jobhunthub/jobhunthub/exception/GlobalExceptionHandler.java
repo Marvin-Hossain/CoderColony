@@ -48,6 +48,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
     }
 
+    public static class DataIntegrityViolationException extends RuntimeException {
+        public DataIntegrityViolationException(String message) { super(message); }
+    }
+
     // Handles 401 Unauthorized
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
@@ -72,6 +76,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+        problemDetail.setTitle("Data Integrity Violation");
+        return handleExceptionInternal(ex, problemDetail,
+                new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    // Handles 400 Bad Request
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<Object> handleInvalidRequestException(InvalidRequestException ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -108,7 +124,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 headers, HttpStatus.BAD_REQUEST, request);
     }
 
-    // Fallback handler for any unhandled exceptions
+    // Handles 500 Internal Server Error
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllUncaughtException(Exception ex, WebRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -120,5 +136,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         return handleExceptionInternal(ex, problemDetail,
                 new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    // Handles 400 Bad Request
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+        problemDetail.setTitle("Invalid Argument");
+        return handleExceptionInternal(ex, problemDetail,
+                new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 }
