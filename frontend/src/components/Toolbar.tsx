@@ -7,6 +7,7 @@ import LogoutButton from './LogoutButton';
 interface UserData {
   authenticated: boolean;
   username: string;
+  primaryEmail: string;
   avatarUrl: string;
 }
 
@@ -35,7 +36,7 @@ const Toolbar: React.FC = () => {
 
     const fetchUser = async () => {
       try {
-        const response = await fetch(
+        const authResponse = await fetch(
           API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.AUTH.USER,
           { 
             credentials: 'include',
@@ -43,21 +44,31 @@ const Toolbar: React.FC = () => {
           }
         );
         
-        if (!response.ok) {
-          throw new Error(`Failed to fetch user data: ${response.status}`);
+        if (!authResponse.ok) {
+          throw new Error(`Failed to fetch user data: ${authResponse.status}`);
         }
 
-        const userData = await response.json();
-        // Only extract needed fields
-        setUserState({
-          data: {
-            authenticated: userData.authenticated,
-            username: userData.username,
-            avatarUrl: userData.avatarUrl
-          },
-          isLoading: false,
-          error: null
-        });
+        const authData = await authResponse.json();
+
+        if (authData.authenticated) {
+          const profileResponse = await fetch(
+              API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.PROFILE.USER,
+              {credentials: 'include', signal: abortController.signal}
+          );
+          const profileData = await profileResponse.json();
+
+          // Only extract needed fields
+          setUserState({
+            data: {
+              authenticated: authData.authenticated,
+              username: profileData.username,
+              primaryEmail: profileData.primaryEmail,
+              avatarUrl: profileData.avatarUrl
+            },
+            isLoading: false,
+            error: null
+          });
+        }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           return; // Ignore abort errors
@@ -132,13 +143,13 @@ const Toolbar: React.FC = () => {
           {userState.data.avatarUrl && (
             <img 
               src={userState.data.avatarUrl} 
-              alt={`${userState.data.username}'s profile`} 
+              alt={`${userState.data.username}'s profile`}
               className="user-avatar"
               referrerPolicy="no-referrer"
               crossOrigin="anonymous"
             />
           )}
-          <span className="username">{userState.data.username}</span>
+          <span className="primary-email">{userState.data.primaryEmail}</span>
         </>
       )}
       <LogoutButton />
