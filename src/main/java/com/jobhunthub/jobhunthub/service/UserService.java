@@ -1,110 +1,119 @@
 package com.jobhunthub.jobhunthub.service;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.ResourceNotFoundException;
+import com.jobhunthub.jobhunthub.config.UserPrincipal;
+import com.jobhunthub.jobhunthub.dto.AuthenticatedUserDTO;
+import com.jobhunthub.jobhunthub.dto.OAuth2UserAttributes;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.InvalidRequestException;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.repository.UserRepository;
 
 /**
- * Core user operations: provisioning from OAuth2/OIDC and lookup by provider ID.
+ * Core user operations: OAuth2 authentication and provider linking.
  */
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ProfileService profileService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, ProfileService profileService) {
         this.userRepository = userRepository;
+        this.profileService = profileService;
     }
 
+    // AUTHENTICATION OPERATIONS
+
     /**
-     * Provision a new user or update an existing one based on OAuth2/OIDC attributes.
+     * Authenticate a user based on OAuth2/OIDC attributes.
      */
     @Transactional
     public User authenticateUser(OAuth2User oauth2User, String provider) {
         var attrs = OAuth2UserAttributes.from(oauth2User, provider);
-        return userRepository.findByProviderAndProviderId(provider, attrs.providerId())
-                .map(user -> updateUser(user, attrs))
-                .orElseGet(() -> createNewUser(provider, attrs));
-    }
 
-    // Private helper method to update user if needed
-    private User updateUser(User user, OAuth2UserAttributes attrs) {
-        if (user.getId() == null || hasChanges(user, attrs)) {
-            updateUserHelper(user, attrs);
-            return userRepository.save(user);
+        // Check if linking to existing session
+        Authentication current = SecurityContextHolder.getContext().getAuthentication();
+        if (current instanceof OAuth2AuthenticationToken token
+                && token.isAuthenticated()
+                && token.getPrincipal() instanceof UserPrincipal up) {
+            User currentUser = up.getDomainUser();
+            linkProvider(currentUser, attrs.providerId(), provider);
+            userRepository.save(currentUser);
+            profileService.linkProviderEmail(currentUser, attrs, provider);
+            return currentUser;
         }
-        return user;
+
+        // Try to find existing user
+        User user = findUserByProvider(attrs.providerId(), provider);
+        if (user != null) {
+            return user;
+        }
+
+        // Create new user
+        return createNewUser(attrs, provider);
     }
 
-    // Private helper method to check if user has changes
-    private boolean hasChanges(User user, OAuth2UserAttributes attrs) {
-        return !attrs.username().equals(user.getUsername()) ||
-               (attrs.email() != null && !attrs.email().equals(user.getEmail())) ||
-               (attrs.avatarUrl() != null && !attrs.avatarUrl().equals(user.getAvatarUrl()));
+    // Link a provider to a user's account
+    @Transactional
+    public AuthenticatedUserDTO linkProvider(User user, String providerId, String provider) {
+        validateProviderNotLinked(providerId, provider, user.getId());
+        setProviderOnUser(user, providerId, provider);
+        
+        // Return updated DTO after linking
+        return getAuthenticatedUserDTO(user);
     }
 
-    // Private helper method to update user attributes
-    private void updateUserHelper(User user, OAuth2UserAttributes attrs) {
-        user.setUsername(attrs.username());
-        if (attrs.email() != null) user.setEmail(attrs.email());
-        if (attrs.avatarUrl() != null) user.setAvatarUrl(attrs.avatarUrl());
+
+    // Get authentication status DTO for a user
+    public AuthenticatedUserDTO getAuthenticatedUserDTO(User user) {
+        boolean googleLinked = user.getGoogleId() != null;
+        boolean githubLinked = user.getGithubId() != null;
+        return new AuthenticatedUserDTO(true, user.getId(), googleLinked, githubLinked);
     }
 
-    // Private helper method to create new user
-    private User createNewUser(String provider, OAuth2UserAttributes attrs) {
+    // PRIVATE HELPER METHODS
+
+    // Find a user by provider ID and provider
+    private User findUserByProvider(String providerId, String provider) {
+        return switch(provider.toLowerCase()) {
+            case "github" -> userRepository.findByGithubId(providerId).orElse(null);
+            case "google" -> userRepository.findByGoogleId(providerId).orElse(null);
+            default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
+        };
+    }
+
+    // Create a new user
+    private User createNewUser(OAuth2UserAttributes attrs, String provider) {
         User newUser = new User();
-        newUser.setProvider(provider);
-        newUser.setProviderId(attrs.providerId());
-        updateUserHelper(newUser, attrs);
-        return userRepository.save(newUser);
+        setProviderOnUser(newUser, attrs.providerId(), provider);
+        newUser = userRepository.save(newUser);
+        profileService.provisionProfile(newUser, attrs);
+        profileService.linkProviderEmail(newUser, attrs, provider);
+        return newUser;
     }
 
-    // Record to store OAuth2/OIDC attributes
-    private record OAuth2UserAttributes(
-        String providerId,
-        String username,
-        String email,
-        String avatarUrl
-    ) {
-
-        // Static method to extract attributes from OAuth2User
-        static OAuth2UserAttributes from(OAuth2User user, String provider) {
-            return switch (provider.toLowerCase()) {
-                case "github" -> extractAttributes(user, "id", "login", "email", "avatar_url");
-                case "google" -> extractAttributes(user, "sub", "name", "email", "picture");
-                default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
-            };
+    // Validate that a provider is not already linked to another user
+    private void validateProviderNotLinked(String providerId, String provider, Long excludeUserId) {
+        User existingUser = findUserByProvider(providerId, provider);
+        if (existingUser != null && !existingUser.getId().equals(excludeUserId)) {
+            throw new InvalidRequestException(
+                "This " + provider + " account is already linked to another user"
+            );
         }
+    }
 
-        // Private helper method to extract attributes from OAuth2User
-        private static OAuth2UserAttributes extractAttributes(
-                OAuth2User user, 
-                String idKey, 
-                String nameKey, 
-                String emailKey, 
-                String avatarKey
-        ) {
-            Object id = user.getAttribute(idKey);
-            if (id == null) {
-                throw new ResourceNotFoundException("OAuth2User", idKey, "missing in principal");
-            }
-            
-            String pid = id.toString();
-            String name = user.getAttribute(nameKey);
-            String email = user.getAttribute(emailKey);
-            String avatar = user.getAttribute(avatarKey);
-            String uname = name != null && !name.isBlank() ? name : fallbackUsername(email, pid);
-            
-            return new OAuth2UserAttributes(pid, uname, email, avatar);
-        }
-
-        // Private helper method to fallback username if name is not available
-        private static String fallbackUsername(String email, String pid) {
-            return email != null && email.contains("@") ? email.split("@")[0] : pid;
+    // Set a provider on a user
+    private void setProviderOnUser(User user, String providerId, String provider) {
+        switch (provider.toLowerCase()) {
+            case "github" -> user.setGithubId(providerId);
+            case "google" -> user.setGoogleId(providerId);
+            default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
         }
     }
 }

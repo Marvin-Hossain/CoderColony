@@ -1,27 +1,25 @@
 .progress-page {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
     font-family: "Roboto", sans-serif;
     color: #333;
-    height: calc(100vh - 100px);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
 }
 
 .progress-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .progress-header h1 {
-    font-size: 2rem;
-    color: #2f4f4f;
-    margin-bottom: 10px;
+    font-size: 1.7rem;
+    color: #2a3a84;
+    margin-bottom: 5px;
     position: relative;
     display: inline-block;
-    padding-bottom: 15px;
+    padding-bottom: 10px;
 }
 
 .progress-header h1:after {
@@ -29,15 +27,15 @@
     position: absolute;
     width: 60px;
     height: 3px;
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .progress-header p {
-    font-size: 1rem;
-    color: #567d57;
+    font-size: 0.9rem;
+    color: #4a5491;
     max-width: 600px;
     margin: 0 auto;
 }
@@ -46,55 +44,87 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    overflow: hidden;
+    gap: 15px;
+    /* overflow: hidden; */
 }
 
 .chart-container {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(77, 107, 254, 0.08);
+    margin-bottom: 10px;
     flex: 1;
-    min-height: 400px;
+    height: 300px;
+    max-height: 300px;
+    min-height: 150px;
     overflow: hidden;
-    transition: box-shadow 0.3s ease;
+    transition: all 0.3s ease;
     position: relative;
+    border: 1px solid rgba(77, 107, 254, 0.08);
 }
 
 .chart-container:hover {
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 15px 35px rgba(77, 107, 254, 0.18);
+    transform: translateY(-5px);
+}
+
+.chart-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, #4d6bfe, #6e8cff);
+    border-radius: 4px 4px 0 0;
 }
 
 .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 15px;
+    margin-bottom: 10px;
 }
 
 .stats-section {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 10px 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(77, 107, 254, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(77, 107, 254, 0.08);
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    height: auto;
 }
 
 .stats-section:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 20px rgba(77, 107, 254, 0.16);
+}
+
+.stats-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #4d6bfe, #6e8cff);
+    border-radius: 4px 0 0 4px;
 }
 
 .stats h3 {
     margin-top: 0;
-    margin-bottom: 15px;
-    color: #2f4f4f;
-    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #2a3a84;
+    font-size: 1.1rem;
     position: relative;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e0f2eb;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e8eeff;
+    font-weight: 600;
 }
 
 .stats h3:after {
@@ -102,30 +132,32 @@
     position: absolute;
     width: 30px;
     height: 3px;
-    background-color: #78c0a8;
+    background-color: #4d6bfe;
     bottom: -1px;
     left: 0;
+    border-radius: 2px;
 }
 
 .stats h4 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #2f4f4f;
+    color: #2a3a84;
     font-size: 1.1rem;
 }
 
 .stat-item {
     display: flex;
     justify-content: space-between;
-    margin: 10px 0;
-    padding: 10px;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.2s ease;
+    margin: 8px 0;
+    padding: 5px 10px;
+    border-bottom: 1px solid rgba(232, 238, 255, 0.5);
+    transition: all 0.3s ease;
+    border-radius: 6px;
 }
 
 .stat-item:hover {
-    background-color: #f9f9f9;
-    border-radius: 6px;
+    background-color: rgba(77, 107, 254, 0.05);
+    transform: translateX(5px);
 }
 
 .stat-item:last-child {
@@ -133,13 +165,18 @@
 }
 
 .stat-item span:first-child {
-    color: #567d57;
+    color: #4a5491;
     font-weight: 500;
 }
 
 .stat-item span:last-child {
     font-weight: 600;
-    color: #2f4f4f;
+    color: #2a3a84;
+    background: rgba(77, 107, 254, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    min-width: 40px;
+    text-align: center;
 }
 
 .loading {
@@ -151,24 +188,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    backdrop-filter: blur(4px);
+    z-index: 10;
 }
 
 .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid #e9ecef;
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(77, 107, 254, 0.1);
     border-radius: 50%;
-    border-top-color: #78c0a8;
-    animation: spin 1s linear infinite;
-    margin-right: 15px;
+    border-top-color: #4d6bfe;
+    animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+    margin-right: 20px;
+    box-shadow: 0 5px 15px rgba(77, 107, 254, 0.15);
 }
 
 .loading-text {
-    color: #567d57;
-    font-size: 1.1rem;
-    font-weight: 500;
+    color: #4a5491;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 @keyframes spin {
@@ -178,8 +219,8 @@
 }
 
 .error-message {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #fff5f5;
+    color: #e53e3e;
     padding: 15px;
     border-radius: 10px;
     margin: 20px 0;
@@ -190,7 +231,7 @@
 @media (max-width: 768px) {
     .progress-page {
         height: auto;
-        min-height: calc(100vh - 100px);
+        min-height: calc(100vh - 80px);
         overflow: visible;
     }
     
@@ -200,9 +241,12 @@
     
     .stats {
         grid-template-columns: 1fr;
+        gap: 10px;
     }
     
     .chart-container {
-        height: 300px !important;
+        height: 180px !important;
+        max-height: 180px !important;
+        padding: 8px;
     }
 }

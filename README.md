@@ -3,10 +3,9 @@ A full-stack application to help job seekers track applications and practice int
 
 ## Features
 - Job application tracking with progress visualization
-- AI-powered interview question practice (behavioral and technical)
-- GitHub OAuth2 authentication
+- AI-powered interview question practice
+- GitHub OAuth2 and Google OIDC authentication
 - Progress tracking and statistics
-- Timezone-aware date handling
 
 ## Project Status
 **Actively Under Development:** This project is currently in progress. Core features like job tracking and AI interview practice are functional, demonstrating the core full-stack architecture. Ongoing development focuses on UI refinement, usability improvements, and expanding test coverage across the application.
@@ -48,17 +47,19 @@ cd JobHuntHub
 ```
 
 ### 2. Backend Configuration (One-Time IDE Setup for Secrets)
-The backend requires a few secrets for local development, primarily for GitHub OAuth login to function. These are **not** stored in the repository and must be configured as environment variables within your IDE's run configuration.
+The backend requires a few secrets for local development, primarily for GitHub OAuth OR Google OIDC login to function (whichever you would prefer to sign in with). These are **not** stored in the repository and must be configured as environment variables within your IDE's run configuration.
 
 *   **Obtain Credentials:**
-    *   The necessary GitHub OAuth credentials (`GITHUB_LOCAL_CLIENT_ID` and `GITHUB_LOCAL_CLIENT_SECRET`) will be securely provided to you by the project maintainer (Marvin). These are for a shared development-only GitHub OAuth application.
+    *   The necessary GitHub OAuth credentials (`GITHUB_LOCAL_CLIENT_ID` and `GITHUB_LOCAL_CLIENT_SECRET`) or Google OIDC credentials (`GOOGLE_LOCAL_CLIENT_ID` and `GOOGLE_LOCAL_CLIENT_SECRET`) will be securely provided to you by the project maintainer (Marvin). These are for a shared development-only GitHub / Google OAuth application.
 *   **Configure Your IDE:**
     1.  Open the `JobHuntHub` backend project in your IDE (e.g., IntelliJ IDEA, VS Code with Java extensions, Eclipse).
     2.  Edit the **Run/Debug Configuration** for the main Spring Boot application (usually named `JobHuntHubApplication` or similar).
     3.  In the configuration settings, find the section for **Environment Variables**.
     4.  Add the following environment variables:
-        *   `GITHUB_LOCAL_CLIENT_ID`: Set this to the Client ID provided to you.
-        *   `GITHUB_LOCAL_CLIENT_SECRET`: Set this to the Client Secret provided to you.
+        *   `GITHUB_LOCAL_CLIENT_ID`: Set this to the GitHub Client ID provided to you.
+        *   `GITHUB_LOCAL_CLIENT_SECRET`: Set this to the GitHub Client Secret provided to you.
+        *    (Optional) `GOOGLE_LOCAL_CLIENT_ID`: Set this to the Google Client ID provided to you.
+        *   (Optional) `GOOGLE_LOCAL_CLIENT_SECRET`: Set this to the Google Client Secret provided to you.
         *   (Optional) `OPENAI_LOCAL_API_KEY`: If you wish to test the AI interview question evaluation feature, set this to your personal OpenAI API key. If not set, AI features will be disabled or provide a mocked response.
     5.  Save the Run/Debug Configuration.
 

@@ -6,14 +6,19 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import com.jobhunthub.jobhunthub.dto.AuthenticatedUserDTO;
+import com.jobhunthub.jobhunthub.dto.OAuth2UserAttributes;
+import com.jobhunthub.jobhunthub.exception.GlobalExceptionHandler.InvalidRequestException;
 import com.jobhunthub.jobhunthub.model.User;
 import com.jobhunthub.jobhunthub.repository.UserRepository;
 
@@ -21,6 +26,9 @@ public class UserServiceTests {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ProfileService profileService;
 
     @InjectMocks
     private UserService userService;
@@ -32,129 +40,278 @@ public class UserServiceTests {
         MockitoAnnotations.openMocks(this);
         user = User.builder()
                 .id(1L)
-                .provider("github")
-                .providerId("456")
-                .username("testuser1")
-                .email("test1@test.com")
-                .avatarUrl("https://github.com/testuser1.png")
+                .githubId("456")
                 .build();
     }
 
+    // === AUTHENTICATION TESTS ===
+
     @Test
-    public void UserService_authenticateUser_returnsNewGithubUser() {
+    public void authenticateUser_createsNewGithubUser_whenUserDoesNotExist() {
         // Arrange
         OAuth2User mockOAuth2User = mock(OAuth2User.class);
         when(mockOAuth2User.getAttribute("id")).thenReturn("123");
-        when(mockOAuth2User.getAttribute("login")).thenReturn("newuser1");
         when(mockOAuth2User.getAttribute("email")).thenReturn("new1@test.com");
         when(mockOAuth2User.getAttribute("avatar_url")).thenReturn("https://github.com/newuser1.png");
 
-        when(userRepository.findByProviderAndProviderId("github", "123"))
-            .thenReturn(Optional.empty());
-
-        // Mock the save to return a new user
+        when(userRepository.findByGithubId("123")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
-            return savedUser;  // Return the same user that was passed to save
+            savedUser.setId(2L); // Simulate database ID assignment
+            return savedUser;
         });
 
         // Act
-        User newUser = userService.authenticateUser(mockOAuth2User, "github");
+        User result = userService.authenticateUser(mockOAuth2User, "github");
 
         // Assert
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getGithubId()).isEqualTo("123");
         verify(userRepository).save(any(User.class));
-        Assertions.assertThat(newUser).isNotNull();
-        Assertions.assertThat(newUser.getProvider()).isEqualTo("github");
-        Assertions.assertThat(newUser.getProviderId()).isEqualTo("123");
-        Assertions.assertThat(newUser.getUsername()).isEqualTo("newuser1");
-        Assertions.assertThat(newUser.getEmail()).isEqualTo("new1@test.com");
-        Assertions.assertThat(newUser.getAvatarUrl()).isEqualTo("https://github.com/newuser1.png");
+        verify(profileService).provisionProfile(eq(result), any(OAuth2UserAttributes.class));
+        verify(profileService).linkProviderEmail(eq(result), any(OAuth2UserAttributes.class), eq("github"));
     }
 
     @Test
-    public void UserService_authenticateUser_returnsCurrentGithubUser() {
+    public void authenticateUser_returnsExistingGithubUser_whenUserExists() {
         // Arrange
         OAuth2User mockOAuth2User = mock(OAuth2User.class);
         when(mockOAuth2User.getAttribute("id")).thenReturn("456");
-        when(mockOAuth2User.getAttribute("login")).thenReturn("testuser1");
         when(mockOAuth2User.getAttribute("email")).thenReturn("test1@test.com");
         when(mockOAuth2User.getAttribute("avatar_url")).thenReturn("https://github.com/testuser1.png");
 
-        when(userRepository.findByProviderAndProviderId("github", "456"))
-            .thenReturn(Optional.of(user));
+        when(userRepository.findByGithubId("456")).thenReturn(Optional.of(user));
 
         // Act
-        User newUser = userService.authenticateUser(mockOAuth2User, "github");
+        User result = userService.authenticateUser(mockOAuth2User, "github");
 
         // Assert
-        Assertions.assertThat(newUser).isNotNull();
-        Assertions.assertThat(newUser.getProvider()).isEqualTo("github");
-        Assertions.assertThat(newUser.getProviderId()).isEqualTo("456");
-        Assertions.assertThat(newUser.getUsername()).isEqualTo("testuser1");
-        Assertions.assertThat(newUser.getEmail()).isEqualTo("test1@test.com");
-        Assertions.assertThat(newUser.getAvatarUrl()).isEqualTo("https://github.com/testuser1.png");
+        Assertions.assertThat(result).isEqualTo(user);
+        Assertions.assertThat(result.getGithubId()).isEqualTo("456");
+        verify(profileService, never()).provisionProfile(any(), any());
     }
+
     @Test
-    public void UserService_authenticateUser_returnsNewGoogleUser() {
+    public void authenticateUser_createsNewGoogleUser_whenUserDoesNotExist() {
         // Arrange
         OAuth2User mockOAuth2User = mock(OAuth2User.class);
         when(mockOAuth2User.getAttribute("sub")).thenReturn("11111");
-        when(mockOAuth2User.getAttribute("name")).thenReturn("newuser2");
         when(mockOAuth2User.getAttribute("email")).thenReturn("new2@test.com");
         when(mockOAuth2User.getAttribute("picture")).thenReturn("https://google.com/newuser2.png");
 
-        when(userRepository.findByProviderAndProviderId("google", "11111"))
-            .thenReturn(Optional.empty());
-
-        // Mock the save to return a new user
+        when(userRepository.findByGoogleId("11111")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
-            return savedUser;  // Return the same user that was passed to save
+            savedUser.setId(3L);
+            return savedUser;
         });
 
         // Act
-        User newUser = userService.authenticateUser(mockOAuth2User, "google");
+        User result = userService.authenticateUser(mockOAuth2User, "google");
 
         // Assert
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.getGoogleId()).isEqualTo("11111");
         verify(userRepository).save(any(User.class));
-        Assertions.assertThat(newUser).isNotNull();
-        Assertions.assertThat(newUser.getProvider()).isEqualTo("google");
-        Assertions.assertThat(newUser.getProviderId()).isEqualTo("11111");
-        Assertions.assertThat(newUser.getUsername()).isEqualTo("newuser2");
-        Assertions.assertThat(newUser.getEmail()).isEqualTo("new2@test.com");
-        Assertions.assertThat(newUser.getAvatarUrl()).isEqualTo("https://google.com/newuser2.png");
+        verify(profileService).provisionProfile(eq(result), any(OAuth2UserAttributes.class));
+        verify(profileService).linkProviderEmail(eq(result), any(OAuth2UserAttributes.class), eq("google"));
     }
 
     @Test
-    public void UserService_authenticateUser_returnsCurrentGoogleUser() {
+    public void authenticateUser_returnsExistingGoogleUser_whenUserExists() {
         // Arrange
-        user = User.builder()
+        User googleUser = User.builder()
         .id(1L)
-        .provider("google")
-        .providerId("99999")
-        .username("testuser2")
-        .email("test2@test.com")
-        .avatarUrl("https://google.com/testuser2.png")
+        .googleId("99999")
         .build();
 
         OAuth2User mockOAuth2User = mock(OAuth2User.class);
         when(mockOAuth2User.getAttribute("sub")).thenReturn("99999");
-        when(mockOAuth2User.getAttribute("name")).thenReturn("testuser2");
         when(mockOAuth2User.getAttribute("email")).thenReturn("test2@test.com");
         when(mockOAuth2User.getAttribute("picture")).thenReturn("https://google.com/testuser2.png");
 
-        when(userRepository.findByProviderAndProviderId("google", "99999"))
-            .thenReturn(Optional.of(user));
+        when(userRepository.findByGoogleId("99999")).thenReturn(Optional.of(googleUser));
 
         // Act
-        User newUser = userService.authenticateUser(mockOAuth2User, "google");
+        User result = userService.authenticateUser(mockOAuth2User, "google");
 
         // Assert
-        Assertions.assertThat(newUser).isNotNull();
-        Assertions.assertThat(newUser.getProvider()).isEqualTo("google");
-        Assertions.assertThat(newUser.getProviderId()).isEqualTo("99999");
-        Assertions.assertThat(newUser.getUsername()).isEqualTo("testuser2");
-        Assertions.assertThat(newUser.getEmail()).isEqualTo("test2@test.com");
-        Assertions.assertThat(newUser.getAvatarUrl()).isEqualTo("https://google.com/testuser2.png");
+        Assertions.assertThat(result).isEqualTo(googleUser);
+        Assertions.assertThat(result.getGoogleId()).isEqualTo("99999");
+        verify(profileService, never()).provisionProfile(any(), any());
+    }
+
+    @Test
+    public void authenticateUser_throwsException_whenUnsupportedProvider() {
+        // Arrange
+        OAuth2User mockOAuth2User = mock(OAuth2User.class);
+        when(mockOAuth2User.getAttribute("id")).thenReturn("123");
+
+        // Act & Assert
+        Assertions.assertThatThrownBy(() -> 
+            userService.authenticateUser(mockOAuth2User, "facebook")
+        ).isInstanceOf(IllegalArgumentException.class)
+         .hasMessageContaining("Unsupported provider: facebook");
+    }
+
+    // === LINK PROVIDER TESTS ===
+
+    @Test
+    public void linkProvider_successfullyLinksGithubProvider() {
+        // Arrange
+        User userWithoutGithub = User.builder()
+                .id(1L)
+                .googleId("google123")
+                .build();
+
+        when(userRepository.findByGithubId("github456")).thenReturn(Optional.empty());
+
+        // Act
+        AuthenticatedUserDTO result = userService.linkProvider(userWithoutGithub, "github456", "github");
+
+        // Assert
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.authenticated()).isTrue();
+        Assertions.assertThat(result.githubLinked()).isTrue();
+        Assertions.assertThat(result.googleLinked()).isTrue();
+        Assertions.assertThat(userWithoutGithub.getGithubId()).isEqualTo("github456");
+    }
+
+    @Test
+    public void linkProvider_successfullyLinksGoogleProvider() {
+        // Arrange
+        User userWithoutGoogle = User.builder()
+                .id(1L)
+                .githubId("github123")
+                .build();
+
+        when(userRepository.findByGoogleId("google456")).thenReturn(Optional.empty());
+
+        // Act
+        AuthenticatedUserDTO result = userService.linkProvider(userWithoutGoogle, "google456", "google");
+
+        // Assert
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.authenticated()).isTrue();
+        Assertions.assertThat(result.githubLinked()).isTrue();
+        Assertions.assertThat(result.googleLinked()).isTrue();
+        Assertions.assertThat(userWithoutGoogle.getGoogleId()).isEqualTo("google456");
+    }
+
+    @Test
+    public void linkProvider_throwsException_whenProviderAlreadyLinkedToAnotherUser() {
+        // Arrange
+        User currentUser = User.builder().id(1L).build();
+        User existingUser = User.builder().id(2L).githubId("github123").build();
+
+        when(userRepository.findByGithubId("github123")).thenReturn(Optional.of(existingUser));
+
+        // Act & Assert
+        Assertions.assertThatThrownBy(() -> 
+            userService.linkProvider(currentUser, "github123", "github")
+        ).isInstanceOf(InvalidRequestException.class)
+         .hasMessageContaining("This github account is already linked to another user");
+    }
+
+    @Test
+    public void linkProvider_allowsLinkingToSameUser() {
+        // Arrange
+        User currentUser = User.builder().id(1L).githubId("github123").build();
+
+        when(userRepository.findByGithubId("github123")).thenReturn(Optional.of(currentUser));
+
+        // Act
+        AuthenticatedUserDTO result = userService.linkProvider(currentUser, "github123", "github");
+
+        // Assert
+        Assertions.assertThat(result).isNotNull();
+        Assertions.assertThat(result.authenticated()).isTrue();
+        Assertions.assertThat(result.githubLinked()).isTrue();
+    }
+
+    @Test
+    public void linkProvider_throwsException_whenUnsupportedProvider() {
+        // Arrange
+        User currentUser = User.builder().id(1L).build();
+
+        // Act & Assert
+        Assertions.assertThatThrownBy(() -> 
+            userService.linkProvider(currentUser, "facebook123", "facebook")
+        ).isInstanceOf(IllegalArgumentException.class)
+         .hasMessageContaining("Unsupported provider: facebook");
+    }
+
+    // === DTO TESTS ===
+
+    @Test
+    public void getAuthenticatedUserDTO_returnsCorrectStatus_whenBothProvidersLinked() {
+        // Arrange
+        User userWithBothProviders = User.builder()
+                .id(1L)
+                .githubId("github123")
+                .googleId("google123")
+                .build();
+
+        // Act
+        AuthenticatedUserDTO result = userService.getAuthenticatedUserDTO(userWithBothProviders);
+
+        // Assert
+        Assertions.assertThat(result.authenticated()).isTrue();
+        Assertions.assertThat(result.id()).isEqualTo(1L);
+        Assertions.assertThat(result.githubLinked()).isTrue();
+        Assertions.assertThat(result.googleLinked()).isTrue();
+    }
+
+    @Test
+    public void getAuthenticatedUserDTO_returnsCorrectStatus_whenOnlyGithubLinked() {
+        // Arrange
+        User userWithGithubOnly = User.builder()
+                .id(1L)
+                .githubId("github123")
+                .build();
+
+        // Act
+        AuthenticatedUserDTO result = userService.getAuthenticatedUserDTO(userWithGithubOnly);
+
+        // Assert
+        Assertions.assertThat(result.authenticated()).isTrue();
+        Assertions.assertThat(result.id()).isEqualTo(1L);
+        Assertions.assertThat(result.githubLinked()).isTrue();
+        Assertions.assertThat(result.googleLinked()).isFalse();
+    }
+
+    @Test
+    public void getAuthenticatedUserDTO_returnsCorrectStatus_whenOnlyGoogleLinked() {
+        // Arrange
+        User userWithGoogleOnly = User.builder()
+                .id(1L)
+                .googleId("google123")
+                .build();
+
+        // Act
+        AuthenticatedUserDTO result = userService.getAuthenticatedUserDTO(userWithGoogleOnly);
+
+        // Assert
+        Assertions.assertThat(result.authenticated()).isTrue();
+        Assertions.assertThat(result.id()).isEqualTo(1L);
+        Assertions.assertThat(result.githubLinked()).isFalse();
+        Assertions.assertThat(result.googleLinked()).isTrue();
+    }
+
+    @Test
+    public void getAuthenticatedUserDTO_returnsCorrectStatus_whenNoProvidersLinked() {
+        // Arrange
+        User userWithNoProviders = User.builder()
+                .id(1L)
+                .build();
+
+        // Act
+        AuthenticatedUserDTO result = userService.getAuthenticatedUserDTO(userWithNoProviders);
+
+        // Assert
+        Assertions.assertThat(result.authenticated()).isTrue();
+        Assertions.assertThat(result.id()).isEqualTo(1L);
+        Assertions.assertThat(result.githubLinked()).isFalse();
+        Assertions.assertThat(result.googleLinked()).isFalse();
     }
 }

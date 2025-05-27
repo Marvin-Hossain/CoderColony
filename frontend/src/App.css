@@ -1,3 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+  --primary-color: #4d6bfe;
+  --primary-dark: #3b54d0;
+  --primary-light: #7790ff;
+  --text-color: #2a3a84;
+  --text-secondary: #4a5491;
+  --background-color: #ffffff;
+  --background-secondary: #f7fafc;
+  --error-color: #e53e3e;
+  --success-color: #38a169;
+  --warning-color: #f6ad55;
+  --border-color: #e2e8f0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--background-secondary);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-container {
+  background-color: var(--background-secondary);
+  min-height: calc(100vh - 60px);
+  padding: 20px;
+}
+
+/* Utility Classes */
+.text-center {
+  text-align: center;
+}
+
+.section-heading {
+  font-size: 1.8rem;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
 /* Reset box-sizing */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -38,11 +99,9 @@ html, body {
 .full-screen-app .behavioral-questions,
 .full-screen-app .technical-questions,
 .full-screen-app .intro {
-  height: 100%;
   margin: 0;
   padding: 20px;
-  overflow-y: auto;
-  background-color: #f9f9f9;
+  background-color: var(--background-secondary);
 }
 
 /* Make main content areas take up available space */
@@ -58,12 +117,9 @@ html, body {
 /* Ensure headers span full width and stay at top */
 .full-screen-app .dashboard-header,
 .full-screen-app .job-apps-header {
-  position: sticky;
-  top: 0;
   width: 100%;
   padding: 10px 20px;
-  background-color: #f9f9f9;
-  z-index: 1;
+  background-color: var(--background-secondary);
 }
 
 /* Make sections within pages more responsive */
@@ -84,7 +140,7 @@ html, body {
 
 /* Global heading styles for consistency */
 h1, h2, h3, h4, h5, h6 {
-  color: #2f4f4f;
+  color: var(--text-color);
   font-family: "Roboto", sans-serif;
   font-weight: 600;
 }
@@ -105,16 +161,6 @@ h4 {
   font-size: 18px;
 }
 
-/* Ensure proper spacing for pages with back buttons */
-/* Removing this style as it conflicts with our PageHeader.css */
-/* .page-header {
-  position: sticky;
-  top: 0;
-  background-color: #f9f9f9;
-  z-index: 1;
-  padding: 10px 20px;
-  margin: -20px -20px 20px -20px;
-} */
 
 .login-content {
   padding: 0;
