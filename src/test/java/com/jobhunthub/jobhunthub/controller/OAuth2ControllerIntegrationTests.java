@@ -10,29 +10,28 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
-
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jobhunthub.jobhunthub.config.UserPrincipal;
+import com.jobhunthub.jobhunthub.model.Profile;
 import com.jobhunthub.jobhunthub.model.User;
+import com.jobhunthub.jobhunthub.repository.ProfileRepository;
 import com.jobhunthub.jobhunthub.repository.UserRepository;
 
 /**
  * Integration tests for OAuth2Controller.
- * Tests GitHub OAuth2 authentication flow and user info endpoints:
- * - Login success and user creation
- * - User info retrieval
- * - Handling of authenticated users not found in the database
+ * Tests OAuth2 authentication flow and provider linking:
+ * - Current user authentication status
+ * - Provider linking functionality
+ * - Error handling for invalid requests
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,52 +44,311 @@ public class OAuth2ControllerIntegrationTests {
 
     @Autowired
     private UserRepository userRepository;
-    private UserPrincipal testPrincipal;
+
+    @Autowired
+    private ProfileRepository profileRepository;
+
+    private UserPrincipal githubOnlyPrincipal;
+    private UserPrincipal googleOnlyPrincipal;
+    private UserPrincipal bothProvidersPrincipal;
+    private UserPrincipal noProvidersPrincipal;
 
     @BeforeEach
     public void setUp() {
-        User testUser = new User();
-        testUser.setProvider("github");
-        testUser.setProviderId("123");
-        testUser.setUsername("testuser");
-        testUser.setEmail("test@test.com");
-        testUser.setAvatarUrl("https://github.com/testuser.png");
-        testUser = userRepository.save(testUser);
-
-        // build a stubbed OAuth2User that matches what your UserService would see
-        var delegate = new DefaultOAuth2User(
-                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),    // or whatever roles you use
-                Map.of("id", testUser.getProviderId(),                 // principal.getName() -> providerId
-                        "name", testUser.getUsername(),                 // unused by loadByProviderId()
-                        "email", testUser.getEmail(),
-                        "avatar_url", testUser.getAvatarUrl()
-                ),
-                "id"  // the key in the map to use as getName()
-        );
-
-        // wrap it in your UserPrincipal
-        this.testPrincipal = new UserPrincipal(delegate, testUser);
+        setupGithubOnlyUser();
+        setupGoogleOnlyUser();
+        setupBothProvidersUser();
+        setupNoProvidersUser();
     }
 
+    private void setupGithubOnlyUser() {
+        User githubUser = new User();
+        githubUser.setGithubId("github123");
+        githubUser = userRepository.save(githubUser);
+
+        Profile profile = new Profile();
+        profile.setUser(githubUser);
+        profile.setUsername("githubuser");
+        profile.setPrimaryEmail("github@test.com");
+        profile.setGithubEmail("github@test.com");
+        profile.setAvatarUrl("https://github.com/githubuser.png");
+        profileRepository.save(profile);
+
+        var githubDelegate = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),
+                Map.of(
+                    "id", "github123",
+                    "login", "githubuser",
+                    "email", "github@test.com",
+                    "avatar_url", "https://github.com/githubuser.png"
+                ),
+                "id"
+        );
+
+        this.githubOnlyPrincipal = new UserPrincipal(githubDelegate, githubUser);
+    }
+
+    private void setupGoogleOnlyUser() {
+        User googleUser = new User();
+        googleUser.setGoogleId("google123");
+        googleUser = userRepository.save(googleUser);
+
+        Profile profile = new Profile();
+        profile.setUser(googleUser);
+        profile.setUsername("googleuser");
+        profile.setPrimaryEmail("google@test.com");
+        profile.setGoogleEmail("google@test.com");
+        profile.setAvatarUrl("https://google.com/googleuser.png");
+        profileRepository.save(profile);
+
+        var googleDelegate = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),
+                Map.of(
+                    "sub", "google123",
+                    "name", "googleuser",
+                    "email", "google@test.com",
+                    "picture", "https://google.com/googleuser.png"
+                ),
+                "sub"
+        );
+
+        this.googleOnlyPrincipal = new UserPrincipal(googleDelegate, googleUser);
+    }
+
+    private void setupBothProvidersUser() {
+        User bothUser = new User();
+        bothUser.setGithubId("github456");
+        bothUser.setGoogleId("google456");
+        bothUser = userRepository.save(bothUser);
+
+        Profile profile = new Profile();
+        profile.setUser(bothUser);
+        profile.setUsername("bothuser");
+        profile.setPrimaryEmail("both@test.com");
+        profile.setGithubEmail("github@both.com");
+        profile.setGoogleEmail("google@both.com");
+        profile.setAvatarUrl("https://github.com/bothuser.png");
+        profileRepository.save(profile);
+
+        var bothDelegate = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),
+                Map.of(
+                    "id", "github456",
+                    "login", "bothuser",
+                    "email", "both@test.com",
+                    "avatar_url", "https://github.com/bothuser.png"
+                ),
+                "id"
+        );
+
+        this.bothProvidersPrincipal = new UserPrincipal(bothDelegate, bothUser);
+    }
+
+    private void setupNoProvidersUser() {
+        User noProvidersUser = new User();
+        noProvidersUser = userRepository.save(noProvidersUser);
+
+        Profile profile = new Profile();
+        profile.setUser(noProvidersUser);
+        profile.setUsername("nouser");
+        profile.setPrimaryEmail("no@test.com");
+        profileRepository.save(profile);
+
+        var noDelegate = new DefaultOAuth2User(
+                List.of(new SimpleGrantedAuthority("OAUTH2_USER")),
+                Map.of(
+                    "id", "temp123",
+                    "login", "nouser",
+                    "email", "no@test.com"
+                ),
+                "id"
+        );
+
+        this.noProvidersPrincipal = new UserPrincipal(noDelegate, noProvidersUser);
+    }
+
+    // === CURRENT USER TESTS ===
+
     @Test
-    public void OAuth2Controller_currentUser_returnUserInfo() throws Exception {
+    public void currentUser_returnsGithubOnlyUser_whenAuthenticatedWithGithub() throws Exception {
         mockMvc
                 .perform(get("/api/auth/user")
-                        .with(oauth2Login().oauth2User(testPrincipal)))
+                        .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated").value(true))
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.email").value("test@test.com"))
-                .andExpect(jsonPath("$.avatarUrl").value("https://github.com/testuser.png"));
+                .andExpect(jsonPath("$.id").value(githubOnlyPrincipal.getDomainUser().getId()))
+                .andExpect(jsonPath("$.githubLinked").value(true))
+                .andExpect(jsonPath("$.googleLinked").value(false));
     }
 
     @Test
-    public void OAuth2Controller_currentUser_withoutAuth_returnUnauthenticated() throws Exception {
+    public void currentUser_returnsGoogleOnlyUser_whenAuthenticatedWithGoogle() throws Exception {
+        mockMvc
+                .perform(get("/api/auth/user")
+                        .with(oauth2Login().oauth2User(googleOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andExpect(jsonPath("$.id").value(googleOnlyPrincipal.getDomainUser().getId()))
+                .andExpect(jsonPath("$.githubLinked").value(false))
+                .andExpect(jsonPath("$.googleLinked").value(true));
+    }
+
+    @Test
+    public void currentUser_returnsBothProvidersUser_whenUserHasBothLinked() throws Exception {
+        mockMvc
+                .perform(get("/api/auth/user")
+                        .with(oauth2Login().oauth2User(bothProvidersPrincipal)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andExpect(jsonPath("$.id").value(bothProvidersPrincipal.getDomainUser().getId()))
+                .andExpect(jsonPath("$.githubLinked").value(true))
+                .andExpect(jsonPath("$.googleLinked").value(true));
+    }
+
+    @Test
+    public void currentUser_returnsNoProvidersUser_whenUserHasNoProvidersLinked() throws Exception {
+        mockMvc
+                .perform(get("/api/auth/user")
+                        .with(oauth2Login().oauth2User(noProvidersPrincipal)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andExpect(jsonPath("$.id").value(noProvidersPrincipal.getDomainUser().getId()))
+                .andExpect(jsonPath("$.githubLinked").value(false))
+                .andExpect(jsonPath("$.googleLinked").value(false));
+    }
+
+    @Test
+    public void currentUser_returnsUnauthenticated_whenNotLoggedIn() throws Exception {
         mockMvc
                 .perform(get("/api/auth/user"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.authenticated").value(false));
+                .andExpect(jsonPath("$.authenticated").value(false))
+                .andExpect(jsonPath("$.id").doesNotExist())
+                .andExpect(jsonPath("$.githubLinked").value(false))
+                .andExpect(jsonPath("$.googleLinked").value(false));
+    }
+
+    // === LINK PROVIDER TESTS ===
+
+    @Test
+    public void linkProvider_successfullyLinksGithub_whenUserHasOnlyGoogle() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "github")
+                        .param("providerId", "newgithub123")
+                        .with(oauth2Login().oauth2User(googleOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andExpect(jsonPath("$.githubLinked").value(true))
+                .andExpect(jsonPath("$.googleLinked").value(true));
+    }
+
+    @Test
+    public void linkProvider_successfullyLinksGoogle_whenUserHasOnlyGithub() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "google")
+                        .param("providerId", "newgoogle123")
+                        .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andExpect(jsonPath("$.githubLinked").value(true))
+                .andExpect(jsonPath("$.googleLinked").value(true));
+    }
+
+    @Test
+    public void linkProvider_allowsRelinkingSameProvider_whenAlreadyLinked() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "github")
+                        .param("providerId", "github123") // Same ID as existing
+                        .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andExpect(jsonPath("$.githubLinked").value(true))
+                .andExpect(jsonPath("$.googleLinked").value(false));
+    }
+
+    @Test
+    public void linkProvider_returnsBadRequest_whenProviderAlreadyLinkedToAnotherUser() throws Exception {
+        // Try to link github123 (already used by githubOnlyPrincipal) to googleOnlyPrincipal
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "github")
+                        .param("providerId", "github123") // Already used by another user
+                        .with(oauth2Login().oauth2User(googleOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void linkProvider_returnsBadRequest_whenUnsupportedProvider() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "facebook")
+                        .param("providerId", "facebook123")
+                        .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void linkProvider_requiresAuthentication_whenNotLoggedIn() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "github")
+                        .param("providerId", "github789"))
+                .andDo(print())
+                .andExpect(status().isFound()); // 302 redirect to login
+    }
+
+    @Test
+    public void linkProvider_returnsBadRequest_whenMissingProvider() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("providerId", "github789")
+                        .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void linkProvider_returnsBadRequest_whenMissingProviderId() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "github")
+                        .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void linkProvider_returnsBadRequest_whenEmptyProvider() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "")
+                        .param("providerId", "github789")
+                        .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void linkProvider_returnsBadRequest_whenEmptyProviderId() throws Exception {
+        mockMvc
+                .perform(post("/api/auth/link-provider")
+                        .param("provider", "github")
+                        .param("providerId", "")
+                        .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 }

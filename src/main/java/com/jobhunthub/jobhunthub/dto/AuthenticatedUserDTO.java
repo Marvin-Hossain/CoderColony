@@ -4,9 +4,8 @@ package com.jobhunthub.jobhunthub.dto;
 public record AuthenticatedUserDTO(
     boolean authenticated,
     Long id,
-    String username,
-    String email,
-    String avatarUrl
+    boolean googleLinked,
+    boolean githubLinked
 ) {
     /**
      * Convenience constructor for creating a DTO representing an unauthenticated state
@@ -14,6 +13,6 @@ public record AuthenticatedUserDTO(
      * @param authenticated should be false for this use case.
      */
     public AuthenticatedUserDTO(boolean authenticated) {
-        this(authenticated, null, null, null, null);
+        this(authenticated, null, false, false);
     }
 } 
