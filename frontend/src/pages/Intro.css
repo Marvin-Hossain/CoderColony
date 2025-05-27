@@ -188,180 +188,6 @@
     font-size: 0.8rem;
     color: #999;
     display: flex;
-    width: 90%;
-    max-width: 1200px;
-    height: 80vh;
-    max-height: 700px;
-    border-radius: 15px;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    position: relative;
-    z-index: 1;
-}
-
-.intro-left {
-    flex: 1;
-    background: #78c0a8;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 60px;
-    position: relative;
-}
-
-.intro-right {
-    flex: 1;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 60px;
-}
-
-.intro-logo {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 50px;
-    letter-spacing: 0.5px;
-}
-
-.intro-heading {
-    font-size: 2.8rem;
-    font-weight: 700;
-    margin: 0 0 20px 0;
-    line-height: 1.2;
-    color: white;
-}
-
-.intro-subheading {
-    font-size: 1.1rem;
-    line-height: 1.5;
-    margin-bottom: 30px;
-    color: rgba(255, 255, 255, 0.9);
-    max-width: 90%;
-}
-
-.feature-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 30px;
-    width: 100%;
-}
-
-.feature-button {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    color: white;
-    padding: 15px 20px;
-    border-radius: 8px;
-    text-align: left;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-.feature-button:hover {
-    background: rgba(255, 255, 255, 0.25);
-}
-
-.welcome-heading {
-    font-size: 2.2rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.welcome-text {
-    color: #666;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.github-login-btn {
-    background-color: #78c0a8 !important;
-    color: white !important;
-    font-weight: 500 !important;
-    padding: 12px 30px !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(120, 192, 168, 0.3) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.3s ease !important;
-    font-size: 1rem !important;
-    width: 100% !important;
-    max-width: 300px !important;
-    border: none !important;
-    margin-bottom: 15px;
-}
-
-.github-login-btn:hover {
-    background-color: #56a68a !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 15px rgba(120, 192, 168, 0.4) !important;
-}
-
-.github-login-btn:before {
-    content: '';
-    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="white" d="M12 0a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2 0 1.9 1.2 1.9 1.2 1 1.8 2.8 1.3 3.4 1 .1-.8.5-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.3-3.1-.1-.4-.6-1.6.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.6.2 2.9.1 3.2.8.8 1.3 1.9 1.3 3.2 0 4.6-2.9 5.6-5.5 5.9.5.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 0z"/></svg>');
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-size: contain;
-    margin-right: 10px;
-    vertical-align: middle;
-}
-
-.google-login-btn {
-    background-color: #78c0a8 !important;
-    color: white !important;
-    font-weight: 500 !important;
-    padding: 12px 30px !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(120, 192, 168, 0.3) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.3s ease !important;
-    font-size: 1rem !important;
-    width: 100% !important;
-    max-width: 300px !important;
-    border: none !important;
-}
-
-.google-login-btn:hover {
-    background-color: #56a68a !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 15px rgba(120, 192, 168, 0.4) !important;
-}
-
-.google-login-btn:before {
-    content: '';
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%234285F4' d='M23.4 12.1c0-.8-.1-1.5-.2-2.2H12v4.2h6.5c-.3 1.8-1.3 3.4-2.7 4.4v3.6h4.4c2.6-2.4 4.2-6 4.2-10z'/><path fill='%23EA4335' d='M12 24c3.2 0 5.8-1 7.7-2.7l-4.4-3.6c-1.2.8-2.8 1.3-4.3 1.3-3.3 0-6.1-2.2-7.1-5.3H0v3.3C1.9 21.6 6.7 24 12 24z'/><path fill='%23FBBC05' d='M4.9 14.7c-.2-.7-.3-1.5-.3-2.3s.1-1.6.3-2.3V6.8H0C-.9 8.8-1.5 10.9-1.5 12s.6 3.2 1.5 5.2l4.9-2.5z'/><path fill='%230F9D58' d='M12 4.8c1.8 0 3.2.6 4.4 1.7l3.3-3.3C17.6 1.2 15.2 0 12 0 6.7 0 1.9 2.4 0 6.8l4.9 3.3C5.9 7 8.7 4.8 12 4.8z'/></svg>");
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-repeat: no-repeat;
-    background-size: contain;
-    margin-right: 10px;
-    vertical-align: middle;
-}
-
-.info-text {
-    font-size: 0.9rem;
-    color: #999;
-    margin-top: 20px;
-    text-align: center;
-}
-
-.security-info {
-    margin-top: 30px;
-    font-size: 0.8rem;
-    color: #999;
-    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 5px;
@@ -373,15 +199,15 @@
         height: auto;
         max-height: none;
     }
-    
+
     .intro-left, .intro-right {
         padding: 40px;
     }
-    
+
     .intro-logo {
         margin-bottom: 30px;
     }
-    
+
     .intro-heading {
         font-size: 2.2rem;
     }
@@ -392,7 +218,7 @@
         width: 95%;
         max-width: 600px;
     }
-    
+
     .intro-left, .intro-right {
         padding: 30px;
     }
@@ -402,15 +228,15 @@
     .intro-left, .intro-right {
         padding: 25px 20px;
     }
-    
+
     .intro-heading {
         font-size: 1.8rem;
     }
-    
+
     .intro-subheading {
         font-size: 1rem;
     }
-    
+
     .welcome-heading {
         font-size: 1.8rem;
     }
