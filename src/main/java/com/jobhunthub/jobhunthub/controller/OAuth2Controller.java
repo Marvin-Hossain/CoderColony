@@ -1,16 +1,22 @@
 package com.jobhunthub.jobhunthub.controller;
 
+import java.io.IOException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.jobhunthub.jobhunthub.config.UserPrincipal;
 import com.jobhunthub.jobhunthub.dto.AuthenticatedUserDTO;
 import com.jobhunthub.jobhunthub.service.UserService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,21 +39,22 @@ public class OAuth2Controller {
         return ResponseEntity.ok(userDTO);
     }
 
-    // Link a provider to a user's account
-    @PostMapping("/link-provider")
-    public ResponseEntity<AuthenticatedUserDTO> linkProvider(
-            @AuthenticationPrincipal UserPrincipal principal,
-            @RequestParam String provider,
-            @RequestParam String providerId) {
+    // Initiate OAuth flow for linking a provider
+    @GetMapping("/link/{provider}")
+    public ResponseEntity<?> initiateProviderLinking(
+            @PathVariable String provider,
+            HttpServletResponse response) throws IOException {
 
-        if (provider == null || provider.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-        if (providerId == null || providerId.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+        if (!provider.equals("github") && !provider.equals("google")) {
+            return ResponseEntity.badRequest()
+                    .body("Unsupported provider: " + provider);
         }
 
-        AuthenticatedUserDTO updatedUserDTO = userService.linkProvider(principal.getDomainUser(), providerId, provider);
-        return ResponseEntity.ok(updatedUserDTO);
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        request.getSession().setAttribute("linking_provider", true);
+
+        String redirectUrl = "/oauth2/authorization/" + provider;
+        response.sendRedirect(redirectUrl);
+        return ResponseEntity.ok().build();
     }
 }
