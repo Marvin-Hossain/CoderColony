@@ -150,6 +150,7 @@ public class UserServiceTests {
         User user = User.builder().id(1L).googleId("google123").build();
         when(profileService.profileExists(user)).thenReturn(true);
         when(userRepository.findByGithubId("github123")).thenReturn(Optional.empty());
+        when(userRepository.save(user)).thenReturn(user);
 
         // Act
         User result = userService.linkProviderToUser(user, mockGithubOAuth2User, "github");
@@ -169,6 +170,7 @@ public class UserServiceTests {
         User user = User.builder().id(1L).googleId("google123").build();
         when(profileService.profileExists(user)).thenReturn(false);
         when(userRepository.findByGithubId("github123")).thenReturn(Optional.empty());
+        when(userRepository.save(user)).thenReturn(user);
 
         // Act
         User result = userService.linkProviderToUser(user, mockGithubOAuth2User, "github");
@@ -202,82 +204,6 @@ public class UserServiceTests {
         // Act & Assert
         Assertions.assertThatThrownBy(() -> 
             userService.linkProviderToUser(user, mockGithubOAuth2User, "facebook")
-        ).isInstanceOf(IllegalArgumentException.class)
-         .hasMessageContaining("Unsupported provider: facebook");
-    }
-
-    // ===================
-    // linkProvider Tests
-    // ===================
-
-    @Test
-    public void linkProvider_successfullyLinksGithubProvider() {
-        // Arrange
-        User user = User.builder().id(1L).googleId("google123").build();
-        when(userRepository.findByGithubId("github456")).thenReturn(Optional.empty());
-
-        // Act
-        AuthenticatedUserDTO result = userService.linkProvider(user, "github456", "github");
-
-        // Assert
-        Assertions.assertThat(result.authenticated()).isTrue();
-        Assertions.assertThat(result.githubLinked()).isTrue();
-        Assertions.assertThat(result.googleLinked()).isTrue();
-        Assertions.assertThat(user.getGithubId()).isEqualTo("github456");
-    }
-
-    @Test
-    public void linkProvider_successfullyLinksGoogleProvider() {
-        // Arrange
-        User user = User.builder().id(1L).githubId("github123").build();
-        when(userRepository.findByGoogleId("google456")).thenReturn(Optional.empty());
-
-        // Act
-        AuthenticatedUserDTO result = userService.linkProvider(user, "google456", "google");
-
-        // Assert
-        Assertions.assertThat(result.authenticated()).isTrue();
-        Assertions.assertThat(result.githubLinked()).isTrue();
-        Assertions.assertThat(result.googleLinked()).isTrue();
-        Assertions.assertThat(user.getGoogleId()).isEqualTo("google456");
-    }
-
-    @Test
-    public void linkProvider_allowsRelinkingSameProvider() {
-        // Arrange
-        User user = User.builder().id(1L).githubId("github123").build();
-        when(userRepository.findByGithubId("github123")).thenReturn(Optional.of(user));
-
-        // Act
-        AuthenticatedUserDTO result = userService.linkProvider(user, "github123", "github");
-
-        // Assert
-        Assertions.assertThat(result.authenticated()).isTrue();
-        Assertions.assertThat(user.getGithubId()).isEqualTo("github123");
-    }
-
-    @Test
-    public void linkProvider_throwsException_whenProviderAlreadyLinkedToAnotherUser() {
-        // Arrange
-        User user = User.builder().id(1L).googleId("google123").build();
-        User anotherUser = User.builder().id(2L).githubId("github456").build();
-        when(userRepository.findByGithubId("github456")).thenReturn(Optional.of(anotherUser));
-
-        // Act & Assert
-        Assertions.assertThatThrownBy(() -> 
-            userService.linkProvider(user, "github456", "github")
-        ).isInstanceOf(InvalidRequestException.class)
-         .hasMessageContaining("This github account is already linked to another user");
-    }
-
-    @Test
-    public void linkProvider_throwsException_whenUnsupportedProvider() {
-        // Arrange
-        User user = User.builder().id(1L).build();
-
-        // Act & Assert
-        Assertions.assertThatThrownBy(() -> 
-            userService.linkProvider(user, "facebook123", "facebook")
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("Unsupported provider: facebook");
     }

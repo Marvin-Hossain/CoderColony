@@ -32,7 +32,7 @@ public class OAuth2Service {
     public OAuth2User handleOAuth2Authentication(OAuth2UserRequest userRequest) {
         OAuth2User oauth2User = defaultService.loadUser(userRequest);
         String provider = userRequest.getClientRegistration().getRegistrationId();
-        User domainUser = processAuthentication(oauth2User, provider);
+        User domainUser = processOAuth2Request(oauth2User, provider);
         return new UserPrincipal(oauth2User, domainUser);
     }
 
@@ -40,45 +40,36 @@ public class OAuth2Service {
     public OidcUser handleOidcAuthentication(OidcUserRequest userRequest) {
         OidcUser oidcUser = oidcService.loadUser(userRequest);
         String provider = userRequest.getClientRegistration().getRegistrationId();
-        User domainUser = processAuthentication(oidcUser, provider);
+        User domainUser = processOAuth2Request(oidcUser, provider);
         return new UserPrincipal(oidcUser, domainUser);
     }
     
-    // Process authentication
-    private User processAuthentication(OAuth2User oauth2User, String provider) {
+    // Decide if the request is for linking or authenticating
+    private User processOAuth2Request(OAuth2User oauth2User, String provider) {
         boolean isLinking = isLinkingRequest();
         Authentication current = SecurityContextHolder.getContext().getAuthentication();
         
         if (isLinking) {
-            clearLinkingFlag();
             if (current != null && current.getPrincipal() instanceof UserPrincipal up) {
                 User currentUser = up.getDomainUser();
                 return userService.linkProviderToUser(currentUser, oauth2User, provider);
             } else {
-                return userService.authenticateUser(oauth2User, provider);
+                throw new IllegalStateException("Account linking requested but no authenticated user found.");
             }
         } else {
             return userService.authenticateUser(oauth2User, provider);
         }
     }
     
+    // Helper method to check if the request is for linking
     private boolean isLinkingRequest() {
         try {
             ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
             HttpServletRequest request = attr.getRequest();
-            return Boolean.TRUE.equals(request.getSession().getAttribute("linking_provider"));
+            String state = request.getParameter("state");
+            return "link".equals(state);
         } catch (Exception e) {
             return false;
-        }
-    }
-    
-    private void clearLinkingFlag() {
-        try {
-            ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-            HttpServletRequest request = attr.getRequest();
-            request.getSession().removeAttribute("linking_provider");
-        } catch (Exception e) {
-            // Ignore
         }
     }
 }

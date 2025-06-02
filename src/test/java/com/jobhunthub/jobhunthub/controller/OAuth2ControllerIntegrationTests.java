@@ -242,7 +242,7 @@ public class OAuth2ControllerIntegrationTests {
                         .with(oauth2Login().oauth2User(googleOnlyPrincipal)))
                 .andDo(print())
                 .andExpect(status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.header().string("Location", "/oauth2/authorization/github"));
+                .andExpect(MockMvcResultMatchers.header().string("Location", "/oauth2/authorization/github?state=link"));
     }
 
     @Test
@@ -252,7 +252,7 @@ public class OAuth2ControllerIntegrationTests {
                         .with(oauth2Login().oauth2User(githubOnlyPrincipal)))
                 .andDo(print())
                 .andExpect(status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.header().string("Location", "/oauth2/authorization/google"));
+                .andExpect(MockMvcResultMatchers.header().string("Location", "/oauth2/authorization/google?state=link"));
     }
 
     @Test

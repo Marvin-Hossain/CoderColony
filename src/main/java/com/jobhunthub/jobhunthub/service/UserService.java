@@ -51,8 +51,8 @@ public class UserService {
         var attrs = OAuth2UserAttributes.from(oauth2User, provider);
         
         // 1. Link provider ID to user (validates uniqueness)
-        linkProvider(user, attrs.providerId(), provider);
-        userRepository.save(user);
+        validateProviderNotLinked(attrs.providerId(), provider, user.getId());
+        setProviderOnUser(user, attrs.providerId(), provider);
         
         // 2. Ensure profile exists before linking email
         if (!profileService.profileExists(user)) {
@@ -62,19 +62,8 @@ public class UserService {
         // 3. Link provider email to profile
         profileService.linkProviderEmail(user, attrs, provider);
         
-        return user;
+        return userRepository.save(user);
     }
-
-    // Link a provider to a user's account
-    @Transactional
-    public AuthenticatedUserDTO linkProvider(User user, String providerId, String provider) {
-        validateProviderNotLinked(providerId, provider, user.getId());
-        setProviderOnUser(user, providerId, provider);
-        
-        // Return updated DTO after linking
-        return getAuthenticatedUserDTO(user);
-    }
-
 
     // Get authentication status DTO for a user
     public AuthenticatedUserDTO getAuthenticatedUserDTO(User user) {
@@ -87,7 +76,7 @@ public class UserService {
 
     // Find a user by provider ID and provider
     private User findUserByProvider(String providerId, String provider) {
-        return switch(provider.toLowerCase()) {
+        return switch(provider) {
             case "github" -> userRepository.findByGithubId(providerId).orElse(null);
             case "google" -> userRepository.findByGoogleId(providerId).orElse(null);
             default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
@@ -116,7 +105,7 @@ public class UserService {
 
     // Set a provider on a user
     private void setProviderOnUser(User user, String providerId, String provider) {
-        switch (provider.toLowerCase()) {
+        switch (provider) {
             case "github" -> user.setGithubId(providerId);
             case "google" -> user.setGoogleId(providerId);
             default -> throw new IllegalArgumentException("Unsupported provider: " + provider);
