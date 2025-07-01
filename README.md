@@ -1,4 +1,5 @@
-# JobHuntHub
+# CoderColony *(formerly JobHuntHub)*
+**Note:** thejobhunthub.com has moved to [codercolony.com](https://codercolony.com)\
 A full-stack application to help job seekers track applications and practice interview questions with AI assistance. This project demonstrates full-stack development skills with Java/Spring Boot and React/TypeScript.
 
 ## Features

@@ -16,11 +16,11 @@ const Intro = () => {
             <div className="intro-container">
                 {/* Left side - Green Hero Section */}
                 <div className="intro-left">
-                    <div className="intro-logo">JobHuntHub</div>
-                    <h1 className="intro-heading">Simplify Your Job Hunt Journey</h1>
+                    <div className="intro-logo">CoderColony</div>
+                    <h1 className="intro-heading">Your Dev Career, Together</h1>
                     <p className="intro-subheading">
-                        Track applications, practice interviews, and monitor your progress—all in 
-                        one place. Let us help you land your dream job faster.
+                        Join a supportive community to track applications, practice interviews, and grow your skills.
+                        CoderColony helps you land your next role faster—with peers, resources, and AI tools all in one place.
                     </p>
                     <div className="feature-buttons">
                     </div>
