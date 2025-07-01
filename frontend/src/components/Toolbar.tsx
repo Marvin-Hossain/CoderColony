@@ -160,7 +160,7 @@ const Toolbar: React.FC = () => {
     <nav className="toolbar">
       <div className="toolbar-content">
         <div className="toolbar-brand">
-          <Link to="/dashboard">JobHuntHub</Link>
+          <Link to="/dashboard">CoderColony</Link>
         </div>
         
         {/* Desktop menu */}

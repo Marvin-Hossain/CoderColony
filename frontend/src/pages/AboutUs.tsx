@@ -6,13 +6,13 @@ const AboutUs: React.FC = () => {
   return (
     <div className="about-us">
       <PageHeader
-        title="About JobHuntHub"
+        title="About CoderColony"
         subtitle="Your complete job search management platform"
       />
       
       <div className="about-content">
         <p>
-          We've built JobHuntHub to simplify the job search process by providing a centralized platform 
+          We've built CoderColony to simplify the job search process by providing a centralized platform
           where you can manage all aspects of your job hunt. Our goal is to give you the tools you need 
           to stay organized, well-prepared, and confident throughout your career journey.
         </p>
@@ -54,7 +54,7 @@ const AboutUs: React.FC = () => {
         <div className="team-section">
           <h3>The Team</h3>
           <p>
-            JobHuntHub was created by a team of developers who experienced firsthand the challenges 
+            CoderColony was created by a team of developers who experienced firsthand the challenges
             of job hunting in the tech industry. We combined our expertise in software development 
             with our knowledge of the hiring process to create a tool we wish we had during our own 
             job searches.
