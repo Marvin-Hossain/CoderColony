@@ -16,8 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class OpenAIService {
-    // Default GPT-4 settings
-    private static final String DEFAULT_MODEL = "gpt-4";
+    private static final String DEFAULT_MODEL = "gpt-4.1-mini";
     private static final double DEFAULT_TEMPERATURE = 0.7;
     private static final int DEFAULT_MAX_TOKENS = 1000;
 
