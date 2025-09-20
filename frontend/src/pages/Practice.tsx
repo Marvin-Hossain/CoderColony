@@ -43,6 +43,21 @@ const Practice = () => {
           </div>
         </div>
 
+        <div className="practice-card" onClick={() => navigate('/practice/flashcards')}>
+          <div className="practice-card-icon">
+            <i className="fas fa-layer-group"></i>
+          </div>
+          <div className="practice-card-content">
+            <h3>Flashcards</h3>
+            <p>Study with spaced repetition flashcards to memorize key concepts and definitions.</p>
+            <div className="practice-card-footer">
+              <span className="practice-card-tag">Memory</span>
+              <span className="practice-card-tag">Spaced Repetition</span>
+              <span className="practice-card-tag">Study</span>
+            </div>
+          </div>
+        </div>
+
         <div className="practice-card coming-soon">
           <div className="practice-card-icon">
             <i className="fas fa-laptop-code"></i>

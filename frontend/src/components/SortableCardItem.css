@@ -1,0 +1,109 @@
+.sortable-card-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: white;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+}
+
+.sortable-card-item:focus-within {
+  border-color: #4d6bfe;
+  box-shadow: 0 0 0 3px rgba(77, 107, 254, 0.1);
+}
+
+.sortable-card-item.dragging {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  opacity: 1;
+  border-color: #4d6bfe;
+  background: white;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: #9ca3af;
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.drag-handle:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.card-inputs {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.card-inputs textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 40px;
+  transition: all 0.2s ease;
+  background-color: #f9fafb;
+}
+
+.card-inputs textarea:focus {
+  outline: none;
+  border-color: #4d6bfe;
+  box-shadow: 0 0 0 2px rgba(77, 107, 254, 0.1);
+  background-color: white;
+}
+
+.delete-button {
+  cursor: pointer;
+  color: #9ca3af;
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.delete-button:hover {
+  color: #ef4444;
+  background-color: #fee2e2;
+  transform: scale(1.1);
+}
+
+.add-card-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  border: 2px dashed #d1d5db;
+  color: #4b5563;
+  background-color: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+}
+
+.add-card-button:hover {
+  background-color: #f3f4f6;
+  border-color: #4d6bfe;
+  color: #4d6bfe;
+} 

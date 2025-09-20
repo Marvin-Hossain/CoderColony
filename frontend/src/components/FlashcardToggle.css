@@ -1,0 +1,155 @@
+.flashcard-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+}
+
+.flashcard-toggle-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flashcard-toggle-button:disabled {
+  cursor: not-allowed;
+}
+
+.flashcard-toggle-track {
+  width: 44px;
+  height: 24px;
+  background: #d1d5db;
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.2s ease;
+  padding: 2px;
+}
+
+.flashcard-toggle--checked .flashcard-toggle-track {
+  background: #4d6bfe;
+}
+
+.flashcard-toggle--disabled .flashcard-toggle-track {
+  background: #f3f4f6;
+  opacity: 0.6;
+}
+
+.flashcard-toggle-thumb {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 10px;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.flashcard-toggle--checked .flashcard-toggle-thumb {
+  transform: translateX(20px);
+}
+
+.flashcard-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.flashcard-toggle--disabled .flashcard-toggle-label {
+  color: #9ca3af;
+}
+
+.flashcard-toggle-icon {
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+}
+
+.flashcard-toggle--checked .flashcard-toggle-icon {
+  color: #4d6bfe;
+}
+
+.flashcard-toggle-text {
+  cursor: pointer;
+}
+
+.flashcard-toggle--disabled .flashcard-toggle-text {
+  cursor: not-allowed;
+}
+
+/* Size variants */
+.flashcard-toggle--small .flashcard-toggle-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+}
+
+.flashcard-toggle--small .flashcard-toggle-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+}
+
+.flashcard-toggle--small.flashcard-toggle--checked .flashcard-toggle-thumb {
+  transform: translateX(16px);
+}
+
+.flashcard-toggle--small .flashcard-toggle-label {
+  font-size: 13px;
+}
+
+.flashcard-toggle--large .flashcard-toggle-track {
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+}
+
+.flashcard-toggle--large .flashcard-toggle-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+}
+
+.flashcard-toggle--large.flashcard-toggle--checked .flashcard-toggle-thumb {
+  transform: translateX(24px);
+}
+
+.flashcard-toggle--large .flashcard-toggle-label {
+  font-size: 16px;
+}
+
+/* Hover effects */
+.flashcard-toggle-button:hover:not(:disabled) .flashcard-toggle-track {
+  box-shadow: 0 0 0 3px rgba(77, 107, 254, 0.1);
+}
+
+.flashcard-toggle--checked .flashcard-toggle-button:hover:not(:disabled) .flashcard-toggle-track {
+  background: #3b56f3;
+}
+
+/* Active state */
+.flashcard-toggle-button:active:not(:disabled) .flashcard-toggle-thumb {
+  transform: scale(0.95);
+}
+
+.flashcard-toggle--checked .flashcard-toggle-button:active:not(:disabled) .flashcard-toggle-thumb {
+  transform: translateX(20px) scale(0.95);
+}
+
+@media (max-width: 768px) {
+  .flashcard-toggle {
+    gap: 10px;
+  }
+  
+  .flashcard-toggle-label {
+    font-size: 15px;
+  }
+} 
