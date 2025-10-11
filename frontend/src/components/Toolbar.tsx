@@ -117,7 +117,21 @@ const Toolbar: React.FC = () => {
       <nav className="toolbar">
         <div className="toolbar-content">
           <div className="toolbar-brand">
-            <Link to="/dashboard">JobHuntHub</Link>
+            <Link to="/dashboard" className="brand-link">
+              <div className="brand-logo">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="40" height="40" rx="8" fill="#ffffff"/>
+                  <path d="M8 12L20 8L32 12V28L20 32L8 28V12Z" fill="#4d6bfe" stroke="#4d6bfe" strokeWidth="1.5"/>
+                  <path d="M12 16L28 16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M12 20L24 20" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M12 24L28 24" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                  <circle cx="20" cy="12" r="2" fill="#4d6bfe"/>
+                  <circle cx="16" cy="28" r="2" fill="#4d6bfe"/>
+                  <circle cx="24" cy="28" r="2" fill="#4d6bfe"/>
+                </svg>
+              </div>
+              <span className="brand-text">CoderColony</span>
+            </Link>
           </div>
           <div className="toolbar-user">
             <span>Loading...</span>
@@ -160,7 +174,21 @@ const Toolbar: React.FC = () => {
     <nav className="toolbar">
       <div className="toolbar-content">
         <div className="toolbar-brand">
-          <Link to="/dashboard">CoderColony</Link>
+          <Link to="/dashboard" className="brand-link">
+            <div className="brand-logo">
+              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="8" fill="#ffffff"/>
+                <path d="M8 12L20 8L32 12V28L20 32L8 28V12Z" fill="#4d6bfe" stroke="#4d6bfe" strokeWidth="1.5"/>
+                <path d="M12 16L28 16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M12 20L24 20" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M12 24L28 24" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                <circle cx="20" cy="12" r="2" fill="#4d6bfe"/>
+                <circle cx="16" cy="28" r="2" fill="#4d6bfe"/>
+                <circle cx="24" cy="28" r="2" fill="#4d6bfe"/>
+              </svg>
+            </div>
+            <span className="brand-text">CoderColony</span>
+          </Link>
         </div>
         
         {/* Desktop menu */}
