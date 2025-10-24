@@ -1,4 +1,3 @@
-import "./Intro.css";
 import Button from "../components/Button";
 import {API_CONFIG} from "@/services/config";
 

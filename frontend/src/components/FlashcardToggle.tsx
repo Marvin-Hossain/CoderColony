@@ -1,5 +1,6 @@
 import React from 'react';
-import './FlashcardToggle.css';
+import { pillButtonStyles } from '@/components/ui/pillButton';
+import { cn } from '@/lib/cn';
 
 interface FlashcardToggleProps {
   label: string;
@@ -24,29 +25,35 @@ const FlashcardToggle: React.FC<FlashcardToggleProps> = ({
     }
   };
 
-  const sizeClass = `flashcard-toggle--${size}`;
-  const checkedClass = checked ? 'flashcard-toggle--checked' : '';
-  const disabledClass = disabled ? 'flashcard-toggle--disabled' : '';
+  let resolvedSize: 'sm' | 'md' | 'lg' = 'md';
+  if (size === 'small') resolvedSize = 'sm';
+  else if (size === 'large') resolvedSize = 'lg';
 
   return (
-    <div className={`flashcard-toggle ${sizeClass} ${checkedClass} ${disabledClass}`}>
-      <button
-        className="flashcard-toggle-button"
-        onClick={handleToggle}
-        disabled={disabled}
-        aria-pressed={checked}
-        aria-label={`${checked ? 'Disable' : 'Enable'} ${label}`}
-      >
-        <div className="flashcard-toggle-track">
-          <div className="flashcard-toggle-thumb" />
-        </div>
-      </button>
-      <div className="flashcard-toggle-label">
-        {icon && <span className="flashcard-toggle-icon">{icon}</span>}
-        <span className="flashcard-toggle-text">{label}</span>
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={handleToggle}
+      disabled={disabled}
+      aria-pressed={checked}
+      aria-label={`${checked ? 'Disable' : 'Enable'} ${label}`}
+      className={cn(
+        pillButtonStyles({
+          intent: checked ? 'primary' : 'default',
+          size: resolvedSize,
+          disabled
+        }),
+        'tw-font-semibold'
+      )}
+      style={{transition: 'transform 0.15s ease'}}
+    >
+      {icon && (
+        <span className={checked ? 'text-primary-foreground' : 'text-muted-foreground'}>
+          {icon}
+        </span>
+      )}
+      <span>{label}</span>
+    </button>
   );
 };
 
-export default FlashcardToggle; 
+export default FlashcardToggle;

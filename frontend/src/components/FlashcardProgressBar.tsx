@@ -1,5 +1,6 @@
 import React from 'react';
-import './FlashcardProgressBar.css';
+import { cn } from '@/lib/cn';
+import { progressTrackStyles, progressFillStyles } from '@/components/ui/progress';
 
 interface FlashcardProgressBarProps {
   current: number;
@@ -22,41 +23,33 @@ const FlashcardProgressBar: React.FC<FlashcardProgressBarProps> = ({
     : 0;
 
   return (
-    <div className="flashcard-progress-bar">
-      <div className="flashcard-progress-bar-header">
-        <div className="flashcard-progress-bar-text">
-          <span className="flashcard-progress-bar-current">{current}</span>
-          <span className="flashcard-progress-bar-separator"> / </span>
-          <span className="flashcard-progress-bar-total">{total}</span>
+    <div className="tw-space-y-3 tw-rounded-2xl tw-border tw-bg-card tw-p-6 tw-shadow-lg">
+      <div className="tw-flex tw-items-center tw-justify-between">
+        <div className="tw-text-lg tw-font-semibold tw-text-primary">
+          {current} <span className="text-muted-foreground">/</span> {total}
         </div>
         {showStats && (correctCount + incorrectCount) > 0 && (
-          <div className="flashcard-progress-bar-accuracy">
+          <div className="tw-inline-flex tw-items-center tw-rounded-full tw-bg-primary/10 tw-px-3 tw-py-1 tw-text-xs tw-font-semibold tw-text-primary">
             {accuracy.toFixed(0)}% correct
           </div>
         )}
       </div>
-      
-      <div className="flashcard-progress-bar-track">
-        <div 
-          className="flashcard-progress-bar-fill"
-          style={{ width: `${percentage}%` }}
+
+      <div className={cn(progressTrackStyles({ size: 'sm' }))}>
+        <div
+          className={cn(progressFillStyles())}
+          style={{width: `${percentage}%`}}
         />
       </div>
-      
+
       {showStats && (
-        <div className="flashcard-progress-bar-stats">
-          <div className="flashcard-progress-bar-stat correct">
-            <span className="flashcard-progress-bar-stat-label">Correct:</span>
-            <span className="flashcard-progress-bar-stat-value">{correctCount}</span>
-          </div>
-          <div className="flashcard-progress-bar-stat incorrect">
-            <span className="flashcard-progress-bar-stat-label">Incorrect:</span>
-            <span className="flashcard-progress-bar-stat-value">{incorrectCount}</span>
-          </div>
+        <div className="tw-flex tw-items-center tw-gap-4 tw-text-xs text-muted-foreground">
+          <span>Correct: <strong className="text-success">{correctCount}</strong></span>
+          <span>Incorrect: <strong className="text-danger">{incorrectCount}</strong></span>
         </div>
       )}
     </div>
   );
 };
 
-export default FlashcardProgressBar; 
+export default FlashcardProgressBar;

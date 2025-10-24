@@ -1,5 +1,6 @@
 import React, {ReactNode} from 'react';
 import './Card.css';
+import { Badge } from './ui/badge';
 
 interface CardItemProps {
     label: string;
@@ -32,13 +33,12 @@ const CardItem: React.FC<CardItemProps> = ({
         <div 
             className={itemClasses}
             onClick={onClick}
+            onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
             style={onClick ? {cursor: 'pointer'} : undefined}
         >
             <span className="card-item-label">{label}</span>
             {value && (
-                <span className={badge ? 'card-badge' : ''}>
-                    {value}
-                </span>
+                badge ? <Badge>{value}</Badge> : <span>{value}</span>
             )}
             {children}
         </div>

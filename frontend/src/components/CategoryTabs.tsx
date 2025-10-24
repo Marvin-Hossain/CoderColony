@@ -1,5 +1,7 @@
 import React from 'react';
-import './CategoryTabs.css';
+// legacy CSS removed after Tailwind/CVA migration
+import { categoryTabStyles } from './ui/category-tabs';
+import { cn } from '../lib/cn';
 
 interface Category {
     id: string;
@@ -17,17 +19,31 @@ const CategoryTabs = ({
                           selectedCategory,
                           onCategoryChange
                       }: CategoryTabsProps) => (
-    <div className="category-tabs">
-        {categories.map((category) => (
-            <button
-                key={category.id}
-                className={`category-tab ${selectedCategory === category.id ? 'active' : ''}`}
-                onClick={() => onCategoryChange(category.id)}
-                data-category={category.id}
-            >
-                {category.label}
-            </button>
-        ))}
+    <div
+        className={cn(
+            // default mobile layout: row with small gap; md+ switches to column
+            'tw-flex tw-w-full tw-mb-5 tw-text-center',
+            'tw-flex-row tw-gap-[10px] md:tw-flex-col md:tw-gap-0'
+        )}
+    >
+        {categories.map((category) => {
+            const isActive = selectedCategory === category.id;
+            return (
+                <button
+                    key={category.id}
+                    className={cn(
+                        categoryTabStyles({ active: isActive }),
+                        // mobile-specific sizing
+                        'tw-p-[10px] md:tw-py-2 md:tw-px-4'
+                    )}
+                    onClick={() => onCategoryChange(category.id)}
+                    data-category={category.id}
+                    type="button"
+                >
+                    {category.label}
+                </button>
+            );
+        })}
     </div>
 );
 

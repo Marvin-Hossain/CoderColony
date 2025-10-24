@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Deck, Card } from '../types/flashcards';
+import { Deck, Card, UserDeckProgress, UserCardProgress } from '../types/flashcards';
 
 // Mock data for development
 const mockDecks: Deck[] = [
@@ -264,6 +264,55 @@ export const flashcardsApi = createApi({
         return { data: undefined };
       },
     }),
+
+    getUserDeckProgress: builder.query<UserDeckProgress, string>({
+        query: (deckId) => `/progress/deck/${deckId}`,
+        providesTags: (_result, _error, deckId) => [{ type: 'Progress', id: deckId }],
+    }),
+
+    getUserCardProgress: builder.query<UserCardProgress[], string>({
+        query: (deckId) => `/progress/deck/${deckId}/cards`,
+        providesTags: (_result, _error, deckId) => [{ type: 'Progress', id: `cards-${deckId}` }],
+    }),
+
+    updateCardProgress: builder.mutation<UserCardProgress, {
+        cardId: string;
+        deckId: string;
+        isCorrect: boolean;
+        boxLevel?: number;
+        nextReview?: string;
+    }>({
+        query: ({ cardId, ...body }) => ({
+            url: `/progress/card/${cardId}`,
+            method: 'POST',
+            body,
+        }),
+        invalidatesTags: (_result, _error, { deckId }) => [{ type: 'Progress', id: deckId }, { type: 'Progress', id: `cards-${deckId}` }],
+    }),
+
+    saveStudySession: builder.mutation<void, {
+        deckId: string;
+        sessionStats: {
+            totalCards: number;
+            correctCount: number;
+            incorrectCount: number;
+            duration: number; // in minutes
+            startTime: string;
+            endTime: string;
+        };
+    }>({
+        query: ({ deckId, sessionStats }) => ({
+            url: `/progress/deck/${deckId}/session`,
+            method: 'POST',
+            body: sessionStats,
+        }),
+        invalidatesTags: (_result, _error, { deckId }) => [{ type: 'Progress', id: deckId }],
+    }),
+
+    getDueCards: builder.query<{cardId: string; dueDate: string}[], string>({
+        query: (deckId) => `/progress/deck/${deckId}/due`,
+        providesTags: (_result, _error, deckId) => [{ type: 'Progress', id: `due-${deckId}` }],
+    }),
   }),
 });
 
@@ -279,4 +328,9 @@ export const {
   useDeleteCardMutation,
   useUpvoteDeckMutation,
   useLogViewMutation,
+  useGetUserDeckProgressQuery,
+  useGetUserCardProgressQuery,
+  useUpdateCardProgressMutation,
+  useSaveStudySessionMutation,
+  useGetDueCardsQuery,
 } = flashcardsApi; 

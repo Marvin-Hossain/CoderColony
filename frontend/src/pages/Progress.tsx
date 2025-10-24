@@ -1,6 +1,13 @@
-import React, {useState, useEffect, useCallback, useMemo} from 'react';
-import "./Progress.css";
+import {useState, useEffect, useMemo} from 'react';
 import {Line} from "react-chartjs-2";
+import '@/styles/dashboard.css';
+import '@/styles/progress.css';
+import ProgressStatStrip, { type StripItem } from '@/components/ui/ProgressStatStrip';
+import DiagonalGoalCard from '@/components/ui/DiagonalGoalCard';
+import TrendUpIcon from '../components/icons/TrendUpIcon';
+import StatusDonutGroup from '@/components/ui/StatusDonutGroup';
+import GradientStatCard from '@/components/ui/GradientStatCard';
+import WeeklyTimeline, { type TimelineDay } from '@/components/ui/WeeklyTimeline';
 import {API_CONFIG} from '@/services/config';
 import {
     Chart as ChartJS,
@@ -13,8 +20,6 @@ import {
     Legend,
 } from "chart.js";
 import {formatChartDate} from '@/services/dateUtils';
-import Card from '../components/Card';
-import CardItem from '../components/CardItem';
 
 ChartJS.register(
     CategoryScale,
@@ -48,14 +53,7 @@ interface AllTimeStats {
     rejected?: number;
 }
 
-interface StatsSectionProps {
-    title: string;
-    stats: AllTimeStats;
-}
-
-interface StatusBreakdownProps {
-    stats: AllTimeStats;
-}
+// (legacy interfaces removed; UI is composed via new components)
 
 const CATEGORIES: Category[] = [
     {id: "jobs", label: "Job Applications", goal: 10},
@@ -94,27 +92,23 @@ const progressService = {
 };
 
 /**
- * Page component to display progress statistics and charts for different categories.
- * Fetches weekly and all-time data based on the selected category tab.
+ * Modernized Progress page. Preserves data fetching, composes new UI components.
  */
 const Progress = () => {
-    const [selectedCategory, setSelectedCategory] = useState<string>("jobs");
+    const [selectedCategory] = useState<string>("jobs");
     const [weeklyData, setWeeklyData] = useState<WeeklyData | null>(null);
     const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    useCallback((categoryId: string): void => {
-        setSelectedCategory(categoryId);
-    }, []);
     /** Memoized calculation for chart data structure required by react-chartjs-2. */
     const chartData = useMemo(() => {
         // Create canvas for gradient
         const ctx = document.createElement('canvas').getContext('2d');
         let gradient = null;
         if (ctx) {
-            gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(77, 107, 254, 0.6)');
-            gradient.addColorStop(1, 'rgba(77, 107, 254, 0.05)');
+            gradient = ctx.createLinearGradient(0, 0, 0, 360);
+            gradient.addColorStop(0, 'rgba(77, 107, 254, 0.35)');
+            gradient.addColorStop(1, 'rgba(77, 107, 254, 0.02)');
         }
         
         return {
@@ -125,15 +119,15 @@ const Progress = () => {
                     data: weeklyData?.chartData?.map(item => item.count) || [],
                     fill: true,
                     backgroundColor: gradient || 'rgba(77, 107, 254, 0.2)',
-                    borderColor: '#4d6bfe',
+                    borderColor: '#5a74ff',
                     borderWidth: 3,
                     tension: 0.4,
                     pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#4d6bfe',
+                    pointBorderColor: '#5a74ff',
                     pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 8,
-                    pointHoverBackgroundColor: '#4d6bfe',
+                    pointRadius: 4.5,
+                    pointHoverRadius: 7.5,
+                    pointHoverBackgroundColor: '#5a74ff',
                     pointHoverBorderColor: '#ffffff',
                     cubicInterpolationMode: 'monotone' as const
                 }
@@ -143,37 +137,27 @@ const Progress = () => {
 
     /** Memoized calculation for chart configuration options. */
     const selectedCategoryData = CATEGORIES.find(c => c.id === selectedCategory);
+
+    /** Compute dynamic Y-axis max: base 5, then round up to next multiple of 5. */
+    const yAxisMax = useMemo(() => {
+        const counts = weeklyData?.chartData?.map(p => p.count) || [];
+        const maxCount = counts.length ? Math.max(...counts) : 0;
+        const base = 5;
+        if (maxCount <= base) return base;
+        const headroom = 0.5; // small headroom so the top point isn't flush
+        const target = maxCount + headroom;
+        return Math.ceil(target / 5) * 5;
+    }, [weeklyData]);
     const chartOptions = useMemo(() => ({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: {
-                position: 'top' as const,
-                labels: {
-                    boxWidth: 15,
-                    usePointStyle: false,
-                    font: {
-                        size: 14,
-                        weight: 'bold' as const
-                    }
-                }
-            },
-            title: {
-                display: true,
-                text: `Weekly ${selectedCategoryData?.label || ''} Progress`,
-                color: '#2a3a84',
-                font: {
-                    size: 18,
-                    weight: 'bold' as const
-                },
-                padding: {
-                    top: 10,
-                    bottom: 20
-                }
-            },
+            legend: { display: false },
+            // Hide inner chart title; we render the card header above the surface
+            title: { display: false },
             tooltip: {
                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                titleColor: '#2a3a84',
+                titleColor: '#1e3a8a',
                 bodyColor: '#4a5491',
                 borderColor: '#4d6bfe',
                 borderWidth: 1,
@@ -198,9 +182,9 @@ const Progress = () => {
         scales: {
             x: {
                 ticks: {
-                    maxRotation: 45,
-                    minRotation: 45,
-                    color: '#4a5491',
+                    maxRotation: 0,
+                    minRotation: 0,
+                    color: 'rgba(255,255,255,0.92)',
                     font: {
                         size: 12
                     },
@@ -215,16 +199,18 @@ const Progress = () => {
                 beginAtZero: true,
                 ticks: {
                     stepSize: 1,
-                    color: '#4a5491',
+                    color: 'rgba(255,255,255,0.92)',
                     font: {
                         size: 12
                     },
                     padding: 8
                 },
-                suggestedMax: (selectedCategoryData?.goal || 0) + 2,
+                max: yAxisMax,
                 grid: {
-                    color: 'rgba(77, 107, 254, 0.06)',
-                    drawBorder: false
+                    color: 'rgba(255,255,255,0.20)',
+                    drawBorder: false,
+                    lineWidth: 1,
+                    borderDash: [4, 4]
                 },
                 border: {
                     dash: [4, 4]
@@ -252,7 +238,9 @@ const Progress = () => {
             duration: 1500,
             easing: 'easeOutQuart' as const
         }
-    }), [selectedCategory, selectedCategoryData]);
+    }), [selectedCategory, selectedCategoryData, yAxisMax]);
+
+    // Applications streak container removed per request; related helpers removed
 
     /** Effect to fetch data whenever the selected category changes. */
     useEffect(() => {
@@ -269,24 +257,26 @@ const Progress = () => {
                     progressService.fetchAllTimeStats(selectedCategory, signal)
                 ]);
 
-                if (!signal.aborted) {
+                if (signal.aborted) {
+                    // Skip state updates when aborted
+                } else {
                     setWeeklyData(fetchedWeeklyData);
                     setAllTimeStats(fetchedStatsData);
                 }
             } catch (err) {
-                if (err instanceof Error) {
-                    if (err.name !== 'AbortError' && !signal.aborted) {
-                        setError('Failed to load progress data. Please try again.');
-                        console.error('Error fetching progress data:', err);
-                    }
-                } else {
-                    if (!signal.aborted) {
-                        setError('An unknown error occurred while fetching progress data.');
-                        console.error('Unknown error fetching progress data:', err);
-                    }
+                if (signal.aborted) {
+                    // No-op on abort
+                } else if (err instanceof Error && err.name !== 'AbortError') {
+                    setError('Failed to load progress data. Please try again.');
+                    console.error('Error fetching progress data:', err);
+                } else if (!(err instanceof Error)) {
+                    setError('An unknown error occurred while fetching progress data.');
+                    console.error('Unknown error fetching progress data:', err);
                 }
             } finally {
-                if (!signal.aborted) {
+                if (signal.aborted) {
+                    // Skip loading state update when aborted
+                } else {
                     setIsLoading(false);
                 }
             }
@@ -299,96 +289,109 @@ const Progress = () => {
         };
     }, [selectedCategory]);
 
-    /** Helper function to render the statistics sections based on available data. */
-    const renderStats = () => {
-        if (!allTimeStats) return null;
-        return (
-            <div className="stats">
-                <StatsSection title="All-Time Stats" stats={allTimeStats}/>
-                {selectedCategory === 'jobs' && (
-                    <StatusBreakdown stats={allTimeStats}/>
-                )}
-            </div>
-        );
-    };
+    // Derived metrics for header and side panels
+    const weeklySum = useMemo(() => (weeklyData?.chartData ?? []).reduce((s, p) => s + (p.count || 0), 0), [weeklyData]);
+    const bestDayCount = useMemo(() => (weeklyData?.chartData ?? []).reduce((m, p) => Math.max(m, p.count), 0), [weeklyData]);
+    // Backend may format average as string with one decimal; normalize to number
+    const dailyAvg = Number(allTimeStats?.average ?? 0);
+    const applied = allTimeStats?.applied || 0;
+    const interviewed = allTimeStats?.interviewed || 0;
+    const rejected = allTimeStats?.rejected || 0;
+    const statusTotal = applied + interviewed + rejected;
+    const successRate = applied > 0 ? Math.round(((interviewed / applied) * 1000)) / 10 : 0; // one decimal
 
-    if (error) {
-        return <div className="error-message">{error}</div>;
-    }
+    const headerItems: [StripItem, StripItem, StripItem] = [
+        { value: Math.round(dailyAvg), label: 'DAILY AVG', color: 'blue' },
+        { value: bestDayCount, label: 'BEST DAY', color: 'orange' },
+        { value: weeklySum, label: 'THIS WEEK', color: 'green' }
+    ];
+
+    const timelineDays: TimelineDay[] = useMemo(() => {
+        const points = weeklyData?.chartData || [];
+        const formatter = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
+        return points.map(p => {
+            const d = new Date(p.date);
+            const day = formatter.format(d);
+            return { dateLabel: day, value: p.count };
+        });
+    }, [weeklyData]);
 
     return (
-        <div className="progress-page">
-            <header className="progress-header">
-                <h1>Progress Tracker</h1>
-                <p>Track your daily and weekly progress to stay motivated</p>
-            </header>
-
-            <div className="progress-content">
-                {/*
-                    We don't need the category tabs for now, so we're commenting it out.
-                    <CategoryTabs
-                    categories={CATEGORIES}
-                    selectedCategory={selectedCategory}
-                    onCategoryChange={handleCategoryChange}
-                /> */}
-
-                {renderStats()}
-
-                <Card className="chart-container" accent="top" size="lg">
-                    {isLoading ? (
-                        <div className="loading">
-                            <div className="loading-spinner"></div>
-                            <div className="loading-text">Loading chart data...</div>
+        <main className="progress-container">
+            <div className="progress-inner">
+                {/* Header */}
+                <section className="progress-header">
+                    <div>
+                        <div className="progress-eyebrow" aria-label="Weekly overview">
+                            <TrendUpIcon className="progress-eyebrow-icon" />
+                            <span>WEEKLY OVERVIEW</span>
                         </div>
-                    ) : (
-                        <Line data={chartData} options={chartOptions}/>
-                    )}
-                </Card>
+                        <h1 className="progress-title">Your<br />Progress</h1>
+                        {allTimeStats && (
+                            <div className="progress-total" aria-live="polite">
+                                <span className="value">{allTimeStats.total ?? 0}</span>
+                                <div className="caption">
+                                    <span className="caption-line">applications</span>
+                                    <span className="caption-sub">submitted all-time</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <ProgressStatStrip items={headerItems} />
+                    </div>
+                </section>
+
+                {error && (
+                    <div className="rounded-xl border border-danger bg-danger/10 px-4 py-3 text-danger" role="alert">
+                        {error}
+                    </div>
+                )}
+
+                {/* Main grid */}
+                <section className="grid-12 mb-8">
+                    <div className="col-span-12 lg-col-span-8 feature-chart">
+                        <div className="decor-top-right" />
+                        <div className="decor-bottom-left" />
+                        <div className="feature-chart-content">
+                            <h2 className="text-2xl mb-4">Application Trend</h2>
+                            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '1rem' }}>Your performance over the past 7 days</p>
+                            <div className="chart-surface">
+                                {isLoading ? (
+                                    <div className="flex h-full flex-col items-center justify-center gap-4">
+                                        <span
+                                            className="animate-spin rounded-full"
+                                            style={{
+                                                width: '2.5rem',
+                                                height: '2.5rem',
+                                                border: '4px solid rgba(255,255,255,0.25)',
+                                                borderTopColor: '#ffffff'
+                                            }}
+                                        />
+                                        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.95)' }}>Loading chart data...</p>
+                                    </div>
+                                ) : (
+                                    <Line data={chartData} options={chartOptions} />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-span-12 lg-col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <StatusDonutGroup applied={applied} interviewed={interviewed} rejected={rejected} total={Math.max(1, statusTotal)} />
+                        <GradientStatCard title="Success Rate" value={`${successRate}%`} subtitle="Interview conversion rate" gradient="purple" />
+                        <DiagonalGoalCard title="Applications" subtitle="This week" value={weeklySum} target={selectedCategoryData?.goal || 0} bgColor="orange" />
+                    </div>
+                </section>
+
+                {/* Weekly timeline */}
+                <section>
+                    <WeeklyTimeline days={timelineDays} />
+                </section>
+
+                {/* Applications streak removed */}
             </div>
-        </div>
+        </main>
     );
 };
-
-/** Memoized component to display general all-time statistics. */
-const StatsSection = React.memo(({title, stats}: StatsSectionProps) => (
-    <Card title={title} accent="left">
-        <CardItem 
-            label="Total Completed"
-            value={stats.total}
-            badge
-        />
-        <CardItem 
-            label="Daily Average"
-            value={typeof stats.average === 'number' ? stats.average.toFixed(1) : 'N/A'}
-            badge
-        />
-        <CardItem 
-            label="Best Day"
-            value={stats.bestDay || 'N/A'}
-            badge
-        />
-    </Card>
-));
-
-/** Memoized component to display job status breakdown statistics. */
-const StatusBreakdown = React.memo(({stats}: StatusBreakdownProps) => (
-    <Card title="Application Status" accent="left">
-        <CardItem 
-            label="Applied"
-            value={stats.applied || 0}
-            badge
-        />
-        <CardItem 
-            label="Interviewed"
-            value={stats.interviewed || 0}
-            badge
-        />
-        <CardItem 
-            label="Rejected"
-            value={stats.rejected || 0}
-            badge
-        />
-    </Card>
-));
 
 export default Progress;

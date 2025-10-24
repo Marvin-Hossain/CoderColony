@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useGetDeckByIdQuery, useGetCardsQuery, useCreateDeckMutation, useUpdateDeckMutation, useCreateCardMutation, useUpdateCardMutation, useDeleteCardMutation } from '../services/flashcardsApi';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { SortableCardItem } from '../components/SortableCardItem';
-import { Plus, Save } from 'lucide-react';
-import { Card } from '../types/flashcards';
-import './DeckEditor.css';
+import {useState, useEffect} from 'react';
+import {useParams, useNavigate} from 'react-router-dom';
+import {useGetDeckByIdQuery, useGetCardsQuery, useCreateDeckMutation, useUpdateDeckMutation, useCreateCardMutation, useUpdateCardMutation, useDeleteCardMutation} from '../services/flashcardsApi';
+import {DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors} from '@dnd-kit/core';
+import {arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {SortableCardItem} from '../components/SortableCardItem';
+import {Plus, Save} from 'lucide-react';
+import {Card} from '../types/flashcards';
+import PageHeader from '../components/PageHeader';
+import Button from '../components/Button';
 
 const DeckEditor = () => {
-  const { deckId } = useParams<{ deckId: string }>();
+  const {deckId} = useParams<{ deckId: string }>();
   const navigate = useNavigate();
   const isCreating = !deckId;
 
@@ -20,10 +21,10 @@ const DeckEditor = () => {
   const [cards, setCards] = useState<Card[]>([]);
   
   // API hooks
-  const { data: existingDeck } = useGetDeckByIdQuery(deckId!, { skip: isCreating });
-  const { data: existingCards } = useGetCardsQuery(deckId!, { skip: isCreating });
-  const [createDeck, { isLoading: isCreatingDeck }] = useCreateDeckMutation();
-  const [updateDeck, { isLoading: isUpdatingDeck }] = useUpdateDeckMutation();
+  const {data: existingDeck} = useGetDeckByIdQuery(deckId!, {skip: isCreating});
+  const {data: existingCards} = useGetCardsQuery(deckId!, {skip: isCreating});
+  const [createDeck, {isLoading: isCreatingDeck}] = useCreateDeckMutation();
+  const [updateDeck, {isLoading: isUpdatingDeck}] = useUpdateDeckMutation();
   const [createCard] = useCreateCardMutation();
   const [updateCard] = useUpdateCardMutation();
   const [deleteCard] = useDeleteCardMutation();
@@ -106,65 +107,98 @@ const DeckEditor = () => {
   };
 
   return (
-    <div className="deck-editor-page">
-      <h2>{isCreating ? 'Create New Deck' : 'Edit Deck'}</h2>
-      
-      <div className="deck-editor-form">
-        <div className="form-group">
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g., React Hooks"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="A short summary of the deck's content"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="tags">Tags (comma-separated)</label>
-          <input
-            id="tags"
-            type="text"
-            value={tags.join(', ')}
-            onChange={(e) => setTags(e.target.value.split(',').map(t => t.trim()))}
-            placeholder="e.g., react, javascript, frontend"
-          />
-        </div>
-      </div>
-      
-      <div className="deck-editor-card-manager">
-        <h3>Cards</h3>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={cards.map(c => c.cardId)} strategy={verticalListSortingStrategy}>
-            {cards.map(card => (
-              <SortableCardItem 
-                key={card.cardId}
-                card={card}
-                onDelete={handleCardDelete}
-                onChange={handleCardChange}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-        <button className="add-card-button" onClick={handleAddNewCard}>
-          <Plus size={16} /> Add Card
-        </button>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="container py-20 space-y-8">
+        <PageHeader
+          title={isCreating ? 'Create a new deck' : 'Edit deck'}
+          subtitle="Organize your cards and keep your study material up to date."
+        />
 
-      <div className="deck-editor-actions">
-        <button className="save-button" onClick={handleSave} disabled={isCreatingDeck || isUpdatingDeck}>
-          <Save size={16} />
-          {isCreatingDeck || isUpdatingDeck ? 'Saving...' : 'Save Deck & Cards'}
-        </button>
+        <section className="space-y-6 rounded-2xl border bg-card p-6 shadow-lg">
+          <div className="space-y-2">
+            <label htmlFor="title" className="text-sm font-semibold text-muted-foreground">Title</label>
+            <input
+              id="title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g., React Hooks"
+              className="form-field"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="description" className="text-sm font-semibold text-muted-foreground">Description</label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="A short summary of the deck's content"
+              className="form-field"
+              style={{minHeight: '120px', resize: 'vertical'}}
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="tags" className="text-sm font-semibold text-muted-foreground">Tags (comma-separated)</label>
+            <input
+              id="tags"
+              type="text"
+              value={tags.join(', ')}
+              onChange={(e) => setTags(e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
+              placeholder="e.g., react, javascript, frontend"
+              className="form-field"
+            />
+          </div>
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+              {tags.map(tag => (
+                <span key={tag} className="inline-flex items-center rounded-full bg-muted/20 px-3 py-1 font-medium">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-4 rounded-2xl border bg-card p-6 shadow-lg">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Cards</h3>
+            <Button variant="outline" onClick={handleAddNewCard} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add card
+            </Button>
+          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={cards.map(c => c.cardId)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-4">
+                {cards.map(card => (
+                  <SortableCardItem
+                    key={card.cardId}
+                    card={card}
+                    onDelete={handleCardDelete}
+                    onChange={handleCardChange}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+          {cards.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Add your first card to start building this deck.
+            </p>
+          )}
+        </section>
+
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSave}
+            className="gap-2"
+            disabled={isCreatingDeck || isUpdatingDeck}
+          >
+            <Save className="h-4 w-4" />
+            {isCreatingDeck || isUpdatingDeck ? 'Saving...' : 'Save deck & cards'}
+          </Button>
+        </div>
       </div>
     </div>
   );

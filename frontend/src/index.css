@@ -5,6 +5,11 @@ html, body {
   padding: 0;
 }
 
+/* Ensure padding and border are included in element width/height to prevent overflow into grid gaps */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',

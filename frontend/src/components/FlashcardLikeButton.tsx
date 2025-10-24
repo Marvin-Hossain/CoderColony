@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Heart } from 'lucide-react';
-import { useUpvoteDeckMutation } from '../services/flashcardsApi';
-import './FlashcardLikeButton.css';
+import React, {useState} from 'react';
+import {Heart} from 'lucide-react';
+import {useUpvoteDeckMutation} from '../services/flashcardsApi';
+import { pillButtonStyles } from '@/components/ui/pillButton';
+import { cn } from '@/lib/cn';
 
 interface FlashcardLikeButtonProps {
   deckId: string;
@@ -25,39 +26,51 @@ const FlashcardLikeButton: React.FC<FlashcardLikeButtonProps> = ({
     
     if (isLoading) return;
     
-    const newLiked = !liked;
-    const newCount = newLiked ? likeCount + 1 : likeCount - 1;
+    const prevLiked = liked;
+    const prevCount = likeCount;
+    const newLiked = !prevLiked;
+    const newCount = newLiked ? prevCount + 1 : prevCount - 1;
     
     // Optimistic update
-    setLiked(newLiked);
-    setLikeCount(newCount);
+    setLiked(() => newLiked);
+    setLikeCount(() => newCount);
     
     try {
       await upvoteDeck(deckId).unwrap();
     } catch (error) {
       // Revert on error
-      setLiked(liked);
-      setLikeCount(likeCount);
-      console.error('Failed to update like:', error);
+      setLiked(prevLiked);
+      setLikeCount(prevCount);
     }
   };
 
-  const sizeClass = `flashcard-like-button--${size}`;
-  const likedClass = liked ? 'flashcard-like-button--liked' : '';
-  const loadingClass = isLoading ? 'flashcard-like-button--loading' : '';
+  let resolvedSize: 'sm' | 'md' | 'lg' = 'md';
+  if (size === 'small') resolvedSize = 'sm';
+  else if (size === 'large') resolvedSize = 'lg';
+
+  let heartSize = 16;
+  if (size === 'small') heartSize = 14;
+  else if (size === 'large') heartSize = 20;
 
   return (
     <button
-      className={`flashcard-like-button ${sizeClass} ${likedClass} ${loadingClass}`}
+      className={cn(
+        pillButtonStyles({
+          intent: liked ? 'danger' : 'default',
+          size: resolvedSize,
+          disabled: isLoading
+        })
+      )}
       onClick={handleLike}
       disabled={isLoading}
       aria-label={liked ? 'Unlike this deck' : 'Like this deck'}
+      style={{transition: 'transform 0.15s ease'}}
     >
       <Heart 
-        size={size === 'small' ? 14 : size === 'large' ? 20 : 16} 
+        size={heartSize} 
         fill={liked ? 'currentColor' : 'none'}
       />
-      <span className="flashcard-like-button-count">{likeCount}</span>
+      <span className="tw-font-mono tw-text-sm">{likeCount}</span>
     </button>
   );
 };

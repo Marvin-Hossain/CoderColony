@@ -1,4 +1,4 @@
-import {BrowserRouter as Router, Routes, Route, useLocation} from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import Intro from './pages/Intro';
 import Dashboard from './pages/Dashboard';
@@ -9,10 +9,10 @@ import BehavioralQuestions from './pages/BehavioralQuestions';
 import TechnicalQuestions from './pages/TechnicalQuestions';
 import AuthSuccess from './pages/AuthSuccess';
 import AboutUs from './pages/AboutUs';
+import { FEATURE_FLAGS } from './services/config';
 import Practice from './pages/Practice';
-import Toolbar from './components/Toolbar';
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./App.css";
+import Navbar from './components/Navbar';
+import "./styles/global.css";
 import "./styles/CleanupStyles.css";
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -23,17 +23,12 @@ const DeckPage = lazy(() => import('./pages/DeckPage'));
 const StudyPage = lazy(() => import('./pages/StudyPage'));
 const DeckEditor = lazy(() => import('./pages/DeckEditor'));
 
-// Layout component that conditionally renders the toolbar
+// Layout component that renders the navbar
 const AppLayout = () => {
-    const location = useLocation();
-    const isLoginPage = location.pathname === '/';
-    
     return (
         <>
-            {!isLoginPage && <Toolbar />}
-            <div className={isLoginPage ? "login-content" : "content"} style={
-                isLoginPage ? {} : { marginTop: '60px', padding: '20px' }
-            }>
+            <Navbar />
+            <main className="flex-1">
                 <Routes>
                     <Route path="/" element={<Intro/>}/>
                     <Route path="/auth-success" element={<AuthSuccess/>}/>
@@ -45,7 +40,9 @@ const AppLayout = () => {
                         <Route path="/practice" element={<Practice/>}/>
                         <Route path="/behavioral-questions" element={<BehavioralQuestions/>}/>
                         <Route path="/technical-questions" element={<TechnicalQuestions/>}/>
-                        <Route path="/about-us" element={<AboutUs/>}/>
+                        {FEATURE_FLAGS.ABOUT_PAGE_ENABLED && (
+                            <Route path="/about-us" element={<AboutUs/>}/>
+                        )}
                         <Route path="/practice/flashcards" element={<Suspense fallback={<>Loading...</>}><Flashcards/></Suspense>}/>
                         <Route path="/practice/flashcards/new" element={<Suspense fallback={<>Loading...</>}><DeckEditor/></Suspense>}/>
                         <Route path="/practice/flashcards/:deckId" element={<Suspense fallback={<>Loading...</>}><DeckPage/></Suspense>}/>
@@ -54,7 +51,7 @@ const AppLayout = () => {
                         <Route path="/explore/flashcards" element={<Suspense fallback={<>Loading...</>}><FlashcardsExplore/></Suspense>}/>
                     </Route>
                 </Routes>
-            </div>
+            </main>
         </>
     );
 };

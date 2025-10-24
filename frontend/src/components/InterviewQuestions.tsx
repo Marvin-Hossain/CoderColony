@@ -1,10 +1,11 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
 import Button from './Button';
-import './InterviewQuestions.css';
+import { Settings as SettingsIcon } from 'lucide-react';
 import {API_CONFIG} from '@/services/config';
-import PageHeader from './PageHeader';
 import MicIcon from './icons/MicIcon';
+import '@/styles/dashboard.css';
+import '@/styles/practice.css';
 
 /**
  * Global type declaration for browser SpeechRecognition APIs,
@@ -38,7 +39,10 @@ interface InterviewQuestionsProps {
  * and displays feedback.
  */
 const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) => {
-    const API_BASE_URL = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS[type.toUpperCase() as keyof typeof API_CONFIG.ENDPOINTS];
+    const endpointPath = type === 'behavioral'
+        ? API_CONFIG.ENDPOINTS.BEHAVIORAL
+        : API_CONFIG.ENDPOINTS.TECHNICAL;
+    const API_BASE_URL = `${API_CONFIG.BASE_URL}${endpointPath}`;
     const [question, setQuestion] = useState<string>('');
     const [response, setResponse] = useState<string>('');
     const [feedback, setFeedback] = useState<FeedbackData | null>(null);
@@ -51,14 +55,13 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
     const recognitionRef = useRef<any>(null);
     
     // Check if speech recognition is available in the browser
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;    
+    const SpeechRecognition = (globalThis as any).SpeechRecognition || (globalThis as any).webkitSpeechRecognition;
     const navigate = useNavigate();
 
     /** Fetches a new question from the backend API. */
     const fetchNewQuestion = async (): Promise<void> => {
         setLoading(true);
         setError(null);
-        console.log('Fetching from:', `${API_BASE_URL}/question`);
         try {
             const response = await fetch(`${API_BASE_URL}/question`, {
                 credentials: 'include'
@@ -84,7 +87,6 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
                 throw new Error('Failed to fetch question');
             }
         } catch (error) {
-            console.error("Error fetching question:", error instanceof Error ? error.message : error);
             setError('Failed to load question. Please try again.');
             setShowResetButton(true);
         } finally {
@@ -121,7 +123,6 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
             const data: FeedbackData = await result.json();
             setFeedback(data);
         } catch (error) {
-            console.error("Error submitting response:", error instanceof Error ? error.message : error);
             setError('Failed to evaluate response. Please try again.');
         } finally {
             setLoading(false);
@@ -163,7 +164,6 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
                 throw new Error('Failed to reset question date');
             }
         } catch (error) {
-            console.error('Error resetting question date:', error instanceof Error ? error.message : error);
             setError('Failed to reset question date. Please try again.');
         } finally {
             setLoading(false);
@@ -204,7 +204,6 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
             }
             await fetchNewQuestion();
         } catch (error) {
-            console.error('Error resetting questions:', error instanceof Error ? error.message : error);
             setError('Failed to reset questions. Please try again.');
             setLoading(false);
         }
@@ -253,7 +252,6 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
 
                 /** Handle speech recognition errors. */
                 recognition.onerror = (event: any) => {
-                    console.error('Speech recognition error:', event.error);
                     setError(`Speech recognition error: ${event.error}`);
                     stopRecognition();
                 };
@@ -269,7 +267,6 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
                 setIsListening(true);
                 setError(null);
             } catch (error) {
-                console.error('Failed to start speech recognition:', error instanceof Error ? error.message : error);
                 setError('Failed to start speech recognition.');
                 stopRecognition();
             }
@@ -300,108 +297,162 @@ const InterviewQuestions = ({type, title, subtitle}: InterviewQuestionsProps) =>
     };
 
     const headerButtons = (
-        <div className="header-buttons">
+        <div className="flex flex-wrap items-center gap-2">
             {showResetButton ? (
                 <Button
                     text="Reset"
                     onClick={resetQuestions}
-                    className="reset-button"
+                    variant="outline"
+                    className="tw-rounded-xl tw-border tw-border-white/50 !tw-text-white !tw-font-semibold hover:tw-bg-white/10"
                     disabled={loading}
                 />
             ) : (
-                <Button
-                    text="Skip"
+                <button
+                    type="button"
                     onClick={handleSkip}
-                    className="skip-button"
                     disabled={loading}
-                />
+                    className={`inline-flex h-12 items-center justify-center tw-rounded-xl tw-border tw-border-white/50 bg-transparent hover:bg-transparent focus:bg-transparent active:bg-transparent tw-bg-transparent hover:tw-bg-transparent focus:tw-bg-transparent active:tw-bg-transparent !tw-text-white !tw-font-semibold cursor-pointer px-4 py-2 ${loading ? 'tw-opacity-50 tw-cursor-not-allowed' : ''}`}
+                    style={{ backgroundColor: 'transparent' }}
+                >
+                    Reset
+                </button>
             )}
-            <Button
-                text="Settings"
+            <button
+                type="button"
                 onClick={navigateToSettings}
-                className="settings-button"
-                disabled={loading}
-            />
+                aria-label="Open settings"
+                className={`inline-flex h-12 w-12 items-center justify-center tw-rounded-xl tw-border tw-border-white/50 bg-transparent hover:bg-transparent focus:bg-transparent active:bg-transparent tw-bg-transparent hover:tw-bg-transparent focus:tw-bg-transparent active:tw-bg-transparent !tw-text-white !tw-font-semibold cursor-pointer`}
+                style={{ backgroundColor: 'transparent' }}
+            >
+                <SettingsIcon size={22} />
+            </button>
         </div>
     );
 
     return (
-        <div className={`${type}-questions`}>
-            <PageHeader
-                title={title}
-                subtitle={subtitle || "Practice your responses and get AI feedback"}
-                rightButton={headerButtons}
-            />
-
-            {error && <div className="error-message">{error}</div>}
-
-            <main className={`${type}-main`}>
-                {loading ? (
-                    <div className="loading">Loading...</div>
-                ) : (
-                    <>
-                        <div className="question-section">
-                            <h2>Question:</h2>
-                            <p>{question || "No question loaded."}</p>
+        <main className="dash-container">
+            <div className="dash-inner">
+                <section className="practice-hero max-w-4xl mx-auto">
+                    <div className="decor-top-right" />
+                    <div className="decor-bottom-left" />
+                    <div className="practice-hero-content">
+                        <div className="flex items-center justify-between gap-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                            <div>
+                                <h1>{title}</h1>
+                                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                                    {subtitle || 'Practice your responses and get AI feedback'}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2">{headerButtons}</div>
                         </div>
+                    </div>
+                </section>
 
-                        {!feedback ? (
-                            <div className="response-section">
-                                <textarea
-                                    value={response}
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setResponse(e.target.value)}
-                                    placeholder={type === 'behavioral' ? "Use the STAR method: Describe the Situation, Task, Action, and Result..." : "Enter your response here..."}
-                                    disabled={noInteraction}
-                                />
-                                <div className="response-buttons">
-                                    <Button
-                                        text="Get Feedback"
-                                        onClick={submitResponse}
-                                        disabled={!canSubmit}
-                                        className="submit-button"
-                                    />
-                                    <Button
-                                        onClick={toggleListening}
-                                        disabled={micDisabled}
-                                        className={`mic-button ${isListening ? 'active' : ''} ${!SpeechRecognition ? 'disabled-feature' : ''}`}
-                                    >
-                                        <MicIcon isActive={isListening} />
-                                    </Button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="feedback-section">
-                                <h3>Feedback:</h3>
-                                <div className={`rating ${feedback.rating < 6 ? 'low-score' : ''}`}>
-                                    Score: {feedback.rating}/10
-                                    {feedback.rating < 6 && (
-                                        <span className="score-warning">
-                                            (Need at least 6/10 to advance)
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="feedback-text"
-                                     style={{whiteSpace: 'pre-wrap'}}>{feedback.feedback}</div>
-                                <div className="button-group">
-                                    <Button
-                                        text="Try Again"
-                                        onClick={handleRetry}
-                                        className="retry-button"
-                                        disabled={loading}
-                                    />
-                                    <Button
-                                        text="Next Question"
-                                        onClick={handleNext}
-                                        className="next-button"
-                                        disabled={loading || feedback.rating < 6}
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </>
+                {error && (
+                    <div className="rounded-xl border border-danger bg-danger/10 px-4 py-3 text-danger" role="alert">
+                        {error}
+                    </div>
                 )}
-            </main>
-        </div>
+
+                <div className="max-w-4xl mx-auto flex flex-col items-center gap-8 py-12">
+                    {loading ? (
+                        <div className="flex h-48 flex-col items-center justify-center gap-4 rounded-2xl p-8 text-muted-foreground shadow-md" style={{ background: '#FFFFFF' }}>
+                            <span
+                                className="inline-block h-12 w-12 animate-spin rounded-full"
+                                style={{
+                                    borderWidth: '4px',
+                                    borderStyle: 'solid',
+                                    borderColor: 'rgba(77, 107, 254, 0.2)',
+                                    borderTopColor: '#2563EB'
+                                }}
+                            />
+                            <p className="text-sm">Loading...</p>
+                        </div>
+                    ) : (
+                        <section className="feature-card feature-card--blue-cc rounded-2xl p-8 shadow-lg w-full">
+                            <div className="decor-top-right" />
+                            <div className="decor-bottom-left" />
+                            <div className="feature-card-content space-y-6">
+                                <header className="space-y-2">
+                                    <h2 className="text-sm font-semibold text-white">Question</h2>
+                                    <p className="text-lg font-semibold leading-relaxed text-white/90">
+                                        {question || 'No question loaded.'}
+                                    </p>
+                                </header>
+
+                                {feedback ? (
+                                    <>
+                                        <div className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold text-white" style={{ borderColor: 'rgba(255,255,255,0.4)' }}>
+                                            Score: {feedback.rating}/10
+                                            {feedback.rating < 6 && (
+                                                <span className="text-xs" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                                                    Need at least 6/10 to advance
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="white-field p-4 text-sm leading-relaxed" style={{ whiteSpace: 'pre-wrap' }}>
+                                            {feedback.feedback}
+                                        </div>
+                                        <div className="flex flex-wrap gap-3">
+                                            <Button
+                                                text="Try Again"
+                                                onClick={handleRetry}
+                                                variant="outline"
+                                                className="w-full sm:w-auto tw-rounded-xl tw-border tw-border-white/50 !tw-text-white !tw-font-semibold hover:tw-bg-white/10"
+                                                disabled={loading}
+                                            />
+                                            <Button
+                                                text="Next Question"
+                                                onClick={handleNext}
+                                                className="w-full sm:w-auto bg-white text-[#2563EB] rounded-xl shadow-md hover:brightness-105"
+                                                disabled={loading || feedback.rating < 6}
+                                            />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <textarea
+                                            value={response}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setResponse(e.target.value)}
+                                            placeholder={type === 'behavioral'
+                                                ? 'Use the STAR method: describe the Situation, Task, Action, and Result...'
+                                                : 'Enter your response here...'}
+                                            disabled={noInteraction}
+                                            className="white-field w-full p-4 placeholder:text-gray-500"
+                                            style={{minHeight: 180, resize: 'vertical'}}
+                                        />
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <Button
+                                                text="Get Feedback"
+                                                onClick={submitResponse}
+                                                disabled={!canSubmit}
+                                                variant="outline"
+                                                className="w-full sm:w-auto tw-rounded-xl tw-border tw-border-white/50 !tw-text-white !tw-font-semibold hover:tw-bg-white/10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={toggleListening}
+                                                disabled={micDisabled}
+                                                aria-pressed={isListening}
+                                            className={`inline-flex h-12 w-12 items-center justify-center rounded-full tw-border tw-border-white/50 bg-transparent hover:bg-transparent focus:bg-transparent active:bg-transparent tw-bg-transparent hover:tw-bg-transparent focus:tw-bg-transparent active:tw-bg-transparent tw-text-white cursor-pointer transition-transform ${micDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                style={{transition: 'all 0.2s ease', backgroundColor: 'transparent'}}
+                                            >
+                                                <MicIcon isActive={isListening}/>
+                                            </button>
+                                        </div>
+                                        {SpeechRecognition == null && (
+                                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                                                Speech recognition is not supported by this browser.
+                                            </p>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </section>
+                    )}
+                </div>
+            </div>
+        </main>
     );
 };
 

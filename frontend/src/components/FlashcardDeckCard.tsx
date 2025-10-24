@@ -1,17 +1,11 @@
 import React from 'react';
-import { Heart, Eye, Users } from 'lucide-react';
-import { Deck } from '../types/flashcards';
-import './FlashcardDeckCard.css';
+import {Heart, Eye, Users} from 'lucide-react';
+import {Deck} from '../types/flashcards';
 
 interface FlashcardDeckCardProps {
   deck: Deck;
   onClick?: () => void;
 }
-
-const getDifficultyClass = (difficulty: number): string => {
-  const classes = ['beginner', 'easy', 'medium', 'hard', 'expert', 'master'];
-  return `difficulty--${classes[difficulty] || 'unknown'}`;
-};
 
 const getDifficultyColor = (difficulty: number, opacity: number = 1): string => {
   const colors = [
@@ -41,63 +35,87 @@ const getDifficultyLabel = (difficulty: number): string => {
 };
 
 const FlashcardDeckCard: React.FC<FlashcardDeckCardProps> = ({ deck, onClick }) => {
+  const Wrapper: React.ElementType = onClick ? 'button' : 'div';
+  const wrapperProps = onClick
+    ? {
+        type: 'button' as const,
+        onClick,
+        className: 'w-full text-left',
+        style: {background: 'none', border: 'none', padding: 0}
+      }
+    : {className: 'w-full'};
+
   return (
-    <div className="flashcard-deck-card" onClick={onClick}>
-      <div className="flashcard-deck-card-header">
-        <div className="flashcard-deck-card-badges">
-          {deck.isOfficial && (
-            <span className="flashcard-deck-card-badge official">Official</span>
-          )}
-          <span 
-            className={`flashcard-deck-card-badge difficulty ${getDifficultyClass(deck.difficulty)}`}
-            style={{ 
-              backgroundColor: getDifficultyColor(deck.difficulty, 0.2),
-              color: getDifficultyColor(deck.difficulty, 1)
-            }}
-          >
-            {getDifficultyLabel(deck.difficulty)}
+    <Wrapper {...wrapperProps}>
+      <article
+        className="flex h-full flex-col gap-5 rounded-2xl border bg-card p-6 text-left shadow-lg transition-transform"
+        style={{transition: 'transform 0.2s ease, box-shadow 0.2s ease'}}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {deck.isOfficial && (
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                Official
+              </span>
+            )}
+            <span
+              className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+              style={{
+                backgroundColor: getDifficultyColor(deck.difficulty, 0.14),
+                color: getDifficultyColor(deck.difficulty, 1)
+              }}
+            >
+              {getDifficultyLabel(deck.difficulty)}
+            </span>
+          </div>
+          <span className="inline-flex items-center rounded-full bg-muted/20 px-3 py-1 text-xs font-medium text-muted-foreground">
+            <Users size={14} className="mr-1" />
+            {deck.isPublic ? 'Public' : 'Private'}
           </span>
         </div>
-      </div>
-      
-      <div className="flashcard-deck-card-content">
-        <h3 className="flashcard-deck-card-title">{deck.title}</h3>
-        {deck.description && (
-          <p className="flashcard-deck-card-description">{deck.description}</p>
-        )}
-        
-        <div className="flashcard-deck-card-tags">
-          {deck.tags.slice(0, 3).map((tag, index) => (
-            <span key={index} className="flashcard-deck-card-tag">
-              {tag}
-            </span>
-          ))}
-          {deck.tags.length > 3 && (
-            <span className="flashcard-deck-card-tag-more">
-              +{deck.tags.length - 3}
-            </span>
+
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold">{deck.title}</h3>
+          {deck.description && (
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {deck.description}
+            </p>
+          )}
+
+          {deck.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {deck.tags.slice(0, 3).map((tag, index) => (
+                <span
+                  key={`${tag}-${index}`}
+                  className="inline-flex items-center rounded-full bg-muted/20 px-3 py-1 text-xs font-medium text-muted-foreground"
+                >
+                  {tag}
+                </span>
+              ))}
+              {deck.tags.length > 3 && (
+                <span className="inline-flex items-center rounded-full bg-muted/30 px-3 py-1 text-xs font-medium text-muted-foreground">
+                  +{deck.tags.length - 3}
+                </span>
+              )}
+            </div>
           )}
         </div>
-      </div>
-      
-      <div className="flashcard-deck-card-footer">
-        <div className="flashcard-deck-card-stats">
-          <div className="flashcard-deck-card-stat">
-            <Heart size={16} />
-            <span>{deck.likeCount}</span>
-          </div>
-          <div className="flashcard-deck-card-stat">
-            <Eye size={16} />
-            <span>{deck.viewCount}</span>
-          </div>
-          <div className="flashcard-deck-card-stat">
-            <Users size={16} />
-            <span>{deck.isPublic ? 'Public' : 'Private'}</span>
+
+        <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <span className="inline-flex items-center gap-1">
+              <Heart size={16} />
+              {deck.likeCount}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Eye size={16} />
+              {deck.viewCount}
+            </span>
           </div>
         </div>
-      </div>
-    </div>
+      </article>
+    </Wrapper>
   );
 };
 
-export default FlashcardDeckCard; 
+export default FlashcardDeckCard;
