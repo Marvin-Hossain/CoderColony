@@ -5,7 +5,7 @@ interface MicIconProps {
   className?: string;
 }
 
-const MicIcon: React.FC<MicIconProps> = ({ isActive = false, className = '' }) => {
+const MicIcon: React.FC<MicIconProps> = ({ className = '' }) => {
   return (
     <svg 
       xmlns="http://www.w3.org/2000/svg" 

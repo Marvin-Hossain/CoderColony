@@ -2,13 +2,12 @@ import {useEffect} from 'react';
 import {useParams, useNavigate} from 'react-router-dom';
 import {motion, AnimatePresence} from 'framer-motion';
 import {useAppDispatch, useAppSelector} from '../hooks/redux';
-import {useGetDeckByIdQuery, useGetCardsQuery, useGetUserCardProgressQuery, useUpdateCardProgressMutation, useSaveStudySessionMutation, useGetDueCardsQuery } from '../services/flashcardsApi';
+import {useGetDeckByIdQuery, useGetCardsQuery, useGetUserCardProgressQuery, useUpdateCardProgressMutation, useSaveStudySessionMutation } from '../services/flashcardsApi';
 import {startSession, flipCard, nextCard, markAnswer, endSession, shuffleCards, updateSettings} from '../store/slices/studySlice';
 import {Loader, AlertTriangle, X, Shuffle, Lightbulb, CheckCircle, XCircle} from 'lucide-react';
 import FlashcardProgressBar from '../components/FlashcardProgressBar';
 import FlashcardToggle from '../components/FlashcardToggle';
 import { useLeitner } from '../hooks/useLeitner';
-import { UserCardProgress } from '../types/flashcards';
 
 const StudyPage = () => {
   const { deckId } = useParams<{ deckId: string }>();
@@ -43,7 +42,8 @@ const StudyPage = () => {
   const handleEndSession = async () => {
     if (!currentSession) return;
 
-    const sessionDuration = Date.now() - new Date(sessionStats.startTime).getTime();
+    const startTimeIso = sessionStats.startTime ?? new Date().toISOString();
+    const sessionDuration = Date.now() - new Date(startTimeIso).getTime();
     
     await saveStudySession({
       deckId: deckId!,
@@ -52,7 +52,7 @@ const StudyPage = () => {
         correctCount: sessionStats.correctCount,
         incorrectCount: sessionStats.incorrectCount,
         duration: Math.round(sessionDuration / 60000), // minutes
-        startTime: sessionStats.startTime,
+        startTime: startTimeIso,
         endTime: new Date().toISOString()
       }
     });

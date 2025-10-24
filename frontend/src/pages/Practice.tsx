@@ -47,7 +47,7 @@ const practiceOptions: PracticeOption[] = [
 
 const Practice = () => {
   const navigate = useNavigate();
-  const getVariantClass = (title: string, comingSoon?: boolean): string => {
+  const getVariantClass = (comingSoon?: boolean): string => {
     if (comingSoon) return 'feature-card--purple';
     return '';
   };
@@ -71,7 +71,7 @@ const Practice = () => {
         <section className="grid-12">
           {practiceOptions.map((option) => {
             const isDisabled = option.comingSoon || !option.href;
-            const variantClass = getVariantClass(option.title, option.comingSoon);
+            const variantClass = getVariantClass(option.comingSoon);
 
             return (
               <div key={option.title} className="col-span-12 md-col-span-6 lg-col-span-4" style={{ marginBottom: '1.5rem' }}>
