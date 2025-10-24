@@ -1,68 +1,112 @@
-import React from 'react';
-import './AboutUs.css';
+import {Target, ClipboardList, BarChart3, Sparkles, Users} from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
-const AboutUs: React.FC = () => {
+type Feature = {
+  title: string;
+  description: string;
+  icon: React.ComponentType<{className?: string}>;
+  tags: string[];
+};
+
+const features: Feature[] = [
+  {
+    title: "Application Tracking",
+    description: "Stay on top of every role with centralized status updates, reminders, and notes.",
+    icon: ClipboardList,
+    tags: ["Pipeline", "Reminders"]
+  },
+  {
+    title: "Interview Practice",
+    description: "Level up behavioral and technical answers using guided prompts and AI feedback.",
+    icon: Target,
+    tags: ["STAR Method", "Mock Sessions"]
+  },
+  {
+    title: "Progress Monitoring",
+    description: "Visualize your momentum with daily and weekly goals that keep you accountable.",
+    icon: BarChart3,
+    tags: ["Goals", "Analytics"]
+  },
+  {
+    title: "AI Feedback",
+    description: "Get instant, actionable insights that highlight strengths and gaps in your responses.",
+    icon: Sparkles,
+    tags: ["Personalized", "Actionable"]
+  }
+];
+
+const AboutUs = () => {
   return (
-    <div className="about-us">
-      <PageHeader
-        title="About CoderColony"
-        subtitle="Your complete job search management platform"
-      />
-      
-      <div className="about-content">
-        <p>
-          We've built CoderColony to simplify the job search process by providing a centralized platform
-          where you can manage all aspects of your job hunt. Our goal is to give you the tools you need 
-          to stay organized, well-prepared, and confident throughout your career journey.
-        </p>
-        
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="icon">1</div>
-            <h3>Application Tracking</h3>
-            <p>Organize all your job applications in one place with status tracking.</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="icon">2</div>
-            <h3>Interview Practice</h3>
-            <p>Prepare with behavioral and technical interview questions.</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="icon">3</div>
-            <h3>Progress Monitoring</h3>
-            <p>Track daily and weekly goals with visual analytics.</p>
-          </div>
-          
-          <div className="feature-card">
-            <div className="icon">4</div>
-            <h3>AI Feedback</h3>
-            <p>Get personalized feedback on your interview responses.</p>
-          </div>
-        </div>
-        
-        <div className="mission-section">
-          <h3>Our Mission</h3>
-          <p>
-            "To empower job seekers with tools and resources that make the job hunting process 
-            more manageable, less stressful, and ultimately more successful."
+    <div className="min-h-screen bg-background">
+      <div className="container py-20 space-y-10">
+        <PageHeader
+          title="About CoderColony"
+          subtitle="Your complete job search management platform"
+        />
+
+        <section className="space-y-6 rounded-2xl border bg-card p-8 shadow-xl">
+          <p className="text-base leading-relaxed text-muted-foreground">
+            CoderColony simplifies the job search experience by bringing every task—applications, prep,
+            and progress—into a single, focused workspace. We built the toolkit we wanted when we were
+            managing interview pipelines, juggling practicing, and trying to stay motivated.
           </p>
-        </div>
-        
-        <div className="team-section">
-          <h3>The Team</h3>
-          <p>
-            CoderColony was created by a team of developers who experienced firsthand the challenges
-            of job hunting in the tech industry. We combined our expertise in software development 
-            with our knowledge of the hiring process to create a tool we wish we had during our own 
-            job searches.
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {features.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <article
+                  key={feature.title}
+                  className="space-y-4 rounded-xl border bg-muted/20 p-6 shadow-sm transition-transform"
+                  style={{transition: 'transform 0.2s ease, box-shadow 0.2s ease'}}
+                >
+                  <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold">{feature.title}</h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {feature.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="space-y-4 rounded-2xl border bg-primary/5 p-8 shadow-xl">
+          <h3 className="text-lg font-semibold text-primary">Our Mission</h3>
+          <blockquote className="text-base italic text-muted-foreground">
+            “Empower job seekers with thoughtful tools and guidance so the search feels intentional,
+            manageable, and ultimately more successful.”
+          </blockquote>
+        </section>
+
+        <section className="space-y-4 rounded-2xl border bg-card p-8 shadow-xl">
+          <div className="inline-flex items-center gap-3 rounded-full bg-muted/20 px-4 py-2 text-sm font-semibold text-muted-foreground">
+            <Users className="h-4 w-4" />
+            Built by developers, for developers
+          </div>
+          <p className="text-base leading-relaxed text-muted-foreground">
+            CoderColony was created by a team who has navigated the modern tech hiring loop many times.
+            We combine engineering expertise with empathy for the process—crafting workflows, AI prompts,
+            and progress trackers that reduce friction and help you stay focused on landing the right role.
           </p>
-        </div>
+        </section>
       </div>
     </div>
   );
 };
 
-export default AboutUs; 
+export default AboutUs;

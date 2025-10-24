@@ -1,0 +1,37 @@
+.dg-card {
+  position: relative;
+  color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  overflow: hidden;
+  min-height: 180px;
+}
+
+.dg-interactive { cursor: pointer; transition: box-shadow 0.2s ease; }
+.dg-interactive:hover { box-shadow: var(--shadow-soft-lg); }
+
+.dg-bg-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+.dg-bg-purple { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
+.dg-bg-blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+
+.dg-decor {
+  position: absolute;
+  top: -2.5rem;
+  right: -2.5rem;
+  width: 10rem; height: 10rem;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+}
+
+.dg-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+.dg-top .dg-subtitle { font-size: 0.875rem; opacity: 0.85; }
+.dg-title { margin: 0.25rem 0 0; font-size: 1.25rem; }
+
+.dg-value { font-size: 2rem; font-weight: 700; display: flex; align-items: baseline; gap: 0.25rem; }
+.dg-target { font-size: 1rem; opacity: 0.85; }
+.dg-unit { font-size: 1rem; font-weight: 600; }
+
+.dg-progress { width: 100%; height: 6px; background: rgba(255,255,255,0.25); border-radius: 9999px; overflow: hidden; margin-top: 0.5rem; }
+.dg-progress-fill { height: 100%; background: #fff; border-radius: 9999px; transition: width 0.5s ease; }
+
+

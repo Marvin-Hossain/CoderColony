@@ -1,10 +1,11 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import Button from '../components/Button';
-import './Settings.css';
 import {API_CONFIG} from '@/services/config';
-import PageHeader from '../components/PageHeader';
 import ToggleSwitch from '../components/ToggleSwitch';
-import {useNavigate, useLocation} from 'react-router-dom';
+import {useLocation} from 'react-router-dom';
+import { Trash2 } from 'lucide-react';
+import '@/styles/dashboard.css';
+import '@/styles/practice.css';
 
 interface Question {
     id: number;
@@ -55,47 +56,101 @@ const QuestionPanel = ({
                            cancelDelete,
                            isLoading
                        }: QuestionPanelProps) => (
-    <div className={`${type}-tab`}>
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
+    <div className="space-y-4">
+        {error && (
+            <div className="rounded-xl border border-danger bg-danger/10 px-4 py-3 text-danger" role="alert">
+                {error}
+            </div>
+        )}
+        {success && (
+            <output className="rounded-xl border border-emerald-500 bg-emerald-500/10 px-4 py-3 text-emerald-600">
+                {success}
+            </output>
+        )}
         {confirmation && !success && !error && (
-            <div className="confirmation-message">
-                <p>{confirmation.message}</p>
-                <div className="confirmation-buttons">
-                    <Button onClick={cancelDelete} text="Cancel" className="cancel-button" disabled={isLoading}/>
-                    <Button onClick={() => confirmDelete(confirmation.id)} text="Confirm" className="confirm-button"
-                            disabled={isLoading}/>
+            <div className="space-y-4">
+                <p className="text-white/90">{confirmation.message}</p>
+                <div className="flex flex-wrap items-center gap-3">
+                    <Button
+                        onClick={cancelDelete}
+                        text="Cancel"
+                        variant="outline"
+                        className="tw-rounded-xl tw-border tw-border-white/50 !tw-text-white !tw-font-semibold hover:tw-bg-white/10"
+                        disabled={isLoading}
+                    />
+                    <Button
+                        onClick={() => confirmDelete(confirmation.id)}
+                        text="Confirm"
+                        className="bg-white text-[#2563EB] rounded-xl shadow-md hover:brightness-105"
+                        disabled={isLoading}
+                    />
                 </div>
             </div>
         )}
-        {/* Form and list are hidden during delete confirmation */}
         {!confirmation && (
             <>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-3">
                     <textarea
                         value={question}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setQuestion(e.target.value)}
                         placeholder={`Enter your ${type} question here...`}
                         required
                         disabled={isLoading}
+                        className="white-field w-full p-4 placeholder:text-gray-500"
+                        style={{minHeight: 140, resize: 'vertical'}}
                     />
-                    <Button type="submit" className="submit-button" text="Add Question"
-                            disabled={isLoading || !question.trim()}/>
+                    <Button
+                        type="submit"
+                        text="Add Question"
+                        variant="outline"
+                        className="tw-rounded-xl tw-border tw-border-white/50 !tw-text-white !tw-font-semibold hover:tw-bg-white/10"
+                        disabled={isLoading || !question.trim()}
+                    />
                 </form>
 
-                <div className="question-list">
-                    <h2>Existing {type.charAt(0).toUpperCase() + type.slice(1)} Questions ({questions.length})</h2>
-                    {isLoading && questions.length === 0 && <p>Loading questions...</p>}
-                    {!isLoading && questions.length === 0 && <p>No questions added yet.</p>}
-                    <ul>
+                <div className="space-y-2">
+                    <h2 className="text-sm font-semibold text-white">Existing {type.charAt(0).toUpperCase() + type.slice(1)} Questions ({questions.length})</h2>
+                    {isLoading && questions.length === 0 && <p className="text-white/80">Loading questions...</p>}
+                    {!isLoading && questions.length === 0 && <p className="text-white/80">No questions added yet.</p>}
+                    <div className="space-y-2">
                         {questions.map((q: Question) => (
-                            <li key={q.id} className="question-item">
-                                <span className="question-text">{q.question}</span>
-                                <Button onClick={() => handleDelete(q.id)} text="Delete" className="delete-button"
-                                        disabled={isLoading}/>
-                            </li>
+                            <div
+                                key={q.id}
+                                className="rounded-xl border px-4 py-4 flex items-center justify-between gap-3 min-h-[60px]"
+                                style={{ borderColor: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)' }}
+                            >
+                                <span className="text-white/90 flex-1 text-left py-2">{q.question}</span>
+                                <button
+                                    onClick={() => handleDelete(q.id)}
+                                    disabled={isLoading}
+                                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl cursor-pointer transition-all duration-200 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    style={{
+                                        backgroundColor: '#dc2626',
+                                        border: '2px solid #dc2626',
+                                        color: '#ffffff',
+                                        boxShadow: '0 4px 6px -1px rgba(220, 38, 38, 0.3)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isLoading) {
+                                            e.currentTarget.style.backgroundColor = '#b91c1c';
+                                            e.currentTarget.style.borderColor = '#b91c1c';
+                                            e.currentTarget.style.boxShadow = '0 8px 15px -3px rgba(220, 38, 38, 0.4)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isLoading) {
+                                            e.currentTarget.style.backgroundColor = '#dc2626';
+                                            e.currentTarget.style.borderColor = '#dc2626';
+                                            e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(220, 38, 38, 0.3)';
+                                        }
+                                    }}
+                                    aria-label="Delete question"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             </>
         )}
@@ -107,7 +162,6 @@ const QuestionPanel = ({
  * behavioral and technical interview questions via different tabs.
  */
 const Settings = () => {
-    const navigate = useNavigate();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const initialTab = (queryParams.get('type') as 'behavioral' | 'technical') || 'behavioral';
@@ -119,10 +173,6 @@ const Settings = () => {
     const [success, setSuccess] = useState<string | null>(null);
     const [confirmation, setConfirmation] = useState<ConfirmationState | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-
-    const handleBack = () => {
-        navigate('/practice');
-    };
 
     /** Fetches all questions for the currently active tab from the backend API. */
     const fetchQuestions = async (signal?: AbortSignal): Promise<void> => {
@@ -147,11 +197,9 @@ const Settings = () => {
                     setError('Failed to load questions. Please try again.');
                     console.error('Error fetching questions:', err);
                 }
-            } else {
-                if (!signal?.aborted) {
-                    setError('An unknown error occurred fetching questions.');
-                    console.error('Unknown error fetching questions:', err);
-                }
+            } else if (!signal?.aborted) {
+                setError('An unknown error occurred fetching questions.');
+                console.error('Unknown error fetching questions:', err);
             }
         } finally {
             if (!signal?.aborted) {
@@ -271,46 +319,55 @@ const Settings = () => {
     }, [activeTab]);
 
     return (
-        <div className="settings">
-            <div className="settings-content">
-                <PageHeader
-                    title="Settings"
-                    subtitle="Customize your interview questions"
-                    rightButton={
-                        <Button
-                            text="Back"
-                            onClick={handleBack}
-                            className="back-button"
-                        />
-                    }
-                />
+        <main className="dash-container">
+            <div className="dash-inner">
+                <section className="practice-hero max-w-4xl mx-auto">
+                    <div className="decor-top-right" />
+                    <div className="decor-bottom-left" />
+                    <div className="practice-hero-content">
+                        <div className="text-center">
+                            <h1>Settings</h1>
+                            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.92)' }}>
+                                Customize your interview questions
+                            </p>
+                        </div>
+                    </div>
+                </section>
 
-                <ToggleSwitch
-                    leftOption="Behavioral Questions"
-                    rightOption="Technical Questions"
-                    leftValue="behavioral"
-                    rightValue="technical"
-                    selectedValue={activeTab}
-                    onChange={handleTabChange}
-                    id="settings-question-toggle"
-                />
+                <div className="max-w-4xl mx-auto flex flex-col gap-4 py-6">
+                    <ToggleSwitch
+                        leftOption="Behavioral Questions"
+                        rightOption="Technical Questions"
+                        leftValue="behavioral"
+                        rightValue="technical"
+                        selectedValue={activeTab}
+                        onChange={handleTabChange}
+                        id="settings-question-toggle"
+                    />
 
-                <QuestionPanel
-                    type={activeTab}
-                    error={error}
-                    success={success}
-                    confirmation={confirmation}
-                    question={question}
-                    setQuestion={setQuestion}
-                    handleSubmit={handleSubmit}
-                    questions={questions}
-                    handleDelete={handleDelete}
-                    confirmDelete={confirmDelete}
-                    cancelDelete={cancelDelete}
-                    isLoading={isLoading}
-                />
+                    <section className="feature-card feature-card--blue-cc rounded-2xl p-6 shadow-lg w-full">
+                        <div className="decor-top-right" />
+                        <div className="decor-bottom-left" />
+                        <div className="feature-card-content space-y-6">
+                            <QuestionPanel
+                                type={activeTab}
+                                error={error}
+                                success={success}
+                                confirmation={confirmation}
+                                question={question}
+                                setQuestion={setQuestion}
+                                handleSubmit={handleSubmit}
+                                questions={questions}
+                                handleDelete={handleDelete}
+                                confirmDelete={confirmDelete}
+                                cancelDelete={cancelDelete}
+                                isLoading={isLoading}
+                            />
+                        </div>
+                    </section>
+                </div>
             </div>
-        </div>
+        </main>
     );
 };
 

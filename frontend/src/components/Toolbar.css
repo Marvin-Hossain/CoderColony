@@ -74,7 +74,7 @@
   flex: 1;
 }
 
-.menu-center {
+.toolbar-menu-center {
   display: flex;
   justify-content: center;
   flex-grow: 1;
@@ -352,7 +352,7 @@
     display: block;
   }
 
-  .menu-center {
+  .toolbar-menu-center {
     display: block;
     margin: 0;
   }

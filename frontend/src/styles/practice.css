@@ -1,0 +1,108 @@
+/* Practice page styles aligned with CoderColony system */
+
+.practice-hero {
+  position: relative;
+  border-radius: 1.5rem;
+  padding: 3rem 2rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 20px 25px rgba(0,0,0,0.10), 0 10px 10px rgba(0,0,0,0.04);
+  margin-bottom: 1.5rem;
+}
+
+.practice-hero .decor-top-right,
+.practice-hero .decor-bottom-left {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none; /* ensure overlays never block interactions */
+}
+
+.practice-hero .decor-top-right {
+  right: -3rem;
+  top: -3rem;
+  width: 16rem; height: 16rem;
+  background: rgba(255,255,255,0.12);
+}
+
+.practice-hero .decor-bottom-left {
+  left: -2rem;
+  bottom: -2rem;
+  width: 12rem; height: 12rem;
+  background: rgba(255,255,255,0.06);
+}
+
+.practice-hero-content h1 {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  font-size: 2rem;
+  letter-spacing: -0.01em;
+}
+
+/* Ensure hero content sits above decorative layers */
+.practice-hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .practice-hero-content h1 { font-size: 2.5rem; }
+}
+
+.practice-hero-content p {
+  margin: 0;
+  color: rgba(255,255,255,0.92);
+}
+
+/* Interactive gradient cards */
+.interactive-card {
+  width: 100%;
+  min-height: 280px;
+  text-align: left;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+  animation: card-enter 280ms ease-out both;
+  display: flex;
+  flex-direction: column;
+}
+
+.interactive-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
+}
+
+.interactive-card:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Coming soon badge consistent with orange tag */
+.coming-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(249, 115, 22, 0.14); /* orange-500 @ 14% */
+  color: #d97706; /* text-warning from system */
+  border: 1px solid rgba(234, 88, 12, 0.30); /* orange-600 @ 30% */
+}
+
+/* Tag chips row spacing */
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+

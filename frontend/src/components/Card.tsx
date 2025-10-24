@@ -1,5 +1,7 @@
 import React, {ReactNode} from 'react';
 import './Card.css';
+import { cn } from '@/lib/cn';
+import { cardStyles } from './ui/card';
 
 interface CardProps {
     /** Card content */
@@ -29,23 +31,22 @@ const Card: React.FC<CardProps> = ({
     loading = false,
     onClick
 }) => {
-    // Generate the appropriate CSS classes based on props
-    const cardClasses = [
-        'card',
-        size === 'sm' ? 'card-sm' : '',
-        size === 'lg' ? 'card-lg' : '',
-        accent === 'left' ? 'card-accent-left' : '',
-        accent === 'top' ? 'card-accent-top' : '',
-        interactive ? 'card-interactive' : '',
-        subtle ? 'card-subtle' : '',
-        loading ? 'card-loading' : '',
+    const cardClasses = cn(
+        cardStyles({
+            size,
+            accent,
+            interactive,
+            subtle,
+            loading,
+        }),
         className
-    ].filter(Boolean).join(' ');
+    );
 
     return (
         <div 
             className={cardClasses} 
             onClick={onClick}
+            onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
             style={onClick ? {cursor: 'pointer'} : undefined}
         >
             {title && <h3 className="card-header">{title}</h3>}

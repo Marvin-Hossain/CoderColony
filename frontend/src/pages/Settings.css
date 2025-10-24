@@ -44,7 +44,7 @@
 }
 
 .error-message::before {
-    content: "⚠️";
+    content: "!";
     margin-right: 10px;
     font-size: 18px;
 }
@@ -62,9 +62,10 @@
 }
 
 .success-message::before {
-    content: "✅";
+    content: "OK";
     margin-right: 10px;
     font-size: 18px;
+    font-weight: 600;
 }
 
 textarea {

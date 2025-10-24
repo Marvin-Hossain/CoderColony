@@ -28,7 +28,8 @@ interface ApiConfig {
 }
 
 export const API_CONFIG: ApiConfig = {
-    BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+    // Prefer relative base for dev (proxied by Vite) and prod (same-origin)
+    BASE_URL: import.meta.env.VITE_API_URL || '/api',
     BASE_AUTH_URL: import.meta.env.VITE_AUTH_URL || 'http://localhost:8080',
     ENDPOINTS: {
         JOBS: '/jobs',
@@ -49,3 +50,11 @@ export const API_CONFIG: ApiConfig = {
         JOBS_STATS: '/jobs/dashboard-stats'
     }
 }; 
+
+export interface FeatureFlags {
+    ABOUT_PAGE_ENABLED: boolean;
+}
+
+export const FEATURE_FLAGS: FeatureFlags = {
+    ABOUT_PAGE_ENABLED: (import.meta.env.VITE_FEATURE_ABOUT_PAGE_ENABLED ?? 'false') === 'true'
+};

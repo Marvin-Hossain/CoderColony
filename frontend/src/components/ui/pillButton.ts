@@ -1,0 +1,36 @@
+import { cva, type VariantProps } from 'class-variance-authority';
+
+export const pillButtonStyles = cva(
+    [
+        'tw-inline-flex',
+        'tw-items-center',
+        'tw-gap-2',
+        'tw-rounded-full',
+        'tw-font-medium',
+        'tw-transition',
+        'tw-border',
+        'tw-px-3',
+        'tw-py-1'
+    ].join(' '),
+    {
+        variants: {
+            intent: {
+                default: 'tw-border tw-text-muted-foreground hover:tw-bg-secondary',
+                primary: 'tw-border-primary tw-text-primary tw-bg-primary/10 hover:tw-bg-primary/15',
+                danger: 'tw-border-danger tw-text-danger tw-bg-danger/10 hover:tw-bg-danger/15',
+            },
+            size: {
+                sm: 'tw-text-xs tw-px-2.5 tw-py-1',
+                md: 'tw-text-xs tw-px-3 tw-py-1',
+                lg: 'tw-text-sm tw-px-3.5 tw-py-1.5',
+            },
+            disabled: { true: 'tw-cursor-not-allowed tw-opacity-60', false: 'tw-cursor-pointer' },
+            active: { true: '', false: '' },
+        },
+        defaultVariants: { intent: 'default', size: 'md', disabled: false, active: false }
+    }
+);
+
+export type PillButtonStyleProps = VariantProps<typeof pillButtonStyles>;
+
+
