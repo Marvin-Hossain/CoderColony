@@ -1,0 +1,52 @@
+.cgoal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #ffffff;
+  position: relative;
+}
+
+.cgoal-interactive { cursor: pointer; }
+
+.cgoal-disabled { opacity: 0.45; }
+
+.cgoal-ring { position: relative; }
+
+.cgoal-svg { display: block; }
+
+.cgoal-track {
+  stroke: rgba(255, 255, 255, 0.25);
+  transition: stroke 0.2s ease;
+}
+
+.cgoal-progress {
+  transition: stroke-dashoffset 0.6s ease, stroke 0.2s ease;
+}
+
+.cgoal-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cgoal-value {
+  font-weight: 700;
+}
+
+.cgoal-title {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.cgoal-soon {
+  position: absolute;
+  bottom: -1.25rem;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+

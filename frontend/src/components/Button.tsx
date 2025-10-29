@@ -1,5 +1,6 @@
 import React from 'react';
-import './Button.css';
+import { buttonStyles } from './ui/button';
+import { cn } from '../lib/cn';
 
 interface ButtonProps {
     text?: string;
@@ -10,6 +11,7 @@ interface ButtonProps {
     children?: React.ReactNode;
     variant?: 'default' | 'outline' | 'ghost';
     size?: 'default' | 'sm' | 'lg';
+    style?: React.CSSProperties;
 }
 
 const Button = ({
@@ -20,17 +22,28 @@ const Button = ({
                     type = 'button',
                     children,
                     variant = 'default',
-                    size = 'default'
+                    size = 'default',
+                    style
                 }: ButtonProps) => {
-    const variantClass = variant === 'outline' ? 'outline' : variant === 'ghost' ? 'ghost' : '';
-    const sizeClass = size === 'lg' ? 'lg' : size === 'sm' ? 'sm' : '';
+    let cvaSize: 'sm' | 'md' | 'lg';
+    if (size === 'lg') {
+        cvaSize = 'lg';
+    } else if (size === 'sm') {
+        cvaSize = 'sm';
+    } else {
+        cvaSize = 'md';
+    }
 
     return (
         <button
-            className={`custom-button ${variantClass} ${sizeClass} ${className}`}
+            className={cn(
+                buttonStyles({ variant: variant ?? 'default', size: cvaSize }),
+                className
+            )}
             onClick={onClick}
             disabled={disabled}
             type={type}
+            style={style}
         >
             {children || text}
         </button>

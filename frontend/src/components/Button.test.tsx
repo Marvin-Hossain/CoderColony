@@ -20,8 +20,6 @@ describe('Button', () => {
   it('applies custom className correctly', () => {
     render(<Button text="Click me" className="test-class" />);
     const button = screen.getByText('Click me');
-    
-    expect(button).toHaveClass('custom-button');
     expect(button).toHaveClass('test-class');
   });
 

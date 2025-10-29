@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import './Toolbar.css';
 import { API_CONFIG } from '@/services/config';
 import LogoutButton from './LogoutButton';
+import { cn } from '@/lib/cn';
+import { menuToggleStyles, mobileMenuOverlayStyles, mobileMenuStyles, toolbarStyles, toolbarContentStyles, brandLinkStyles, brandLogoStyles, brandTextStyles, desktopMenuStyles, toolbarMenuCenterStyles, toolbarLinksStyles, toolbarLinkAnchorStyles, toolbarUserStyles, userAvatarStyles, mobileMenuContentStyles, mobileMenuLinksStyles } from './ui/toolbar';
 
 interface UserData {
   authenticated: boolean;
@@ -114,11 +116,11 @@ const Toolbar: React.FC = () => {
 
   if (userState.isLoading) {
     return (
-      <nav className="toolbar">
-        <div className="toolbar-content">
+      <nav className={cn(toolbarStyles())}>
+        <div className={cn(toolbarContentStyles())}>
           <div className="toolbar-brand">
-            <Link to="/dashboard" className="brand-link">
-              <div className="brand-logo">
+            <Link to="/dashboard" className={cn(brandLinkStyles())}>
+              <div className={cn(brandLogoStyles())}>
                 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect width="40" height="40" rx="8" fill="#ffffff"/>
                   <path d="M8 12L20 8L32 12V28L20 32L8 28V12Z" fill="#4d6bfe" stroke="#4d6bfe" strokeWidth="1.5"/>
@@ -130,10 +132,10 @@ const Toolbar: React.FC = () => {
                   <circle cx="24" cy="28" r="2" fill="#4d6bfe"/>
                 </svg>
               </div>
-              <span className="brand-text">CoderColony</span>
+              <span className={cn(brandTextStyles())}>CoderColony</span>
             </Link>
           </div>
-          <div className="toolbar-user">
+          <div className={cn(toolbarUserStyles())}>
             <span>Loading...</span>
           </div>
         </div>
@@ -142,23 +144,23 @@ const Toolbar: React.FC = () => {
   }
 
   const renderNavLinks = () => (
-    <ul className="toolbar-links">
-      <li><Link to="/progress" onClick={() => setMobileMenuOpen(false)}>Progress</Link></li>
-      <li><Link to="/job-apps" onClick={() => setMobileMenuOpen(false)}>Applications</Link></li>
-      <li><Link to="/practice" onClick={() => setMobileMenuOpen(false)}>Practice</Link></li>
-      <li><Link to="/about-us" onClick={() => setMobileMenuOpen(false)}>About Us</Link></li>
+    <ul className={cn(toolbarLinksStyles())}>
+      <li><Link className={cn(toolbarLinkAnchorStyles())} to="/progress" onClick={() => setMobileMenuOpen(false)}>Progress</Link></li>
+      <li><Link className={cn(toolbarLinkAnchorStyles())} to="/job-apps" onClick={() => setMobileMenuOpen(false)}>Applications</Link></li>
+      <li><Link className={cn(toolbarLinkAnchorStyles())} to="/practice" onClick={() => setMobileMenuOpen(false)}>Practice</Link></li>
+      <li><Link className={cn(toolbarLinkAnchorStyles())} to="/about-us" onClick={() => setMobileMenuOpen(false)}>About Us</Link></li>
     </ul>
   );
 
   const renderUserSection = () => (
-    <div className="toolbar-user">
+    <div className={cn(toolbarUserStyles())}>
       {userState.data && (
         <>
           {userState.data.avatarUrl && (
             <img 
               src={userState.data.avatarUrl} 
               alt={`${userState.data.username}'s profile`}
-              className="user-avatar"
+              className={cn(userAvatarStyles())}
               referrerPolicy="no-referrer"
               crossOrigin="anonymous"
             />
@@ -171,29 +173,26 @@ const Toolbar: React.FC = () => {
   );
 
   return (
-    <nav className="toolbar">
-      <div className="toolbar-content">
+    <nav className={cn(toolbarStyles())}>
+      <div className={cn(toolbarContentStyles())}>
         <div className="toolbar-brand">
-          <Link to="/dashboard" className="brand-link">
-            <div className="brand-logo">
+          <Link to="/dashboard" className={cn(brandLinkStyles())}>
+            <div className={cn(brandLogoStyles())}>
               <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="40" height="40" rx="8" fill="#ffffff"/>
                 <path d="M8 12L20 8L32 12V28L20 32L8 28V12Z" fill="#4d6bfe" stroke="#4d6bfe" strokeWidth="1.5"/>
                 <path d="M12 16L28 16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
                 <path d="M12 20L24 20" stroke="white" strokeWidth="2" strokeLinecap="round"/>
                 <path d="M12 24L28 24" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="20" cy="12" r="2" fill="#4d6bfe"/>
-                <circle cx="16" cy="28" r="2" fill="#4d6bfe"/>
-                <circle cx="24" cy="28" r="2" fill="#4d6bfe"/>
               </svg>
             </div>
-            <span className="brand-text">CoderColony</span>
+            <span className={cn(brandTextStyles())}>CoderColony</span>
           </Link>
         </div>
         
         {/* Desktop menu */}
-        <div className="desktop-menu">
-          <div className="menu-center">
+        <div className={cn(desktopMenuStyles())}>
+          <div className={cn(toolbarMenuCenterStyles())}>
             {renderNavLinks()}
           </div>
           {renderUserSection()}
@@ -201,7 +200,7 @@ const Toolbar: React.FC = () => {
         
         {/* Mobile menu toggle button */}
         <button 
-          className={`menu-toggle ${mobileMenuOpen ? 'open' : ''}`}
+          className={cn(menuToggleStyles({ open: mobileMenuOpen }))}
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
           aria-expanded={mobileMenuOpen}
@@ -210,15 +209,17 @@ const Toolbar: React.FC = () => {
         </button>
         
         {/* Mobile menu overlay */}
-        <div 
-          className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`}
+        <button 
+          type="button"
+          aria-label="Close menu overlay"
+          className={cn(mobileMenuOverlayStyles({ active: mobileMenuOpen }))}
           onClick={() => setMobileMenuOpen(false)}
-        ></div>
+        ></button>
         
         {/* Mobile sidebar */}
-        <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-          <div className="mobile-menu-content">
-            <div className="mobile-menu-links">
+        <div className={cn(mobileMenuStyles({ open: mobileMenuOpen }))}>
+          <div className={cn(mobileMenuContentStyles())}>
+            <div className={cn(mobileMenuLinksStyles())}>
               {renderNavLinks()}
             </div>
             <div className="mobile-menu-user">
