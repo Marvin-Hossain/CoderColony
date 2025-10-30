@@ -103,6 +103,7 @@
   border: none;
   cursor: pointer;
   padding: 0.625rem;
+  position: relative;
   z-index: 1100;
   transition: transform 0.2s ease;
 }
@@ -118,6 +119,7 @@
   height: 0.125rem;
   background-color: var(--color-text);
   transition: background-color 0.2s ease;
+  pointer-events: none;
 }
 
 .hamburger-icon::before,
@@ -281,12 +283,15 @@
   display: none;
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .mobile-menu-overlay.active {
   display: block;
   opacity: 1;
+  pointer-events: auto;
 }
+
 
 /* Media queries for responsive design */
 @media (max-width: 900px) {
@@ -296,6 +301,7 @@
 
   .menu-toggle {
     display: block;
+    position: relative;
   }
 
   .mobile-menu {

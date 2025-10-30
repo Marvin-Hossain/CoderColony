@@ -236,62 +236,67 @@ const Navbar: React.FC = () => {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 tw-sticky tw-top-0 tw-z-50 tw-w-full tw-border-b tw-bg-background/95 tw-backdrop-blur tw-supports-[backdrop-filter]:tw-bg-background/60">
-      <div className="container tw-flex tw-h-16 tw-items-center tw-justify-between">
-        <div className="tw-flex tw-items-center tw-space-x-3">
-          <Link to="/dashboard" className={cn(brandLinkStyles())}>
-            <div className={cn(brandLogoStyles())}>
-              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="tw-w-8 tw-h-8">
-                <rect width="40" height="40" rx="8" fill="currentColor"/>
-                <path d="M8 12L20 8L32 12V28L20 32L8 28V12Z" fill="white" stroke="white" strokeWidth="1.5"/>
-                <path d="M12 16L28 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M12 20L24 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M12 24L28 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <span className="tw-font-semibold tw-text-lg">CoderColony</span>
-          </Link>
-        </div>
-        
-        
-        {/* Desktop menu */}
-        <div className={cn(desktopMenuStyles())}>
-          <div className={cn(navbarMenuCenterStyles())}>
-            {renderNavLinks()}
+    <>
+      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 tw-sticky tw-top-0 tw-z-50 tw-w-full tw-border-b tw-bg-background/95 tw-backdrop-blur tw-supports-[backdrop-filter]:tw-bg-background/60">
+        <div className="container tw-flex tw-h-16 tw-items-center tw-justify-between">
+          <div className="tw-flex tw-items-center tw-space-x-3">
+            <Link to="/dashboard" className={cn(brandLinkStyles())}>
+              <div className={cn(brandLogoStyles())}>
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="tw-w-8 tw-h-8">
+                  <rect width="40" height="40" rx="8" fill="currentColor"/>
+                  <path d="M8 12L20 8L32 12V28L20 32L8 28V12Z" fill="white" stroke="white" strokeWidth="1.5"/>
+                  <path d="M12 16L28 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M12 20L24 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M12 24L28 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <span className="tw-font-semibold tw-text-lg">CoderColony</span>
+            </Link>
           </div>
-          {renderUserSection()}
-        </div>
-        
-        {/* Mobile menu toggle button */}
-        <button 
-          className={cn(menuToggleStyles({ open: mobileMenuOpen }), 'tw-p-2')}
-          onClick={toggleMobileMenu}
-          aria-label="Toggle menu"
-          aria-expanded={mobileMenuOpen}
-        >
-          <span className="hamburger-icon"></span>
-        </button>
-        
-        {/* Mobile menu overlay */}
-        <button 
-          className={cn(mobileMenuOverlayStyles({ active: mobileMenuOpen }))}
-          onClick={() => setMobileMenuOpen(false)}
-          aria-label="Close menu overlay"
-        ></button>
-        
-        {/* Mobile sidebar */}
-        <div className={cn(mobileMenuStyles({ open: mobileMenuOpen }))}>
-          <div className={cn(mobileMenuContentStyles())}>
-            <div className={cn(mobileMenuLinksStyles())}>
+          
+          
+          {/* Desktop menu */}
+          <div className={cn(desktopMenuStyles())}>
+            <div className={cn(navbarMenuCenterStyles())}>
               {renderNavLinks()}
             </div>
-            <div className="mobile-menu-user">
-              {renderUserSection()}
-            </div>
+            {renderUserSection()}
+          </div>
+          
+          {/* Mobile menu toggle button */}
+          <button 
+            className={cn(menuToggleStyles({ open: mobileMenuOpen }), 'tw-p-2')}
+            onClick={toggleMobileMenu}
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <span className="hamburger-icon"></span>
+          </button>
+        </div>
+      </nav>
+      
+      {/* Mobile menu overlay - moved outside nav to avoid stacking context issues */}
+      <button 
+        className={cn(mobileMenuOverlayStyles({ active: mobileMenuOpen }))}
+        onClick={() => {
+          setMobileMenuOpen(false);
+          document.body.style.overflow = 'auto';
+        }}
+        aria-label="Close menu overlay"
+      ></button>
+      
+      {/* Mobile sidebar - moved outside nav to avoid stacking context issues */}
+      <div className={cn(mobileMenuStyles({ open: mobileMenuOpen }))}>
+        <div className={cn(mobileMenuContentStyles())}>
+          <div className={cn(mobileMenuLinksStyles())}>
+            {renderNavLinks()}
+          </div>
+          <div className="mobile-menu-user">
+            {renderUserSection()}
           </div>
         </div>
       </div>
-    </nav>
+    </>
   );
 };
 
